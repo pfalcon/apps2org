@@ -44,13 +44,11 @@ public class AppsListActivity extends ListActivity {
 
 	private DatabaseHelper dbHelper;
 
-	private ArrayList<Application> apps;
+	private List<Application> apps;
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
 	private final GenericDialogManager genericDialogManager = new GenericDialogManager();
-
-	private ApplicationInfoManager applicationInfoManager;
 
 	private final Handler handler = new Handler() {
 		@Override
@@ -74,32 +72,33 @@ public class AppsListActivity extends ListActivity {
 
 	};
 
-	private List<? extends Map<String, ?>> convertToMapArray(ArrayList<Application> apps) {
+	private List<? extends Map<String, ?>> convertToMapArray(List<Application> apps) {
 		List<Map<String, Object>> l = new ArrayList<Map<String, Object>>();
 		for (Application application : apps) {
 			Map<String, Object> m = new HashMap<String, Object>();
 			m.put("image", application.getIcon());
-			m.put("name", application.getName());
-			m.put("appInfo", application.getPackage());
+			m.put("name", application.getLabel());
+			m.put("appInfo", application);
 			l.add(m);
 		}
 		return l;
 	}
 
 	private ProgressDialog pd;
+	private ApplicationInfoManager applicationInfoManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		applicationInfoManager = new ApplicationInfoManager(getPackageManager());
 		dbHelper = new DatabaseHelper(this);
 		setContentView(R.layout.main);
 		chooseLabelDialog = new ChooseLabelDialogCreator(this, dbHelper);
 		genericDialogManager.addDialog(chooseLabelDialog);
+		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-				chooseLabelDialog.setCurrentApp(apps.get(position).getPackage());
+				chooseLabelDialog.setCurrentApp(apps.get(position));
 				showDialog(chooseLabelDialog.getDialogId());
 			}
 		});
@@ -107,16 +106,12 @@ public class AppsListActivity extends ListActivity {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				fillData();
+				apps = applicationInfoManager.getAppsArray(handler);
 				handler.sendEmptyMessage(-1);
 				handler.sendEmptyMessage(-2);
 			}
 		};
 		t.start();
-	}
-
-	public void fillData() {
-		apps = applicationInfoManager.getAppsArray(handler);
 	}
 
 	public final class AppsListAdapter extends SimpleAdapter {
@@ -132,7 +127,7 @@ public class AppsListActivity extends ListActivity {
 						((ImageView) view).setImageDrawable((Drawable) data);
 						return true;
 					case R.id.labels:
-						((TextView) view).setText(dbHelper.labelDao.getLabelsString(data.toString()));
+						((TextView) view).setText(dbHelper.labelDao.getLabelsString((Application) data));
 						return true;
 					default:
 						return false;

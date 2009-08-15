@@ -30,7 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ComponentInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -52,144 +53,178 @@ public class ApplicationInfoManager {
 	private static final Set<String> ignoredApps = new HashSet<String>();
 
 	static {
-		ignoredApps.add("com.android.phone");
-		ignoredApps.add("com.google.android.street");
-		ignoredApps.add("com.android.googlesearch");
-		ignoredApps.add("com.samsung.camera.firmware");
-		ignoredApps.add("com.samsung.TSP.firmware");
-		ignoredApps.add("com.samsung.RilErrorNotifier");
-		ignoredApps.add("com.samsung.android.wlantest");
-		ignoredApps.add("com.samsung.bootsetting");
-		ignoredApps.add("com.samsung.sec.android.musictest_tool");
-		ignoredApps.add("com.samsung.sec.android.application.csc");
-		ignoredApps.add("com.samsung.InputEventApp");
-		ignoredApps.add("com.samsung.test.shutdown");
-		ignoredApps.add("com.android.samsungtest.FactoryTest");
-		ignoredApps.add("com.android.samsungtest.CurrenctDataState");
-		ignoredApps.add("com.test.version");
-		ignoredApps.add("com.test.lcdtest");
-		ignoredApps.add("com.android.samsungtest.FileCopy");
-		ignoredApps.add("com.android.testgps");
-		ignoredApps.add("com.android.samsungtest.DataCopy");
-		ignoredApps.add("android");
-		ignoredApps.add("com.google.android.providers.settings");
-		ignoredApps.add("com.google.android.providers.gmail");
-		ignoredApps.add("com.android.providers.settings");
-		ignoredApps.add("com.android.providers.im");
-		ignoredApps.add("com.android.providers.drm");
-		ignoredApps.add("com.android.providers.calendar");
-		ignoredApps.add("com.android.providers.contacts");
-		ignoredApps.add("com.android.providers.media");
-		ignoredApps.add("com.android.providers.downloads");
-		ignoredApps.add("com.android.providers.userdictionary");
-		ignoredApps.add("com.android.providers.telephony");
-		ignoredApps.add("com.android.providers.subscribedfeeds");
-		ignoredApps.add("com.google.android.server.checkin");
-		ignoredApps.add("com.android.serviceModeApp");
-		ignoredApps.add("com.android.RilFactoryApp");
-		ignoredApps.add("com.google.android.apps.uploader");
-		ignoredApps.add("com.android.packageinstaller");
-		ignoredApps.add("com.android.htmlviewer");
-		ignoredApps.add("com.android.FileCount");
-		ignoredApps.add("com.google.android.googleapps");
-		ignoredApps.add("com.google.android.apps.gtalkservice");
-		ignoredApps.add("com.google.android.location");
-		ignoredApps.add("com.android.stk");
-		ignoredApps.add("com.android.setupwizard");
-		ignoredApps.add("com.android.inputmethod.latin");
-		ignoredApps.add("com.android.Personalization");
-		ignoredApps.add("com.android.term");
-		ignoredApps.add("com.android.soundrecorder");
+		// ignoredApps.add("com.android.phone");
+		// ignoredApps.add("com.google.android.street");
+		// ignoredApps.add("com.android.googlesearch");
+		// ignoredApps.add("com.samsung.camera.firmware");
+		// ignoredApps.add("com.samsung.TSP.firmware");
+		// ignoredApps.add("com.samsung.RilErrorNotifier");
+		// ignoredApps.add("com.samsung.android.wlantest");
+		// ignoredApps.add("com.samsung.bootsetting");
+		// ignoredApps.add("com.samsung.sec.android.musictest_tool");
+		// ignoredApps.add("com.samsung.sec.android.application.csc");
+		// ignoredApps.add("com.samsung.InputEventApp");
+		// ignoredApps.add("com.samsung.test.shutdown");
+		// ignoredApps.add("com.android.samsungtest.FactoryTest");
+		// ignoredApps.add("com.android.samsungtest.CurrenctDataState");
+		// ignoredApps.add("com.test.version");
+		// ignoredApps.add("com.test.lcdtest");
+		// ignoredApps.add("com.android.samsungtest.FileCopy");
+		// ignoredApps.add("com.android.testgps");
+		// ignoredApps.add("com.android.samsungtest.DataCopy");
+		// ignoredApps.add("android");
+		// ignoredApps.add("com.google.android.providers.settings");
+		// ignoredApps.add("com.google.android.providers.gmail");
+		// ignoredApps.add("com.android.providers.settings");
+		// ignoredApps.add("com.android.providers.im");
+		// ignoredApps.add("com.android.providers.drm");
+		// ignoredApps.add("com.android.providers.calendar");
+		// ignoredApps.add("com.android.providers.contacts");
+		// ignoredApps.add("com.android.providers.media");
+		// ignoredApps.add("com.android.providers.downloads");
+		// ignoredApps.add("com.android.providers.userdictionary");
+		// ignoredApps.add("com.android.providers.telephony");
+		// ignoredApps.add("com.android.providers.subscribedfeeds");
+		// ignoredApps.add("com.google.android.server.checkin");
+		// ignoredApps.add("com.android.serviceModeApp");
+		// ignoredApps.add("com.android.RilFactoryApp");
+		// ignoredApps.add("com.google.android.apps.uploader");
+		// ignoredApps.add("com.android.packageinstaller");
+		// ignoredApps.add("com.android.htmlviewer");
+		// ignoredApps.add("com.android.FileCount");
+		// ignoredApps.add("com.google.android.googleapps");
+		// ignoredApps.add("com.google.android.apps.gtalkservice");
+		// ignoredApps.add("com.google.android.location");
+		// ignoredApps.add("com.android.stk");
+		// ignoredApps.add("com.android.setupwizard");
+		// ignoredApps.add("com.android.inputmethod.latin");
+		// ignoredApps.add("com.android.Personalization");
+		// ignoredApps.add("com.android.term");
+		// ignoredApps.add("com.android.soundrecorder");
 	}
 
-	public ApplicationInfoManager(PackageManager pm) {
+	private static ApplicationInfoManager singleton;
+
+	private ApplicationInfoManager(PackageManager pm) {
 		this.pm = pm;
+		loadAppsMap(pm);
 	}
 
-	public ArrayList<Application> getAppsArray(Handler handler) {
-		List<ApplicationInfo> installedApplications = pm.getInstalledApplications(0);
-		ArrayList<Application> apps = new ArrayList<Application>();
-		for (Iterator<ApplicationInfo> iterator = installedApplications.iterator(); iterator.hasNext();) {
-			ApplicationInfo a = iterator.next();
-			if (!a.enabled || ignoredApps.contains(a.packageName)) {
-				iterator.remove();
-			} else {
-				apps.add(convertToApplication(a, null));
-				getLabel(a);
-				getIcon(a);
-				handler.sendEmptyMessage(apps.size());
+	private void loadAppsMap(PackageManager pm) {
+		synchronized (this) {
+			applicationMap = new HashMap<String, Application>();
+			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+			List<ResolveInfo> installedApplications = pm.queryIntentActivities(mainIntent, 0);
+			for (Iterator<ResolveInfo> iterator = installedApplications.iterator(); iterator.hasNext();) {
+				ResolveInfo resolveInfo = iterator.next();
+				ComponentInfo a = resolveInfo.activityInfo;
+				if (a.enabled && !ignoredApps.contains(a.name)) {
+					Application app = new ApplicationImpl(resolveInfo.activityInfo, (long) applicationMap.size());
+					applicationMap.put(app.getName(), app);
+				}
 			}
 		}
-		Collections.sort(apps);
+	}
+
+	public static ApplicationInfoManager singleton(PackageManager pm) {
+		if (singleton == null) {
+			synchronized (ApplicationInfoManager.class) {
+				if (singleton == null) {
+					singleton = new ApplicationInfoManager(pm);
+				}
+			}
+		}
+		return singleton;
+	}
+
+	private Map<String, Application> applicationMap = new HashMap<String, Application>();
+
+	private List<Application> apps;
+
+	public List<Application> getAppsArray(Handler handler) {
+		if (apps == null) {
+			apps = createAppsArray(handler);
+		}
 		return apps;
+	}
+
+	private ArrayList<Application> createAppsArray(Handler handler) {
+		ArrayList<Application> l = new ArrayList<Application>();
+
+		Collection<Application> values = applicationMap.values();
+		for (Application app : values) {
+			l.add(app);
+			app.getLabel();
+			app.getIcon();
+			handler.sendEmptyMessage(l.size());
+		}
+		Collections.sort(l);
+		return l;
 	}
 
 	public Collection<Application> convertToApplicationList(List<AppLabel> l) {
 		TreeSet<Application> ret = new TreeSet<Application>();
 		for (AppLabel appLabel : l) {
-			try {
-				ret.add(convertToApplication(appLabel));
-			} catch (NameNotFoundException ignored) {
+			Application application = applicationMap.get(appLabel.getApp());
+			if (application != null) {
+				ret.add(application);
 			}
 		}
 		return ret;
-	}
-
-	public Application convertToApplication(AppLabel appLabel) throws NameNotFoundException {
-		return new ApplicationImpl(appLabel);
-	}
-
-	public Application convertToApplication(String appId, Long id) throws NameNotFoundException {
-		return new ApplicationImpl(appId, id);
-	}
-
-	public Application convertToApplication(ApplicationInfo applicationInfo, Long id) {
-		return new ApplicationImpl(applicationInfo, id);
 	}
 
 	private class ApplicationImpl implements Application, Comparable<Application> {
 
 		private final Long id;
 
-		private final ApplicationInfo applicationInfo;
+		private final ActivityInfo activityInfo;
 
-		public ApplicationImpl(AppLabel appLabel) throws NameNotFoundException {
-			this(appLabel.getApp(), appLabel.getId());
-		}
+		private String label;
 
-		public ApplicationImpl(String appId, Long id) throws NameNotFoundException {
+		private Drawable drawableIcon;
+
+		public ApplicationImpl(ActivityInfo activityInfo, Long id) {
 			this.id = id;
-			this.applicationInfo = getApplicationInfo(appId);
+			this.activityInfo = activityInfo;
 		}
 
-		public ApplicationImpl(ApplicationInfo applicationInfo, Long id) {
-			this.id = id;
-			this.applicationInfo = applicationInfo;
-		}
-
-		public String getName() {
-			CharSequence name = getLabel(applicationInfo);
-			return name.toString();
+		public String getLabel() {
+			if (label == null) {
+				CharSequence l = activityInfo.loadLabel(pm);
+				if (l != null) {
+					label = l.toString();
+				}
+			}
+			return label;
 		}
 
 		public int compareTo(Application another) {
-			return getName().compareToIgnoreCase(another.getName());
+			return getLabel().compareToIgnoreCase(another.getLabel());
 		}
 
 		public Long getId() {
 			return id;
 		}
 
+		public String getName() {
+			return activityInfo.name;
+		}
+
 		public String getPackage() {
-			return applicationInfo.packageName;
+			return activityInfo.packageName;
 		}
 
 		public int getIconResource() {
-			return applicationInfo.icon;
+			if (activityInfo.icon > 0) {
+				return activityInfo.icon;
+			}
+			return activityInfo.applicationInfo.icon;
 		}
 
 		public Uri getIntent() {
-			Intent intent = ApplicationInfoManager.this.getIntent(applicationInfo.packageName);
+			Intent intent = ApplicationInfoManager.this.getIntent(activityInfo.packageName);
 			Uri intentUri = null;
 			if (intent != null) {
 				intentUri = Uri.parse(intent.toURI());
@@ -203,7 +238,7 @@ public class ApplicationInfoManager {
 				if (col.equals(BaseColumns._ID)) {
 					values.add(getId());
 				} else if (col.equals(LiveFolders.NAME)) {
-					values.add(getName());
+					values.add(getLabel());
 				} else if (col.equals(LiveFolders.ICON_BITMAP)) {
 					values.add(((BitmapDrawable) getIcon()).getBitmap());
 				} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
@@ -218,7 +253,10 @@ public class ApplicationInfoManager {
 		}
 
 		public Drawable getIcon() {
-			return ApplicationInfoManager.this.getIcon(applicationInfo);
+			if (drawableIcon == null) {
+				drawableIcon = activityInfo.loadIcon(pm);
+			}
+			return drawableIcon;
 		}
 	}
 
@@ -258,31 +296,5 @@ public class ApplicationInfoManager {
 			return i;
 		}
 		return null;
-	}
-
-	private static Map<String, CharSequence> labelCache = new HashMap<String, CharSequence>();
-
-	private CharSequence getLabel(ApplicationInfo applicationInfo) {
-		CharSequence ret = labelCache.get(applicationInfo.packageName);
-		if (ret == null) {
-			ret = applicationInfo.loadLabel(pm);
-			labelCache.put(applicationInfo.packageName, ret);
-		}
-		return ret;
-	}
-
-	private ApplicationInfo getApplicationInfo(String appId) throws NameNotFoundException {
-		return pm.getApplicationInfo(appId, 0);
-	}
-
-	private static Map<String, Drawable> iconCache = new HashMap<String, Drawable>();
-
-	private Drawable getIcon(ApplicationInfo applicationInfo) {
-		Drawable ret = iconCache.get(applicationInfo.packageName);
-		if (ret == null) {
-			ret = applicationInfo.loadIcon(pm);
-			iconCache.put(applicationInfo.packageName, ret);
-		}
-		return ret;
 	}
 }

@@ -55,9 +55,9 @@ public class LabelListActivity extends ExpandableListActivity {
 
 	private DatabaseHelper dbHelper;
 
-	private ApplicationInfoManager applicationInfoManager;
-
 	private ChooseLabelDialogCreator chooseLabelDialog;
+
+	private ApplicationInfoManager applicationInfoManager;
 
 	private final GenericDialogManager genericDialogManager = new GenericDialogManager();
 
@@ -65,7 +65,7 @@ public class LabelListActivity extends ExpandableListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		dbHelper = new DatabaseHelper(this);
-		applicationInfoManager = new ApplicationInfoManager(getPackageManager());
+		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 
 		mAdapter = new MyExpandableListAdapter();
 
@@ -83,7 +83,7 @@ public class LabelListActivity extends ExpandableListActivity {
 		getExpandableListView().setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
 			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 				Application app = mAdapter.getChild(groupPosition, childPosition);
-				chooseLabelDialog.setCurrentApp(app.getPackage());
+				chooseLabelDialog.setCurrentApp(app);
 				showDialog(chooseLabelDialog.getDialogId());
 				return false;
 			}
@@ -192,8 +192,8 @@ public class LabelListActivity extends ExpandableListActivity {
 
 			Application application = getChild(groupPosition, childPosition);
 
-			vl.setText(dbHelper.labelDao.getLabelsString(application.getPackage()));
-			v.setText(application.getName());
+			vl.setText(dbHelper.labelDao.getLabelsString(application));
+			v.setText(application.getLabel());
 			image.setImageDrawable(application.getIcon());
 			return cv;
 		}

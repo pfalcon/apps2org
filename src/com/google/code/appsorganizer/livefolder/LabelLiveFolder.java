@@ -31,7 +31,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.model.Label;
 
@@ -55,19 +54,20 @@ public class LabelLiveFolder extends ListActivity {
 
 				public void onItemClick(AdapterView<?> arg0, View v, int arg2, long arg3) {
 					CharSequence label = ((TextView) v).getText();
-					long labelId = getLabelId(label);
+					Label labelObject = getLabelId(label);
 					setResult(RESULT_OK, createLiveFolder(LabelLiveFolder.this, Uri
-							.parse("content://com.google.code.appsorganizer/live_folders/" + labelId), label.toString(), R.drawable.address_48));
+							.parse("content://com.google.code.appsorganizer/live_folders/" + labelObject.getId()), labelObject.getName(),
+							labelObject.getIcon()));
 					finish();
 				}
 
-				private long getLabelId(CharSequence label) {
+				private Label getLabelId(CharSequence label) {
 					for (Label l : labels) {
 						if (l.getName().equals(label.toString())) {
-							return l.getId();
+							return l;
 						}
 					}
-					return -1;
+					throw new RuntimeException("Label " + label + " non trovata");
 				}
 			});
 		} else {

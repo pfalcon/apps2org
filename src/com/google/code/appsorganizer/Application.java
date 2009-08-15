@@ -27,6 +27,8 @@ public interface Application extends Comparable<Application> {
 
 	String getName();
 
+	String getLabel();
+
 	String getPackage();
 
 	int getIconResource();

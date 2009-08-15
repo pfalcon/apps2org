@@ -43,7 +43,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator<Activity> {
 
 	private final DatabaseHelper labelAdapter;
 
-	private String appId;
+	private Application application;
 
 	private ChooseLabelListAdapter adapter;
 
@@ -56,7 +56,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator<Activity> {
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		adapter = new ChooseLabelListAdapter(owner, getAllLabels(appId));
+		adapter = new ChooseLabelListAdapter(owner, getAllLabels(application.getName()));
 
 		ListView l = (ListView) dialog.findViewById(R.id.labelList);
 		l.setAdapter(adapter);
@@ -108,7 +108,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator<Activity> {
 		builder = builder.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				new AppLabelSaver(labelAdapter).save(appId, modifiedLabels);
+				new AppLabelSaver(labelAdapter).save(application, modifiedLabels);
 			}
 		});
 		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
@@ -126,7 +126,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator<Activity> {
 		return body;
 	}
 
-	public void setCurrentApp(String appId) {
-		this.appId = appId;
+	public void setCurrentApp(Application application) {
+		this.application = application;
 	}
 }

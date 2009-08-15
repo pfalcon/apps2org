@@ -24,18 +24,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.google.code.appsorganizer.R;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
-
-	private static final String INTERNET = "Internet";
-
-	private static final String ANDROID = "Android";
 
 	private static final String TAG = "DatabaseHelper";
 
 	public final AppLabelDao appsLabelDao;
 	public final LabelDao labelDao;
 
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 9;
 
 	public DatabaseHelper(Context context) {
 		super(context, "data", null, DATABASE_VERSION);
@@ -51,35 +49,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(labelDao.getCreateTableScript());
 		db.execSQL(appsLabelDao.getCreateTableScript());
 
-		long internetId = insertLabel(db, INTERNET);
-		long androidId = insertLabel(db, ANDROID);
+		long internetId = insertLabel(db, "Internet", R.drawable.globe);
+		long androidId = insertLabel(db, "Android", R.drawable.pda_black);
+		long multimediaId = insertLabel(db, "Multimedia", R.drawable.multimedia);
+		insertLabel(db, "Games", R.drawable.joystick);
 
 		insertInterneApps(db, internetId);
 		insertAndroidApps(db, androidId);
+		insertMultimediaApps(db, multimediaId);
+	}
+
+	private void insertMultimediaApps(SQLiteDatabase db, long id) {
+		// insertApp(db, "com.google.code.appsorganizer.HomeActivity", id);
+		insertApp(db, "com.android.music.MusicBrowserActivity", id);
+		insertApp(db, "com.android.music.VideoBrowserActivity", id);
+		insertApp(db, "com.android.camera.Camera", id);
+		insertApp(db, "com.android.camera.VideoCamera", id);
+		insertApp(db, "com.android.camera.GalleryPicker", id);
 	}
 
 	private void insertAndroidApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.contacts", id);
-		insertApp(db, "com.android.mms", id);
-		insertApp(db, "com.android.vending", id);
+		insertApp(db, "com.android.alarmclock.AlarmClock", id);
+		insertApp(db, "com.android.calendar.LaunchActivity", id);
+		insertApp(db, "com.android.vending.AssetBrowserActivity", id);
+		insertApp(db, "com.android.settings.Settings", id);
+		insertApp(db, "com.android.contacts.DialtactsActivity", id);
+		insertApp(db, "com.android.contacts.DialtactsContactsEntryActivity", id);
+		insertApp(db, "com.android.mms.ui.ConversationList", id);
+		insertApp(db, "com.android.calculator2.Calculator", id);
 
-		insertApp(db, "com.android.launcher", id);
-		insertApp(db, "com.android.music", id);
-
-		insertApp(db, "com.android.calculator2", id);
-		insertApp(db, "com.android.settings", id);
-		insertApp(db, "com.android.camera", id);
-		insertApp(db, "com.android.alarmclock", id);
+		// insertApp(db, "com.android.contacts", id);
+		// insertApp(db, "com.android.mms", id);
+		// insertApp(db, "com.android.vending", id);
+		//
+		// insertApp(db, "com.android.launcher", id);
+		// insertApp(db, "com.android.music", id);
+		//
+		// insertApp(db, "com.android.calculator2", id);
+		// insertApp(db, "com.android.settings", id);
+		// insertApp(db, "com.android.camera", id);
+		// insertApp(db, "com.android.alarmclock", id);
 	}
 
 	private void insertInterneApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.browser", id);
-		insertApp(db, "com.google.android.apps.maps", id);
-		insertApp(db, "com.google.android.gm", id);
-		insertApp(db, "com.google.android.talk", id);
-		insertApp(db, "com.google.android.youtube", id);
-		insertApp(db, "com.android.calendar", id);
-		insertApp(db, "com.android.email", id);
+		insertApp(db, "com.android.browser.BrowserActivity", id);
+		insertApp(db, "com.google.android.talk.SigningInActivity", id);
+		insertApp(db, "com.google.android.maps.MapsActivity", id);
+		insertApp(db, "com.google.android.youtube.HomePage", id);
+		insertApp(db, "com.google.android.gm.ConversationListActivityGmail", id);
+		insertApp(db, "com.android.email.activity.Welcome", id);
 	}
 
 	@Override
@@ -94,9 +112,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
-	private long insertLabel(SQLiteDatabase db, String value) {
+	private long insertLabel(SQLiteDatabase db, String value, Integer icon) {
 		ContentValues v = new ContentValues();
 		v.put(LabelDao.LABEL.getName(), value);
+		v.put(LabelDao.ICON.getName(), icon);
 		return db.insert(LabelDao.NAME, null, v);
 	}
 

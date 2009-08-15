@@ -23,7 +23,9 @@ import java.util.List;
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.google.code.appsorganizer.AppLabelBinding;
+import com.google.code.appsorganizer.Application;
 import com.google.code.appsorganizer.AppsListActivity;
+import com.google.code.appsorganizer.MockApplication;
 
 public class LabelDaoTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
 
@@ -31,7 +33,7 @@ public class LabelDaoTest extends ActivityInstrumentationTestCase2<AppsListActiv
 		super("com.google.code.appsorganizer", AppsListActivity.class);
 	}
 
-	private static final String appId = "aaaaaa";
+	private static final Application appId = new MockApplication("aaaaaa");
 	private static final String otherAppId = "o_aaaaaa";
 
 	public void testGetLabelsString() throws Exception {
@@ -53,8 +55,8 @@ public class LabelDaoTest extends ActivityInstrumentationTestCase2<AppsListActiv
 			lab2Id = labelDao.insert("lab2");
 			lab3Id = labelDao.insert("lab3");
 
-			id1 = appsLabelDao.insert(appId, lab1Id);
-			id2 = appsLabelDao.insert(appId, lab2Id);
+			id1 = appsLabelDao.insert(appId.getName(), lab1Id);
+			id2 = appsLabelDao.insert(appId.getName(), lab2Id);
 			id3 = appsLabelDao.insert(otherAppId, lab3Id);
 			s = labelDao.getLabelsString(appId);
 			assertEquals("lab1, lab2", s);

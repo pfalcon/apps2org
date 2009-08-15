@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.code.appsorganizer.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
@@ -68,9 +69,9 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return new Label();
 	}
 
-	public String getLabelsString(String appId) {
+	public String getLabelsString(Application application) {
 		StringBuilder b = new StringBuilder();
-		List<Label> l = getLabels(appId);
+		List<Label> l = getLabels(application);
 		for (Label label : l) {
 			if (b.length() > 0) {
 				b.append(", ");
@@ -80,11 +81,11 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return b.toString();
 	}
 
-	public List<Label> getLabels(String appId) {
+	public List<Label> getLabels(Application application) {
 		Cursor c = db
 				.rawQuery(
 						"select l._id, l.label, l.icon from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
-						new String[] { appId });
+						new String[] { application.getName() });
 		return convertCursorToList(c, columns);
 	}
 

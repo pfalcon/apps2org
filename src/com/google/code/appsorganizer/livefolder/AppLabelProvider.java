@@ -23,7 +23,6 @@ import java.util.List;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
@@ -94,12 +93,13 @@ public class AppLabelProvider extends ContentProvider {
 		if (labelDbManager == null) {
 			labelDbManager = new DatabaseHelper(getContext());
 		}
+		if (applicationInfoManager == null) {
+			applicationInfoManager = ApplicationInfoManager.singleton(getContext().getPackageManager());
+		}
 		String p = uri.getPath();
 		Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
 		try {
 			List<AppLabel> apps = labelDbManager.appsLabelDao.getApps(labelId);
-			PackageManager pm = getContext().getPackageManager();
-			applicationInfoManager = new ApplicationInfoManager(pm);
 			return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
 		} catch (Throwable e) {
 			return sErrorCursor;

@@ -42,8 +42,8 @@ public class ChooseIconActivity extends Activity {
 
 		loadIcons();
 
-		setContentView(R.layout.icon_grid);
-		mGrid = (GridView) findViewById(R.id.iconGrid);
+		setContentView(com.google.code.appsorganizer.R.layout.icon_grid);
+		mGrid = (GridView) findViewById(com.google.code.appsorganizer.R.id.iconGrid);
 		mGrid.setAdapter(new AppsAdapter());
 		mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -59,11 +59,16 @@ public class ChooseIconActivity extends Activity {
 	private List<Integer> mIcons;
 
 	private void loadIcons() {
-		mIcons = Arrays.asList(R.drawable.address_48, R.drawable.bookmark_48, R.drawable.briefcase_48, R.drawable.bubble_48,
-				R.drawable.buy_48, R.drawable.calendar_48, R.drawable.clipboard_48, R.drawable.clock_48, R.drawable.diagram_48,
-				R.drawable.document_48, R.drawable.flag_48, R.drawable.gear_48, R.drawable.globe_48, R.drawable.key_48,
-				R.drawable.label_48, R.drawable.letter_48, R.drawable.pencil_32, R.drawable.shield_32, R.drawable.statistics_32,
-				R.drawable.user_48, R.drawable.wallet_32);
+		mIcons = Arrays.asList(R.drawable.agt_member, R.drawable.binary, R.drawable.cam_unmount, R.drawable.camera_unmount,
+				R.drawable.cardgame, R.drawable.cdimage, R.drawable.chardevice, R.drawable.doc, R.drawable.energy, R.drawable.favorites,
+				R.drawable.file_temporary, R.drawable.floppy_unmount, R.drawable.globe, R.drawable.hardware, R.drawable.icon_default,
+				R.drawable.image2, R.drawable.images, R.drawable.internet_connection_tools, R.drawable.joystick, R.drawable.kbackgammon,
+				R.drawable.keyboard, R.drawable.kfm_home, R.drawable.klaptopdaemon, R.drawable.knode, R.drawable.kontact,
+				R.drawable.kopete, R.drawable.kpaint, R.drawable.kpat, R.drawable.kspread_ksp, R.drawable.kstars, R.drawable.kweather,
+				R.drawable.messenger, R.drawable.midi, R.drawable.mp3, R.drawable.mp3player_alt_unmount, R.drawable.multimedia,
+				R.drawable.multimedia2, R.drawable.news, R.drawable.package_favorite, R.drawable.package_games_board,
+				R.drawable.package_games_strategy, R.drawable.pda_black, R.drawable.schedule, R.drawable.service_manager, R.drawable.sms,
+				R.drawable.video);
 	}
 
 	public class AppsAdapter extends BaseAdapter {

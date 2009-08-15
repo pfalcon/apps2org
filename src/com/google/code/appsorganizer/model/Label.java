@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer.model;
 
+import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.ObjectWithId;
 
 /**
@@ -84,6 +85,9 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 	}
 
 	public Integer getIcon() {
+		if (icon == null) {
+			return R.drawable.icon_default;
+		}
 		return icon;
 	}
 
