@@ -158,7 +158,9 @@ public class ApplicationInfoManager {
 			l.add(app);
 			app.getLabel();
 			app.getIcon();
-			handler.sendEmptyMessage(l.size());
+			if (handler != null) {
+				handler.sendEmptyMessage(l.size());
+			}
 		}
 		Collections.sort(l);
 		return l;

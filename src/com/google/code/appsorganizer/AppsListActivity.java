@@ -25,11 +25,8 @@ import java.util.Map;
 
 import android.app.Dialog;
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -50,28 +47,6 @@ public class AppsListActivity extends ListActivity {
 
 	private final GenericDialogManager genericDialogManager = new GenericDialogManager();
 
-	private final Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			if (msg.what == -1) {
-				pd.setMessage(getText(R.string.preparing_apps_list));
-			} else if (msg.what == -2) {
-				final SimpleAdapter appsAdapter = new AppsListAdapter(AppsListActivity.this, convertToMapArray(apps), R.layout.app_row,
-						new String[] { "image", "name", "appInfo" }, new int[] { R.id.image, R.id.name, R.id.labels });
-				dbHelper.appsLabelDao.addListener(new DbChangeListener() {
-					public void notifyDataSetChanged() {
-						appsAdapter.notifyDataSetChanged();
-					}
-				});
-				setListAdapter(appsAdapter);
-				pd.dismiss();
-			} else {
-				pd.setMessage(getString(R.string.total_apps) + ": " + msg.what);
-			}
-		}
-
-	};
-
 	private List<? extends Map<String, ?>> convertToMapArray(List<Application> apps) {
 		List<Map<String, Object>> l = new ArrayList<Map<String, Object>>();
 		for (Application application : apps) {
@@ -84,9 +59,6 @@ public class AppsListActivity extends ListActivity {
 		return l;
 	}
 
-	private ProgressDialog pd;
-	private ApplicationInfoManager applicationInfoManager;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -94,24 +66,21 @@ public class AppsListActivity extends ListActivity {
 		setContentView(R.layout.main);
 		chooseLabelDialog = new ChooseLabelDialogCreator(this, dbHelper);
 		genericDialogManager.addDialog(chooseLabelDialog);
-		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-
+		apps = ApplicationInfoManager.singleton(getPackageManager()).getAppsArray(null);
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 				chooseLabelDialog.setCurrentApp(apps.get(position));
 				showDialog(chooseLabelDialog.getDialogId());
 			}
 		});
-		pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list), getText(R.string.please_wait_loading), true, false);
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				apps = applicationInfoManager.getAppsArray(handler);
-				handler.sendEmptyMessage(-1);
-				handler.sendEmptyMessage(-2);
+		final SimpleAdapter appsAdapter = new AppsListAdapter(AppsListActivity.this, convertToMapArray(apps), R.layout.app_row,
+				new String[] { "image", "name", "appInfo" }, new int[] { R.id.image, R.id.name, R.id.labels });
+		dbHelper.appsLabelDao.addListener(new DbChangeListener() {
+			public void notifyDataSetChanged() {
+				appsAdapter.notifyDataSetChanged();
 			}
-		};
-		t.start();
+		});
+		setListAdapter(appsAdapter);
 	}
 
 	public final class AppsListAdapter extends SimpleAdapter {
