@@ -16,8 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.google.code.appsorganizer.db;
+package com.google.code.appsorganizer;
 
-public interface DbChangeListener {
-	void notifyDataSetChanged();
+import android.R;
+import android.test.ActivityInstrumentationTestCase2;
+import android.view.KeyEvent;
+import android.widget.ListView;
+
+public class HomeActivityTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+
+	public HomeActivityTest() {
+		super("com.google.code.appsorganizer", AppsListActivity.class);
+	}
+
+	public void testButton() throws Exception {
+		AppsListActivity activity = getActivity();
+		ListView list = (ListView) activity.findViewById(R.id.list);
+		getInstrumentation().sendCharacterSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		// getInstrumentation().sendCharacterSync(KeyEvent.KEYCODE_DPAD_CENTER);
+		// activity.showDialog(ChooseLabelDialog.DIALOG_CHOOSE_LABEL);
+	}
+
 }

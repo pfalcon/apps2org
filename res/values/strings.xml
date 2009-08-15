@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Apps Manager</string>
+	<string name="app_name">Apps Organizer</string>
 	<string name="choose_labels_header">Choose labels</string>
 	<string name="alert_dialog_ok">OK</string>
 	<string name="alert_dialog_hide">Hide</string>

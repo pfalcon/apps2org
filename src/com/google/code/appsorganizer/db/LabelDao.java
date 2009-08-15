@@ -1,14 +1,31 @@
+/*
+ * Copyright (C) 2009 Apps Organizer
+ *
+ * This file is part of Apps Organizer
+ *
+ * Apps Organizer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Apps Organizer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.google.code.appsorganizer.db;
-
 
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 
-import com.google.code.appsorganizer.model.Label;
-
 import android.content.ContentValues;
 import android.database.Cursor;
+
+import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
 
@@ -64,9 +81,10 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public List<Label> getLabels(String appId) {
-		Cursor c = db.rawQuery(
-				"select l._id, l.label from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
-				new String[] { appId });
+		Cursor c = db
+				.rawQuery(
+						"select l._id, l.label, l.icon from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
+						new String[] { appId });
 		return convertCursorToList(c, columns);
 	}
 

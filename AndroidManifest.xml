@@ -10,7 +10,7 @@
 			</intent-filter>
 		</activity>
 		<activity android:name=".livefolder.LabelLiveFolder"
-			android:label="App manager">
+			android:label="Apps Organizer">
 			<intent-filter>
 				<action android:name="android.intent.action.CREATE_LIVE_FOLDER" />
 				<category android:name="android.intent.category.DEFAULT" />

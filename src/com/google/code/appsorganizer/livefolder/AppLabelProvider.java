@@ -1,11 +1,24 @@
+/*
+ * Copyright (C) 2009 Apps Organizer
+ *
+ * This file is part of Apps Organizer
+ *
+ * Apps Organizer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Apps Organizer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.google.code.appsorganizer.livefolder;
 
-
 import java.util.List;
-
-import com.google.code.appsorganizer.ApplicationInfoManager;
-import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.model.AppLabel;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -17,9 +30,13 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.LiveFolders;
 
+import com.google.code.appsorganizer.ApplicationInfoManager;
+import com.google.code.appsorganizer.db.DatabaseHelper;
+import com.google.code.appsorganizer.model.AppLabel;
+
 public class AppLabelProvider extends ContentProvider {
 
-	public static final String AUTHORITY = "it.appmanager";
+	public static final String AUTHORITY = "com.google.code.appsorganizer";
 
 	// To distinguish this URI
 	private static final int TYPE_MY_URI = 0;

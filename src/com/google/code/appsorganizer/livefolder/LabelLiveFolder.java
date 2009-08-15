@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2009 Apps Organizer
+ *
+ * This file is part of Apps Organizer
+ *
+ * Apps Organizer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Apps Organizer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.google.code.appsorganizer.livefolder;
 
 import java.util.List;
@@ -18,7 +36,7 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelLiveFolder extends ListActivity {
-	public static final Uri CONTENT_URI = Uri.parse("content://it.appmanager/live_folders/");
+	public static final Uri CONTENT_URI = Uri.parse("content://com.google.code.appsorganizer/live_folders/");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +57,7 @@ public class LabelLiveFolder extends ListActivity {
 					CharSequence label = ((TextView) v).getText();
 					long labelId = getLabelId(label);
 					setResult(RESULT_OK, createLiveFolder(LabelLiveFolder.this, Uri
-							.parse("content://it.appmanager/live_folders/" + labelId), label.toString(), R.drawable.address_48));
+							.parse("content://com.google.code.appsorganizer/live_folders/" + labelId), label.toString(), R.drawable.address_48));
 					finish();
 				}
 
