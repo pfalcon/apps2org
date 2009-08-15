@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="horizontal" android:layout_width="fill_parent"
+	android:layout_height="wrap_content" android:layout_weight="1">
+
+	<ImageView android:layout_width="48px" android:id="@+id/image"
+		android:layout_height="48px"></ImageView>
+
+	<LinearLayout android:id="@+id/LinearLayout01" android:orientation="vertical"
+		android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_weight="1">
+		<TextView android:layout_width="fill_parent" android:id="@+id/name"
+			android:text="NAME" android:layout_height="fill_parent" android:layout_weight="1" 
+			android:textAppearance="?android:attr/textAppearanceMedium"></TextView>
+
+		<TextView android:text="TextView01" android:id="@+id/labels" android:layout_weight="1"
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:textAppearance="?android:attr/textAppearanceSmall"></TextView>
+	</LinearLayout>
+</LinearLayout>

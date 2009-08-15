@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Apps Manager</string>
+	<string name="choose_labels_header">Label associate</string>
+	<string name="alert_dialog_ok">OK</string>
+	<string name="alert_dialog_hide">Nascondi</string>
+	<string name="alert_dialog_cancel">Annulla</string>
+	<string name="alert_dialog_new">Nuova</string>
+	<string name="tab_apps">Applicazioni</string>
+	<string name="tab_labels">Label</string>
+	<string name="preparing_apps_list">Caricamento lista applicazioni</string>
+	<string name="total_apps">Totale applicazioni</string>
+	<string name="please_wait_loading">Caricamento in corso...</string>
+	<string name="rename">Rinomina</string>
+	<string name="change_icon">Cambia icona</string>
+	<string name="launch">Esegui</string>	
+</resources>
