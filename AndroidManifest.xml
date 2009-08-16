@@ -19,9 +19,9 @@
 
 		<provider android:authorities="com.google.code.appsorganizer"
 			android:multiprocess="true" android:name=".livefolder.AppLabelProvider" />
-		<activity android:name="HomeActivity"></activity>
-		<activity android:name="AppsListActivity"></activity>
-		<activity android:name="LabelListActivity"></activity>
+		<activity android:name=".HomeActivity"></activity>
+		<activity android:name=".AppsListActivity"></activity>
+		<activity android:name=".LabelListActivity"></activity>
 		<activity android:name=".chooseicon.ChooseIconActivity"></activity>
 	</application>
 	<uses-sdk android:minSdkVersion="3" />

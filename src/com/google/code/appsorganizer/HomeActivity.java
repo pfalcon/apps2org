@@ -36,4 +36,10 @@ public class HomeActivity extends TabActivity {
 		tabHost.addTab(tabHost.newTabSpec("tab2").setIndicator(getText(R.string.tab_labels)).setContent(
 				new Intent(this, LabelListActivity.class)));
 	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle state) {
+		// rewrite this method to avoid ClassCastException on device rotation
+		getTabHost().setCurrentTabByTag(state.getString("currentTab"));
+	}
 }

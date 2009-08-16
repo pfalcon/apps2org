@@ -22,11 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import android.content.Intent;
@@ -50,59 +48,6 @@ public class ApplicationInfoManager {
 
 	private final PackageManager pm;
 
-	private static final Set<String> ignoredApps = new HashSet<String>();
-
-	static {
-		// ignoredApps.add("com.android.phone");
-		// ignoredApps.add("com.google.android.street");
-		// ignoredApps.add("com.android.googlesearch");
-		// ignoredApps.add("com.samsung.camera.firmware");
-		// ignoredApps.add("com.samsung.TSP.firmware");
-		// ignoredApps.add("com.samsung.RilErrorNotifier");
-		// ignoredApps.add("com.samsung.android.wlantest");
-		// ignoredApps.add("com.samsung.bootsetting");
-		// ignoredApps.add("com.samsung.sec.android.musictest_tool");
-		// ignoredApps.add("com.samsung.sec.android.application.csc");
-		// ignoredApps.add("com.samsung.InputEventApp");
-		// ignoredApps.add("com.samsung.test.shutdown");
-		// ignoredApps.add("com.android.samsungtest.FactoryTest");
-		// ignoredApps.add("com.android.samsungtest.CurrenctDataState");
-		// ignoredApps.add("com.test.version");
-		// ignoredApps.add("com.test.lcdtest");
-		// ignoredApps.add("com.android.samsungtest.FileCopy");
-		// ignoredApps.add("com.android.testgps");
-		// ignoredApps.add("com.android.samsungtest.DataCopy");
-		// ignoredApps.add("android");
-		// ignoredApps.add("com.google.android.providers.settings");
-		// ignoredApps.add("com.google.android.providers.gmail");
-		// ignoredApps.add("com.android.providers.settings");
-		// ignoredApps.add("com.android.providers.im");
-		// ignoredApps.add("com.android.providers.drm");
-		// ignoredApps.add("com.android.providers.calendar");
-		// ignoredApps.add("com.android.providers.contacts");
-		// ignoredApps.add("com.android.providers.media");
-		// ignoredApps.add("com.android.providers.downloads");
-		// ignoredApps.add("com.android.providers.userdictionary");
-		// ignoredApps.add("com.android.providers.telephony");
-		// ignoredApps.add("com.android.providers.subscribedfeeds");
-		// ignoredApps.add("com.google.android.server.checkin");
-		// ignoredApps.add("com.android.serviceModeApp");
-		// ignoredApps.add("com.android.RilFactoryApp");
-		// ignoredApps.add("com.google.android.apps.uploader");
-		// ignoredApps.add("com.android.packageinstaller");
-		// ignoredApps.add("com.android.htmlviewer");
-		// ignoredApps.add("com.android.FileCount");
-		// ignoredApps.add("com.google.android.googleapps");
-		// ignoredApps.add("com.google.android.apps.gtalkservice");
-		// ignoredApps.add("com.google.android.location");
-		// ignoredApps.add("com.android.stk");
-		// ignoredApps.add("com.android.setupwizard");
-		// ignoredApps.add("com.android.inputmethod.latin");
-		// ignoredApps.add("com.android.Personalization");
-		// ignoredApps.add("com.android.term");
-		// ignoredApps.add("com.android.soundrecorder");
-	}
-
 	private static ApplicationInfoManager singleton;
 
 	private ApplicationInfoManager(PackageManager pm) {
@@ -120,7 +65,7 @@ public class ApplicationInfoManager {
 			for (Iterator<ResolveInfo> iterator = installedApplications.iterator(); iterator.hasNext();) {
 				ResolveInfo resolveInfo = iterator.next();
 				ComponentInfo a = resolveInfo.activityInfo;
-				if (a.enabled && !ignoredApps.contains(a.name)) {
+				if (a.enabled) {
 					Application app = new ApplicationImpl(resolveInfo.activityInfo, (long) applicationMap.size());
 					applicationMap.put(app.getName(), app);
 				}
@@ -160,6 +105,9 @@ public class ApplicationInfoManager {
 			app.getIcon();
 			if (handler != null) {
 				handler.sendEmptyMessage(l.size());
+			}
+			if (l.size() > 5) {
+				break;
 			}
 		}
 		Collections.sort(l);

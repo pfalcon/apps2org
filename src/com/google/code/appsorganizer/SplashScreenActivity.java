@@ -31,7 +31,7 @@ public class SplashScreenActivity extends Activity {
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
 				pd.setMessage(getText(R.string.preparing_apps_list));
-				pd.dismiss();
+				// pd.dismiss();
 				Intent intent = new Intent(SplashScreenActivity.this, HomeActivity.class);
 				startActivity(intent);
 			} else {

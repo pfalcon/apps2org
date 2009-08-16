@@ -47,9 +47,6 @@ import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Label;
 
-/**
- * Demonstrates expandable lists backed by a Simple Map-based adapter
- */
 public class LabelListActivity extends ExpandableListActivity {
 	private MyExpandableListAdapter mAdapter;
 
