@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.SplashScreenActivity;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -33,7 +34,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public final AppLabelDao appsLabelDao;
 	public final LabelDao labelDao;
 
-	private static final int DATABASE_VERSION = 9;
+	private static final int DATABASE_VERSION = 11;
 
 	public DatabaseHelper(Context context) {
 		super(context, "data", null, DATABASE_VERSION);
@@ -52,15 +53,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		long internetId = insertLabel(db, "Internet", R.drawable.globe);
 		long androidId = insertLabel(db, "Android", R.drawable.pda_black);
 		long multimediaId = insertLabel(db, "Multimedia", R.drawable.multimedia);
+		long utilityId = insertLabel(db, "Utility", R.drawable.service_manager);
 		insertLabel(db, "Games", R.drawable.joystick);
 
 		insertInterneApps(db, internetId);
 		insertAndroidApps(db, androidId);
 		insertMultimediaApps(db, multimediaId);
+		insertUtilityApps(db, utilityId);
+	}
+
+	private void insertUtilityApps(SQLiteDatabase db, long id) {
+		insertApp(db, SplashScreenActivity.class.getName(), id);
 	}
 
 	private void insertMultimediaApps(SQLiteDatabase db, long id) {
-		// insertApp(db, "com.google.code.appsorganizer.HomeActivity", id);
 		insertApp(db, "com.android.music.MusicBrowserActivity", id);
 		insertApp(db, "com.android.music.VideoBrowserActivity", id);
 		insertApp(db, "com.android.camera.Camera", id);
