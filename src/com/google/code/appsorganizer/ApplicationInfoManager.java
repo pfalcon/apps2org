@@ -106,9 +106,6 @@ public class ApplicationInfoManager {
 			if (handler != null) {
 				handler.sendEmptyMessage(l.size());
 			}
-			if (l.size() > 5) {
-				break;
-			}
 		}
 		Collections.sort(l);
 		return l;
