@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
@@ -65,7 +66,7 @@ public class MockApplication implements Application {
 	 * 
 	 * @see com.google.code.appsorganizer.Application#getIntent()
 	 */
-	public Uri getIntent() {
+	public Uri getIntentUri() {
 		return null;
 	}
 
@@ -103,6 +104,10 @@ public class MockApplication implements Application {
 	 * @see com.google.code.appsorganizer.Application#getPackage()
 	 */
 	public String getPackage() {
+		return null;
+	}
+
+	public Intent getIntent() {
 		return null;
 	}
 

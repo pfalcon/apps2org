@@ -21,15 +21,11 @@ package com.google.code.appsorganizer.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 
-public abstract class GenericDialogCreator<T extends Activity> {
+public abstract class GenericDialogCreator {
 
 	private int dialogId = 1;
 
-	protected final T owner;
-
-	public GenericDialogCreator(T owner) {
-		this.owner = owner;
-	}
+	protected Activity owner;
 
 	public int getDialogId() {
 		return dialogId;
@@ -44,4 +40,12 @@ public abstract class GenericDialogCreator<T extends Activity> {
 	}
 
 	public abstract Dialog createDialog();
+
+	public Activity getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Activity owner) {
+		this.owner = owner;
+	}
 }

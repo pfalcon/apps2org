@@ -25,13 +25,18 @@ import java.util.Map;
 
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
@@ -45,7 +50,7 @@ public class AppsListActivity extends ListActivity {
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
-	private final GenericDialogManager genericDialogManager = new GenericDialogManager();
+	private GenericDialogManager genericDialogManager;
 
 	private List<? extends Map<String, ?>> convertToMapArray(List<Application> apps) {
 		List<Map<String, Object>> l = new ArrayList<Map<String, Object>>();
@@ -64,7 +69,8 @@ public class AppsListActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		dbHelper = new DatabaseHelper(this);
 		setContentView(R.layout.main);
-		chooseLabelDialog = new ChooseLabelDialogCreator(this, dbHelper);
+		genericDialogManager = new GenericDialogManager(this);
+		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper);
 		genericDialogManager.addDialog(chooseLabelDialog);
 		apps = ApplicationInfoManager.singleton(getPackageManager()).getAppsArray(null);
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -81,6 +87,32 @@ public class AppsListActivity extends ListActivity {
 			}
 		});
 		setListAdapter(appsAdapter);
+
+		registerForContextMenu(getListView());
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		Application app = apps.get(info.position);
+		menu.setHeaderTitle(app.getLabel());
+		menu.add(0, 0, 0, R.string.choose_labels_header);
+		menu.add(0, 1, 1, R.string.launch);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		Application app = apps.get(info.position);
+		if (item.getItemId() == 0) {
+			chooseLabelDialog.setCurrentApp(app);
+			showDialog(chooseLabelDialog.getDialogId());
+		} else {
+			Intent intent = app.getIntent();
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);
+		}
+		return true;
 	}
 
 	public final class AppsListAdapter extends SimpleAdapter {

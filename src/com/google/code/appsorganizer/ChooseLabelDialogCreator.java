@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -39,7 +38,7 @@ import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 import com.google.code.appsorganizer.model.Label;
 
-public class ChooseLabelDialogCreator extends GenericDialogCreator<Activity> {
+public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private final DatabaseHelper labelAdapter;
 
@@ -47,8 +46,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator<Activity> {
 
 	private ChooseLabelListAdapter adapter;
 
-	public ChooseLabelDialogCreator(Activity owner, DatabaseHelper labelAdapter) {
-		super(owner);
+	public ChooseLabelDialogCreator(DatabaseHelper labelAdapter) {
 		this.labelAdapter = labelAdapter;
 	}
 

@@ -21,15 +21,23 @@ package com.google.code.appsorganizer.dialogs;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.app.Activity;
 import android.app.Dialog;
 
 public class GenericDialogManager {
 
-	private final Map<Integer, GenericDialogCreator<?>> dialogs = new HashMap<Integer, GenericDialogCreator<?>>();
+	private final Map<Integer, GenericDialogCreator> dialogs = new HashMap<Integer, GenericDialogCreator>();
 
-	public void addDialog(GenericDialogCreator<?> d) {
+	private final Activity owner;
+
+	public GenericDialogManager(Activity owner) {
+		this.owner = owner;
+	}
+
+	public void addDialog(GenericDialogCreator d) {
 		int id = dialogs.size();
 		d.setDialogId(id);
+		d.setOwner(owner);
 		dialogs.put(id, d);
 	}
 

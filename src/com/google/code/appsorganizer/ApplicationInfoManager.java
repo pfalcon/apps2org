@@ -133,6 +133,8 @@ public class ApplicationInfoManager {
 
 		private String label;
 
+		private Intent intent;
+
 		private Drawable drawableIcon;
 
 		public ApplicationImpl(ActivityInfo activityInfo, Long id) {
@@ -173,8 +175,15 @@ public class ApplicationInfoManager {
 			return activityInfo.applicationInfo.icon;
 		}
 
-		public Uri getIntent() {
-			Intent intent = ApplicationInfoManager.this.getIntent(activityInfo.packageName);
+		public Intent getIntent() {
+			if (intent == null) {
+				intent = ApplicationInfoManager.this.getIntent(activityInfo.packageName);
+			}
+			return intent;
+		}
+
+		public Uri getIntentUri() {
+			Intent intent = getIntent();
 			Uri intentUri = null;
 			if (intent != null) {
 				intentUri = Uri.parse(intent.toURI());
@@ -196,7 +205,7 @@ public class ApplicationInfoManager {
 				} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
 					values.add(getIconResource());
 				} else if (col.equals(LiveFolders.INTENT)) {
-					values.add(getIntent());
+					values.add(getIntentUri());
 				}
 			}
 			return values;

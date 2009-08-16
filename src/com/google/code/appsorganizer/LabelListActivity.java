@@ -25,6 +25,7 @@ import java.util.Map;
 
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -44,6 +45,8 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Label;
 
@@ -54,9 +57,11 @@ public class LabelListActivity extends ExpandableListActivity {
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
+	private TextEntryDialog textEntryDialog;
+
 	private ApplicationInfoManager applicationInfoManager;
 
-	private final GenericDialogManager genericDialogManager = new GenericDialogManager();
+	private GenericDialogManager genericDialogManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -74,8 +79,11 @@ public class LabelListActivity extends ExpandableListActivity {
 
 		setListAdapter(mAdapter);
 
-		chooseLabelDialog = new ChooseLabelDialogCreator(this, dbHelper);
+		genericDialogManager = new GenericDialogManager(this);
+		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper);
+		textEntryDialog = new TextEntryDialog(getString(R.string.rename_label), getString(R.string.label_name));
 		genericDialogManager.addDialog(chooseLabelDialog);
+		genericDialogManager.addDialog(textEntryDialog);
 
 		getExpandableListView().setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
 			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
@@ -91,10 +99,18 @@ public class LabelListActivity extends ExpandableListActivity {
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		int type = ExpandableListView.getPackedPositionType(((ExpandableListContextMenuInfo) menuInfo).packedPosition);
+		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuInfo;
+		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-			menu.add(0, 0, 0, R.string.launch);
+			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+			Application app = mAdapter.getChild(groupPos, childPos);
+			menu.setHeaderTitle(app.getLabel());
+			menu.add(0, 0, 0, R.string.choose_labels_header);
+			menu.add(0, 1, 1, R.string.launch);
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+			Label label = mAdapter.getGroup(groupPos);
+			menu.setHeaderTitle(label.getName());
 			menu.add(0, 0, 0, R.string.rename);
 			menu.add(0, 1, 1, R.string.change_icon);
 		}
@@ -103,24 +119,34 @@ public class LabelListActivity extends ExpandableListActivity {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) item.getMenuInfo();
-
-		// String title = ((TextView) info.targetView).getText().toString();
-
+		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
 		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-			// int groupPos =
-			// ExpandableListView.getPackedPositionGroup(info.packedPosition);
-			// int childPos =
-			// ExpandableListView.getPackedPositionChild(info.packedPosition);
-			// // Toast.makeText(this, title + ": Child " + childPos +
-			// // " clicked in group " + groupPos, Toast.LENGTH_SHORT).show();
-			// return true;
+			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+			Application app = mAdapter.getChild(groupPos, childPos);
+			if (item.getItemId() == 0) {
+				chooseLabelDialog.setCurrentApp(app);
+				showDialog(chooseLabelDialog.getDialogId());
+			} else {
+				Intent intent = app.getIntent();
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
+			}
+			return true;
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
-			if (item.getItemId() == 1) {
-				int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+			final Label label = mAdapter.getGroup(groupPos);
+			if (item.getItemId() == 0) {
+				textEntryDialog.setDefaultValue(label.getName());
+				textEntryDialog.setOnOkListener(new OnOkClickListener() {
+					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+						label.setName(charSequence.toString());
+						LabelDao.getSingleton().update(label);
+					}
+				});
+				showDialog(textEntryDialog.getDialogId());
+			} else if (item.getItemId() == 1) {
 				startActivityForResult(new Intent(this, ChooseIconActivity.class), groupPos);
-				// Toast.makeText(this, ": Group " + groupPos + " clicked",
-				// Toast.LENGTH_SHORT).show();
 				return true;
 			}
 		}

@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
@@ -33,7 +34,9 @@ public interface Application extends Comparable<Application> {
 
 	int getIconResource();
 
-	Uri getIntent();
+	Intent getIntent();
+
+	Uri getIntentUri();
 
 	Drawable getIcon();
 
