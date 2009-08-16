@@ -40,5 +40,7 @@ public interface Application extends Comparable<Application> {
 
 	Drawable getIcon();
 
+	byte[] getIconBytes();
+
 	Iterable<Object> getIterable(String[] cursorColumns);
 }

@@ -120,4 +120,9 @@ public class MockApplication implements Application {
 		return 0;
 	}
 
+	public byte[] getIconBytes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

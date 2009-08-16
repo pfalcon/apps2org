@@ -57,9 +57,10 @@ public class AppLabelProvider extends ContentProvider {
 
 	// Set of columns needed by a LiveFolder
 	// This is the live folder contract
-	private static final String[] CURSOR_COLUMNS = new String[] { BaseColumns._ID, LiveFolders.NAME, LiveFolders.ICON_PACKAGE,
-			LiveFolders.ICON_RESOURCE,
-			// LiveFolders.ICON_BITMAP,
+	// private static final String[] CURSOR_COLUMNS = new String[] {
+	// BaseColumns._ID, LiveFolders.NAME, LiveFolders.ICON_PACKAGE,
+	// LiveFolders.ICON_RESOURCE, LiveFolders.INTENT };
+	private static final String[] CURSOR_COLUMNS = new String[] { BaseColumns._ID, LiveFolders.NAME, LiveFolders.ICON_BITMAP,
 			LiveFolders.INTENT };
 
 	// In case there are no rows
@@ -99,6 +100,7 @@ public class AppLabelProvider extends ContentProvider {
 		String p = uri.getPath();
 		Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
 		try {
+			// ShortcutIconResource.fromContext(new Context, arg1)
 			List<AppLabel> apps = labelDbManager.appsLabelDao.getApps(labelId);
 			return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
 		} catch (Throwable e) {

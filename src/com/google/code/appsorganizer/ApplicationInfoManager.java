@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +35,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
+import android.database.CursorWindow;
 import android.database.MatrixCursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -196,7 +200,7 @@ public class ApplicationInfoManager {
 				} else if (col.equals(LiveFolders.NAME)) {
 					values.add(getLabel());
 				} else if (col.equals(LiveFolders.ICON_BITMAP)) {
-					values.add(((BitmapDrawable) getIcon()).getBitmap());
+					values.add(getIconBytes());
 				} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
 					values.add(getPackage());
 				} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
@@ -214,11 +218,87 @@ public class ApplicationInfoManager {
 			}
 			return drawableIcon;
 		}
+
+		public byte[] getIconBytes() {
+			BitmapDrawable b = (BitmapDrawable) getIcon();
+			Bitmap bitmap = b.getBitmap();
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			boolean compress = bitmap.compress(CompressFormat.PNG, 100, os);
+			if (compress) {
+				return os.toByteArray();
+			} else {
+				os = new ByteArrayOutputStream();
+				bitmap.compress(CompressFormat.JPEG, 100, os);
+				return os.toByteArray();
+			}
+		}
 	}
 
 	public Cursor convertToCursor(List<AppLabel> l, String[] cursorColumns) throws NameNotFoundException {
-		MatrixCursor m = new MatrixCursor(cursorColumns, l.size());
-		for (Application application : convertToApplicationList(l)) {
+		final ArrayList<Application> applications = new ArrayList<Application>(convertToApplicationList(l));
+		// override 2 methods to manage blob field
+		MatrixCursor m = new MatrixCursor(cursorColumns, l.size()) {
+			@Override
+			public byte[] getBlob(int column) {
+				Application app = applications.get(getPosition());
+				byte[] iconBytes = app.getIconBytes();
+				return iconBytes;
+			}
+
+			@Override
+			public void fillWindow(int position, CursorWindow window) {
+				if (position < 0 || position > getCount()) {
+					return;
+				}
+				window.acquireReference();
+				try {
+					int oldpos = mPos;
+					mPos = position - 1;
+					window.clear();
+					window.setStartPosition(position);
+					int columnNum = getColumnCount();
+					window.setNumColumns(columnNum);
+					while (moveToNext() && window.allocRow()) {
+						for (int i = 0; i < columnNum; i++) {
+							if (i == 2) {
+								byte[] field = getBlob(i);
+								if (field != null) {
+									if (!window.putBlob(field, mPos, i)) {
+										window.freeLastRow();
+										break;
+									}
+								} else {
+									if (!window.putNull(mPos, i)) {
+										window.freeLastRow();
+										break;
+									}
+								}
+							} else {
+								String field = getString(i);
+								if (field != null) {
+									if (!window.putString(field, mPos, i)) {
+										window.freeLastRow();
+										break;
+									}
+								} else {
+									if (!window.putNull(mPos, i)) {
+										window.freeLastRow();
+										break;
+									}
+								}
+							}
+						}
+					}
+
+					mPos = oldpos;
+				} catch (IllegalStateException e) {
+					// simply ignore it
+				} finally {
+					window.releaseReference();
+				}
+			}
+		};
+		for (Application application : applications) {
 			m.addRow(application.getIterable(cursorColumns));
 		}
 		return m;
