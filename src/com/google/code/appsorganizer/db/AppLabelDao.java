@@ -73,6 +73,10 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return insert(obj);
 	}
 
+	public List<String> getAppsWithLabel() {
+		return queryForStringList(true, APP, null, null, null, null);
+	}
+
 	public List<AppLabel> getApps(Long labelId) {
 		return queryForList(columns, Collections.singletonMap(LABEL_ID, labelId.toString()), null, null, null);
 	}

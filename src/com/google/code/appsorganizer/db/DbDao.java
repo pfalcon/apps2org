@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer.db;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -99,6 +100,24 @@ public abstract class DbDao<T> {
 		return convertCursorToObject(c, cols);
 	}
 
+	public List<String> queryForStringList(boolean distinct, DbColumns<T> col, Map<DbColumns<T>, String> filter, String orderBy,
+			String groupBy, String having) {
+		Cursor c = query(distinct, Collections.singletonList(col), filter, orderBy, groupBy, having);
+		return convertCursorToStringList(c, col);
+	}
+
+	protected List<String> convertCursorToStringList(Cursor c, DbColumns<T> col) {
+		List<String> l = new ArrayList<String>();
+		try {
+			while (c.moveToNext()) {
+				l.add(col.getString(c));
+			}
+		} finally {
+			c.close();
+		}
+		return l;
+	}
+
 	protected List<T> convertCursorToList(Cursor c, List<DbColumns<T>> cols) {
 		List<T> l = new ArrayList<T>();
 		try {
@@ -135,6 +154,12 @@ public abstract class DbDao<T> {
 			c.close();
 		}
 		return null;
+	}
+
+	public Cursor query(boolean distinct, List<DbColumns<T>> cols, Map<DbColumns<T>, String> filter, String orderBy, String groupBy,
+			String having) {
+		return db.query(distinct, name, columnsToStringArray(cols), filterToSelection(filter), filterToSelectionArgs(filter), groupBy,
+				having, orderBy, null);
 	}
 
 	public Cursor query(List<DbColumns<T>> cols, Map<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {

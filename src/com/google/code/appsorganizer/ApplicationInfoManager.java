@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import android.content.Intent;
@@ -113,6 +115,17 @@ public class ApplicationInfoManager {
 		}
 		Collections.sort(l);
 		return l;
+	}
+
+	public Collection<Application> convertToApplicationListNot(List<String> l) {
+		Set<String> s = new HashSet<String>(l);
+		TreeSet<Application> ret = new TreeSet<Application>();
+		for (Application application : apps) {
+			if (!s.contains(application.getName())) {
+				ret.add(application);
+			}
+		}
+		return ret;
 	}
 
 	public Collection<Application> convertToApplicationList(List<AppLabel> l) {

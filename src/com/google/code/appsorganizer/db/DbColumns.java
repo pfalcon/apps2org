@@ -43,7 +43,7 @@ public abstract class DbColumns<T> {
 
 	public abstract void populateContent(T obj, ContentValues c);
 
-	protected Integer getInt(Cursor c) {
+	public Integer getInt(Cursor c) {
 		int i = c.getColumnIndexOrThrow(name);
 		if (c.isNull(i)) {
 			return null;
@@ -51,7 +51,7 @@ public abstract class DbColumns<T> {
 		return c.getInt(i);
 	}
 
-	protected Long getLong(Cursor c) {
+	public Long getLong(Cursor c) {
 		int i = c.getColumnIndexOrThrow(name);
 		if (c.isNull(i)) {
 			return null;
@@ -59,7 +59,7 @@ public abstract class DbColumns<T> {
 		return c.getLong(i);
 	}
 
-	protected String getString(Cursor c) {
+	public String getString(Cursor c) {
 		int i = c.getColumnIndexOrThrow(name);
 		if (c.isNull(i)) {
 			return null;

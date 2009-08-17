@@ -16,4 +16,5 @@
 	<string name="launch">Launch</string>
 	<string name="rename_label">Rename label</string>
 	<string name="label_name">Label name</string>
+	<string name="other_label">Other apps</string>
 </resources>

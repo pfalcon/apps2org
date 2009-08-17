@@ -73,7 +73,7 @@ public class LabelListActivity extends ExpandableListActivity {
 
 		dbHelper.appsLabelDao.addListener(new DbChangeListener() {
 			public void notifyDataSetChanged() {
-				mAdapter.reload();
+				mAdapter.reloadAndNotify();
 			}
 		});
 
@@ -111,8 +111,12 @@ public class LabelListActivity extends ExpandableListActivity {
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Label label = mAdapter.getGroup(groupPos);
 			menu.setHeaderTitle(label.getName());
-			menu.add(0, 0, 0, R.string.rename);
-			menu.add(0, 1, 1, R.string.change_icon);
+			MenuItem renameItem = menu.add(0, 0, 0, R.string.rename);
+			MenuItem changeIconItem = menu.add(0, 1, 1, R.string.change_icon);
+			if (label.getId() == -1l) {
+				renameItem.setEnabled(false);
+				changeIconItem.setEnabled(false);
+			}
 		}
 	}
 
@@ -171,10 +175,26 @@ public class LabelListActivity extends ExpandableListActivity {
 
 		private Map<Long, List<Application>> apps = new HashMap<Long, List<Application>>();
 
-		public void reload() {
-			groups = dbHelper.labelDao.getLabels();
-			apps = new HashMap<Long, List<Application>>();
+		public MyExpandableListAdapter() {
+			reload();
+		}
+
+		public void reloadAndNotify() {
+			reload();
 			notifyDataSetChanged();
+		}
+
+		private void reload() {
+			groups = dbHelper.labelDao.getLabels();
+			groups.add(createNoLabel());
+			apps = new HashMap<Long, List<Application>>();
+		}
+
+		private Label createNoLabel() {
+			Label label = new Label();
+			label.setId(-1l);
+			label.setName(getText(R.string.other_label).toString());
+			return label;
 		}
 
 		private List<Application> getAppsInPos(Integer pos) {
@@ -185,8 +205,13 @@ public class LabelListActivity extends ExpandableListActivity {
 		private List<Application> getApps(Long labelId) {
 			List<Application> ret = apps.get(labelId);
 			if (ret == null) {
-				List<AppLabel> l = dbHelper.appsLabelDao.getApps(labelId);
-				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
+				if (labelId == -1) {
+					List<String> l = dbHelper.appsLabelDao.getAppsWithLabel();
+					ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationListNot(l));
+				} else {
+					List<AppLabel> l = dbHelper.appsLabelDao.getApps(labelId);
+					ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
+				}
 				apps.put(labelId, ret);
 			}
 			return ret;
@@ -251,20 +276,6 @@ public class LabelListActivity extends ExpandableListActivity {
 				image.setImageDrawable(null);
 			}
 			return cv;
-			// if (cv == null) {
-			// LayoutInflater factory =
-			// LayoutInflater.from(LabelListActivity.this);
-			// cv =
-			// factory.inflate(android.R.layout.simple_expandable_list_item_1,
-			// null);
-			// }
-			// TextView textView = (TextView)
-			// cv.findViewById(android.R.id.text1);
-			// AbsListView.LayoutParams lp = new
-			// AbsListView.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 64);
-			// textView.setLayoutParams(lp);
-			// textView.setText(getGroup(groupPosition).getName());
-			// return cv;
 		}
 
 		public boolean isChildSelectable(int groupPosition, int childPosition) {
