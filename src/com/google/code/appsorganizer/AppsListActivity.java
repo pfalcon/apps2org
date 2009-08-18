@@ -91,6 +91,14 @@ public class AppsListActivity extends ListActivity {
 	}
 
 	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (dbHelper != null) {
+			dbHelper.close();
+		}
+	}
+
+	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		Application app = apps.get(info.position);

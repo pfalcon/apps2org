@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ComponentInfo;
@@ -58,21 +59,21 @@ public class ApplicationInfoManager {
 
 	private ApplicationInfoManager(PackageManager pm) {
 		this.pm = pm;
-		loadAppsMap(pm);
 	}
 
-	private void loadAppsMap(PackageManager pm) {
+	public void loadAppsMap() {
 		synchronized (this) {
 			applicationMap = new HashMap<String, Application>();
 			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
 			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
 			List<ResolveInfo> installedApplications = pm.queryIntentActivities(mainIntent, 0);
+			long pos = 0;
 			for (Iterator<ResolveInfo> iterator = installedApplications.iterator(); iterator.hasNext();) {
 				ResolveInfo resolveInfo = iterator.next();
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
-					Application app = new ApplicationImpl(resolveInfo.activityInfo, (long) applicationMap.size());
+					Application app = new ApplicationImpl(resolveInfo.activityInfo, pos++);
 					applicationMap.put(app.getName(), app);
 				}
 			}
@@ -131,9 +132,24 @@ public class ApplicationInfoManager {
 	public Collection<Application> convertToApplicationList(List<AppLabel> l) {
 		TreeSet<Application> ret = new TreeSet<Application>();
 		for (AppLabel appLabel : l) {
-			Application application = applicationMap.get(appLabel.getApp());
+			Application application = getApplication(appLabel.getApp());
 			if (application != null) {
 				ret.add(application);
+			}
+		}
+		return ret;
+	}
+
+	private Application getApplication(String app) {
+		Application ret = applicationMap.get(app);
+		if (ret == null) {
+			try {
+				ActivityInfo activityInfo = pm.getActivityInfo(new ComponentName(app.substring(0, app.lastIndexOf('.')), app), 0);
+				if (activityInfo != null) {
+					ret = new ApplicationImpl(activityInfo, (long) applicationMap.size());
+					applicationMap.put(app, ret);
+				}
+			} catch (NameNotFoundException e) {
 			}
 		}
 		return ret;
@@ -150,6 +166,8 @@ public class ApplicationInfoManager {
 		private Intent intent;
 
 		private Drawable drawableIcon;
+
+		private byte[] iconBytes;
 
 		public ApplicationImpl(ActivityInfo activityInfo, Long id) {
 			this.id = id;
@@ -233,6 +251,13 @@ public class ApplicationInfoManager {
 		}
 
 		public byte[] getIconBytes() {
+			if (iconBytes == null) {
+				iconBytes = createIconBytes();
+			}
+			return iconBytes;
+		}
+
+		private byte[] createIconBytes() {
 			BitmapDrawable b = (BitmapDrawable) getIcon();
 			Bitmap bitmap = b.getBitmap();
 			ByteArrayOutputStream os = new ByteArrayOutputStream();

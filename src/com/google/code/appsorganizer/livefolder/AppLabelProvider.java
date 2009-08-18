@@ -80,7 +80,6 @@ public class AppLabelProvider extends ContentProvider {
 		sErrorCursor.addRow(ERROR_MESSAGE_ROW);
 	}
 
-	private DatabaseHelper labelDbManager;
 	private ApplicationInfoManager applicationInfoManager;
 
 	@Override
@@ -91,20 +90,25 @@ public class AppLabelProvider extends ContentProvider {
 			return sErrorCursor;
 		}
 
-		if (labelDbManager == null) {
-			labelDbManager = new DatabaseHelper(getContext());
-		}
-		if (applicationInfoManager == null) {
-			applicationInfoManager = ApplicationInfoManager.singleton(getContext().getPackageManager());
-		}
-		String p = uri.getPath();
-		Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
+		DatabaseHelper dbHelper = null;
 		try {
-			// ShortcutIconResource.fromContext(new Context, arg1)
-			List<AppLabel> apps = labelDbManager.appsLabelDao.getApps(labelId);
-			return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
-		} catch (Throwable e) {
-			return sErrorCursor;
+			dbHelper = new DatabaseHelper(getContext());
+			if (applicationInfoManager == null) {
+				applicationInfoManager = ApplicationInfoManager.singleton(getContext().getPackageManager());
+			}
+			String p = uri.getPath();
+			Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
+			try {
+				// ShortcutIconResource.fromContext(new Context, arg1)
+				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
+				return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
+			} catch (Throwable e) {
+				return sErrorCursor;
+			}
+		} finally {
+			if (dbHelper != null) {
+				dbHelper.close();
+			}
 		}
 	}
 

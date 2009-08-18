@@ -37,6 +37,8 @@ import com.google.code.appsorganizer.model.Label;
 public class LabelLiveFolder extends ListActivity {
 	public static final Uri CONTENT_URI = Uri.parse("content://com.google.code.appsorganizer/live_folders/");
 
+	private DatabaseHelper dbHelper;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,10 +46,10 @@ public class LabelLiveFolder extends ListActivity {
 		final Intent intent = getIntent();
 		final String action = intent.getAction();
 
-		DatabaseHelper labelDbManager = new DatabaseHelper(this);
+		dbHelper = new DatabaseHelper(this);
 
 		if (LiveFolders.ACTION_CREATE_LIVE_FOLDER.equals(action)) {
-			final List<Label> labels = labelDbManager.labelDao.getLabels();
+			final List<Label> labels = dbHelper.labelDao.getLabels();
 			setListAdapter(new ArrayAdapter<Label>(this, android.R.layout.simple_list_item_1, labels));
 
 			getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -73,6 +75,14 @@ public class LabelLiveFolder extends ListActivity {
 		} else {
 			setResult(RESULT_CANCELED);
 			finish();
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (dbHelper != null) {
+			dbHelper.close();
 		}
 	}
 

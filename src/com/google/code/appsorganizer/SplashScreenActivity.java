@@ -49,7 +49,9 @@ public class SplashScreenActivity extends Activity {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				ApplicationInfoManager.singleton(getPackageManager()).getAppsArray(handler);
+				ApplicationInfoManager singleton = ApplicationInfoManager.singleton(getPackageManager());
+				singleton.loadAppsMap();
+				singleton.getAppsArray(handler);
 				handler.sendEmptyMessage(-1);
 			}
 		};

@@ -98,6 +98,14 @@ public class LabelListActivity extends ExpandableListActivity {
 	}
 
 	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (dbHelper != null) {
+			dbHelper.close();
+		}
+	}
+
+	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuInfo;
 		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
