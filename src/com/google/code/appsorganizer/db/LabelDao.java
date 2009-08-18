@@ -47,12 +47,12 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	public static final DbColumns<Label> ICON = new DbColumns<Label>("icon", "integer") {
 		@Override
 		public void populateObject(Label obj, Cursor c) {
-			obj.setIcon(getInt(c));
+			obj.setIconDb(getInt(c));
 		}
 
 		@Override
 		public void populateContent(Label obj, ContentValues c) {
-			c.put(name, obj.getIcon());
+			c.put(name, obj.getIconDb());
 		}
 	};
 

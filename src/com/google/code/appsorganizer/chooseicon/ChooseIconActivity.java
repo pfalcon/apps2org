@@ -18,7 +18,6 @@
  */
 package com.google.code.appsorganizer.chooseicon;
 
-import java.util.Arrays;
 import java.util.List;
 
 import android.app.Activity;
@@ -31,7 +30,7 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.model.Label;
 
 public class ChooseIconActivity extends Activity {
 	private GridView mGrid;
@@ -59,22 +58,10 @@ public class ChooseIconActivity extends Activity {
 	private List<Integer> mIcons;
 
 	private void loadIcons() {
-		mIcons = Arrays.asList(R.drawable.agt_member, R.drawable.binary, R.drawable.cam_unmount, R.drawable.camera_unmount,
-				R.drawable.cardgame, R.drawable.cdimage, R.drawable.chardevice, R.drawable.doc, R.drawable.energy, R.drawable.favorites,
-				R.drawable.file_temporary, R.drawable.floppy_unmount, R.drawable.globe, R.drawable.hardware, R.drawable.icon_default,
-				R.drawable.image2, R.drawable.images, R.drawable.internet_connection_tools, R.drawable.joystick, R.drawable.kbackgammon,
-				R.drawable.keyboard, R.drawable.kfm_home, R.drawable.klaptopdaemon, R.drawable.knode, R.drawable.kontact,
-				R.drawable.kopete, R.drawable.kpaint, R.drawable.kpat, R.drawable.kspread_ksp, R.drawable.kstars, R.drawable.kweather,
-				R.drawable.messenger, R.drawable.midi, R.drawable.mp3, R.drawable.mp3player_alt_unmount, R.drawable.multimedia,
-				R.drawable.multimedia2, R.drawable.news, R.drawable.package_favorite, R.drawable.package_games_board,
-				R.drawable.package_games_strategy, R.drawable.pda_black, R.drawable.schedule, R.drawable.service_manager, R.drawable.sms,
-				R.drawable.video);
+		mIcons = Label.getIconsList();
 	}
 
 	public class AppsAdapter extends BaseAdapter {
-		public AppsAdapter() {
-		}
-
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ImageView i;
 
