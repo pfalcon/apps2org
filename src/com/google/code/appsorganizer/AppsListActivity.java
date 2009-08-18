@@ -25,7 +25,6 @@ import java.util.Map;
 
 import android.app.Dialog;
 import android.app.ListActivity;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -95,23 +94,14 @@ public class AppsListActivity extends ListActivity {
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		Application app = apps.get(info.position);
-		menu.setHeaderTitle(app.getLabel());
-		menu.add(0, 0, 0, R.string.choose_labels_header);
-		menu.add(0, 1, 1, R.string.launch);
+		ApplicationContextMenuManager.singleton().createMenu(menu, app);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		Application app = apps.get(info.position);
-		if (item.getItemId() == 0) {
-			chooseLabelDialog.setCurrentApp(app);
-			showDialog(chooseLabelDialog.getDialogId());
-		} else {
-			Intent intent = app.getIntent();
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startActivity(intent);
-		}
+		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog);
 		return true;
 	}
 

@@ -105,9 +105,7 @@ public class LabelListActivity extends ExpandableListActivity {
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
 			Application app = mAdapter.getChild(groupPos, childPos);
-			menu.setHeaderTitle(app.getLabel());
-			menu.add(0, 0, 0, R.string.choose_labels_header);
-			menu.add(0, 1, 1, R.string.launch);
+			ApplicationContextMenuManager.singleton().createMenu(menu, app);
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Label label = mAdapter.getGroup(groupPos);
 			menu.setHeaderTitle(label.getName());
@@ -129,14 +127,7 @@ public class LabelListActivity extends ExpandableListActivity {
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
 			Application app = mAdapter.getChild(groupPos, childPos);
-			if (item.getItemId() == 0) {
-				chooseLabelDialog.setCurrentApp(app);
-				showDialog(chooseLabelDialog.getDialogId());
-			} else {
-				Intent intent = app.getIntent();
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(intent);
-			}
+			ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog);
 			return true;
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			final Label label = mAdapter.getGroup(groupPos);
