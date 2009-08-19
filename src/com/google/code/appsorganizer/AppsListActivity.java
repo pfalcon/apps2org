@@ -25,6 +25,7 @@ import java.util.Map;
 
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -111,6 +112,11 @@ public class AppsListActivity extends ListActivity {
 		Application app = apps.get(info.position);
 		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog);
 		return true;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	public final class AppsListAdapter extends SimpleAdapter {

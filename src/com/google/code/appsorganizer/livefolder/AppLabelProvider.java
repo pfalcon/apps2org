@@ -99,8 +99,8 @@ public class AppLabelProvider extends ContentProvider {
 			String p = uri.getPath();
 			Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
 			try {
-				// ShortcutIconResource.fromContext(new Context, arg1)
 				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
+				applicationInfoManager.reloadAppsMap();
 				return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
 			} catch (Throwable e) {
 				return sErrorCursor;

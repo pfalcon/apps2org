@@ -59,7 +59,8 @@ public class ApplicationContextMenuManager {
 		case 2:
 			Uri packageURI = Uri.parse("package:" + app.getPackage());
 			Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
-			activity.startActivity(uninstallIntent);
+			uninstallIntent.putExtra("package", app.getPackage());
+			activity.startActivityForResult(uninstallIntent, 1);
 		}
 	}
 

@@ -61,13 +61,16 @@ public class ApplicationInfoManager {
 		this.pm = pm;
 	}
 
+	public void reloadAppsMap() {
+		if (applicationMap.isEmpty()) {
+			loadAppsMap();
+		}
+	}
+
 	public void loadAppsMap() {
 		synchronized (this) {
 			applicationMap = new HashMap<String, Application>();
-			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-			List<ResolveInfo> installedApplications = pm.queryIntentActivities(mainIntent, 0);
+			List<ResolveInfo> installedApplications = getAllResolveInfo();
 			long pos = 0;
 			for (Iterator<ResolveInfo> iterator = installedApplications.iterator(); iterator.hasNext();) {
 				ResolveInfo resolveInfo = iterator.next();
@@ -78,6 +81,13 @@ public class ApplicationInfoManager {
 				}
 			}
 		}
+	}
+
+	private List<ResolveInfo> getAllResolveInfo() {
+		Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+		mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+		return pm.queryIntentActivities(mainIntent, 0);
 	}
 
 	public static ApplicationInfoManager singleton(PackageManager pm) {
@@ -142,17 +152,32 @@ public class ApplicationInfoManager {
 
 	private Application getApplication(String app) {
 		Application ret = applicationMap.get(app);
-		if (ret == null) {
-			try {
-				ActivityInfo activityInfo = pm.getActivityInfo(new ComponentName(app.substring(0, app.lastIndexOf('.')), app), 0);
-				if (activityInfo != null) {
-					ret = new ApplicationImpl(activityInfo, (long) applicationMap.size());
-					applicationMap.put(app, ret);
-				}
-			} catch (NameNotFoundException e) {
-			}
-		}
+		// if (ret == null) {
+		// ret = retrieveActivityInfo(app, app);
+		// if (ret != null) {
+		// applicationMap.put(app, ret);
+		// }
+		// }
 		return ret;
+	}
+
+	private Application retrieveActivityInfo(String pack, String app) {
+		int lastIndexOf = pack.lastIndexOf('.');
+		if (lastIndexOf == -1) {
+			return null;
+		}
+		pack = pack.substring(0, lastIndexOf);
+		try {
+			ComponentName componentName = new ComponentName(pack, app);
+			ActivityInfo activityInfo = pm.getActivityInfo(componentName, 0);
+			if (activityInfo != null) {
+				return new ApplicationImpl(activityInfo, (long) applicationMap.size());
+			} else {
+				return null;
+			}
+		} catch (NameNotFoundException e) {
+			return retrieveActivityInfo(pack, app);
+		}
 	}
 
 	private class ApplicationImpl implements Application, Comparable<Application> {
@@ -209,7 +234,9 @@ public class ApplicationInfoManager {
 
 		public Intent getIntent() {
 			if (intent == null) {
-				intent = ApplicationInfoManager.this.getIntent(activityInfo.packageName);
+				intent = new Intent(Intent.ACTION_MAIN);
+				intent.addCategory(Intent.CATEGORY_LAUNCHER);
+				intent.setClassName(getPackage(), getName());
 			}
 			return intent;
 		}
@@ -342,33 +369,4 @@ public class ApplicationInfoManager {
 		return m;
 	}
 
-	private static Map<String, ResolveInfo> infoMap = null;
-
-	public Map<String, ResolveInfo> getRunableMap(boolean reload) {
-		if (infoMap == null || reload == true) {
-			synchronized (this) {
-				Intent baseIntent = new Intent(Intent.ACTION_MAIN);
-				baseIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-				List<ResolveInfo> l = pm.queryIntentActivities(baseIntent, 0);
-				infoMap = new HashMap<String, ResolveInfo>();
-				for (ResolveInfo info : l) {
-					infoMap.put(info.activityInfo.packageName, info);
-				}
-			}
-		}
-		return infoMap;
-	}
-
-	private Intent getIntent(String packageName) {
-		// pm.getLaunchIntentForPackage(applicationInfo.packageName);
-		Map<String, ResolveInfo> map = getRunableMap(false);
-		ResolveInfo info = map.get(packageName);
-		if (info != null) {
-			Intent i = new Intent(Intent.ACTION_MAIN);
-			i.addCategory(Intent.CATEGORY_LAUNCHER);
-			i.setClassName(packageName, info.activityInfo.name);
-			return i;
-		}
-		return null;
-	}
 }
