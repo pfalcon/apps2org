@@ -65,12 +65,12 @@ public class LabelListActivity extends ExpandableListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		dbHelper = new DatabaseHelper(this);
+		dbHelper = DatabaseHelper.singleton();
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 
 		mAdapter = new MyExpandableListAdapter();
 
-		dbHelper.appsLabelDao.addListener(new DbChangeListener() {
+		applicationInfoManager.addListener(new DbChangeListener() {
 			public void notifyDataSetChanged() {
 				mAdapter.reloadAndNotify();
 			}
@@ -79,7 +79,7 @@ public class LabelListActivity extends ExpandableListActivity {
 		setListAdapter(mAdapter);
 
 		genericDialogManager = new GenericDialogManager(this);
-		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper);
+		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
 		textEntryDialog = new TextEntryDialog(getString(R.string.rename_label), getString(R.string.label_name));
 		genericDialogManager.addDialog(chooseLabelDialog);
 		genericDialogManager.addDialog(textEntryDialog);
@@ -94,14 +94,6 @@ public class LabelListActivity extends ExpandableListActivity {
 		});
 
 		registerForContextMenu(getExpandableListView());
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (dbHelper != null) {
-			dbHelper.close();
-		}
 	}
 
 	@Override

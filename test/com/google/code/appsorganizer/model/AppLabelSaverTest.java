@@ -25,6 +25,7 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import com.google.code.appsorganizer.AppLabelBinding;
 import com.google.code.appsorganizer.Application;
+import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.AppsListActivity;
 import com.google.code.appsorganizer.MockApplication;
 import com.google.code.appsorganizer.db.DatabaseHelper;
@@ -38,9 +39,9 @@ public class AppLabelSaverTest extends ActivityInstrumentationTestCase2<AppsList
 	private static final Application appId = new MockApplication("aaaaaa");
 
 	public void testGetLabelsString() throws Exception {
-		DatabaseHelper dbHelper = new DatabaseHelper(getActivity());
+		DatabaseHelper dbHelper = DatabaseHelper.singleton();
 
-		AppLabelSaver appLabelSaver = new AppLabelSaver(dbHelper);
+		AppLabelSaver appLabelSaver = new AppLabelSaver(dbHelper, ApplicationInfoManager.singleton(getActivity().getPackageManager()));
 
 		List<AppLabelBinding> modifiedLabels = new ArrayList<AppLabelBinding>();
 		modifiedLabels.add(new AppLabelBinding("lab1", true));

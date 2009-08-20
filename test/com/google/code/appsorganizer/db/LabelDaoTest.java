@@ -37,7 +37,7 @@ public class LabelDaoTest extends ActivityInstrumentationTestCase2<AppsListActiv
 	private static final String otherAppId = "o_aaaaaa";
 
 	public void testGetLabelsString() throws Exception {
-		DatabaseHelper dbHelper = new DatabaseHelper(getActivity());
+		DatabaseHelper dbHelper = DatabaseHelper.singleton();
 		LabelDao labelDao = dbHelper.labelDao;
 		AppLabelDao appsLabelDao = dbHelper.appsLabelDao;
 

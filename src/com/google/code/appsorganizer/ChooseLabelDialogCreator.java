@@ -42,12 +42,15 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private final DatabaseHelper labelAdapter;
 
+	private final ApplicationInfoManager applicationInfoManager;
+
 	private Application application;
 
 	private ChooseLabelListAdapter adapter;
 
-	public ChooseLabelDialogCreator(DatabaseHelper labelAdapter) {
+	public ChooseLabelDialogCreator(DatabaseHelper labelAdapter, ApplicationInfoManager applicationInfoManager) {
 		this.labelAdapter = labelAdapter;
+		this.applicationInfoManager = applicationInfoManager;
 	}
 
 	@Override
@@ -106,7 +109,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		builder = builder.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				new AppLabelSaver(labelAdapter).save(application, modifiedLabels);
+				new AppLabelSaver(labelAdapter, applicationInfoManager).save(application, modifiedLabels);
 			}
 		});
 		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {

@@ -18,4 +18,6 @@
 	<string name="label_name">Nome label</string>
 	<string name="other_label">Altre applicazioni</string>
 	<string name="uninstall">Disinstalla</string>
+	<string name="reload_apps">Ricarica</string>
+	<string name="about">About</string>	
 </resources>

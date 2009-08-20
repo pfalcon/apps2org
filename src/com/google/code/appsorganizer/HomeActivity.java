@@ -21,6 +21,9 @@ package com.google.code.appsorganizer;
 import android.app.TabActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.TabHost;
 
 public class HomeActivity extends TabActivity {
@@ -41,5 +44,40 @@ public class HomeActivity extends TabActivity {
 	protected void onRestoreInstanceState(Bundle state) {
 		// rewrite this method to avoid ClassCastException on device rotation
 		getTabHost().setCurrentTabByTag(state.getString("currentTab"));
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Hold on to this
+		// mMenu = menu;
+
+		// Inflate the currently selected menu XML resource.
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.home_menu, menu);
+		menu.getItem(0).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.getItem(1).setIcon(android.R.drawable.ic_menu_info_details);
+
+		// // Disable the spinner since we've already created the menu and the
+		// user
+		// // can no longer pick a different menu XML.
+		// mSpinner.setEnabled(false);
+		//        
+		// // Change instructions
+		// mInstructionsText.setText(getResources().getString(
+		// R.string.menu_from_xml_instructions_go_back));
+
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.reload_apps:
+			new AppsReloader(this, false).reload();
+			return true;
+		case R.id.about:
+			return true;
+		}
+		return false;
 	}
 }

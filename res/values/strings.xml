@@ -18,4 +18,6 @@
 	<string name="label_name">Label name</string>
 	<string name="other_label">Other apps</string>
 	<string name="uninstall">Uninstall</string>
+	<string name="reload_apps">Reload</string>
+	<string name="about">About</string>
 </resources>

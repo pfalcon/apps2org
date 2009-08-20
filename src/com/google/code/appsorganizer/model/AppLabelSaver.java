@@ -22,14 +22,18 @@ import java.util.List;
 
 import com.google.code.appsorganizer.AppLabelBinding;
 import com.google.code.appsorganizer.Application;
+import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 
 public class AppLabelSaver {
 
 	private final DatabaseHelper dbHelper;
 
-	public AppLabelSaver(DatabaseHelper dbHelper) {
+	private final ApplicationInfoManager applicationInfoManager;
+
+	public AppLabelSaver(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager) {
 		this.dbHelper = dbHelper;
+		this.applicationInfoManager = applicationInfoManager;
 	}
 
 	public void save(Application application, List<AppLabelBinding> modifiedLabels) {
@@ -45,7 +49,7 @@ public class AppLabelSaver {
 					dbHelper.appsLabelDao.delete(b.getAppLabelId());
 				}
 			}
-			dbHelper.appsLabelDao.notifyDataSetChanged();
+			applicationInfoManager.notifyDataSetChanged();
 		}
 	}
 }

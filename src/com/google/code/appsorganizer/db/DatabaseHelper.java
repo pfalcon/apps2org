@@ -26,6 +26,7 @@ import android.util.Log;
 
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.SplashScreenActivity;
+import com.google.code.appsorganizer.model.Label;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -35,6 +36,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public final LabelDao labelDao;
 
 	private static final int DATABASE_VERSION = 11;
+
+	private static DatabaseHelper singleton;
+
+	public static void init(Context context) {
+		singleton = new DatabaseHelper(context);
+	}
+
+	public static DatabaseHelper initOrSingleton(Context context) {
+		if (singleton == null) {
+			init(context);
+		}
+		return singleton;
+	}
+
+	public static DatabaseHelper singleton() {
+		return singleton;
+	}
 
 	public DatabaseHelper(Context context) {
 		super(context, "data", null, DATABASE_VERSION);
@@ -50,11 +68,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(labelDao.getCreateTableScript());
 		db.execSQL(appsLabelDao.getCreateTableScript());
 
-		long internetId = insertLabel(db, "Internet", R.drawable.globe);
-		long androidId = insertLabel(db, "Android", R.drawable.pda_black);
-		long multimediaId = insertLabel(db, "Multimedia", R.drawable.multimedia);
-		long utilityId = insertLabel(db, "Utility", R.drawable.service_manager);
-		insertLabel(db, "Games", R.drawable.joystick);
+		long internetId = insertLabel(db, "Internet", Label.convertToIconDb(R.drawable.globe));
+		long androidId = insertLabel(db, "Android", Label.convertToIconDb(R.drawable.pda_black));
+		long multimediaId = insertLabel(db, "Multimedia", Label.convertToIconDb(R.drawable.multimedia));
+		long utilityId = insertLabel(db, "Utility", Label.convertToIconDb(R.drawable.service_manager));
+		insertLabel(db, "Games", Label.convertToIconDb(R.drawable.joystick));
 
 		insertInterneApps(db, internetId);
 		insertAndroidApps(db, androidId);

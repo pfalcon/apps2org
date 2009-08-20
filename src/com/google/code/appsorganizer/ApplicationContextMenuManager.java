@@ -56,11 +56,13 @@ public class ApplicationContextMenuManager {
 			Intent intent = app.getIntent();
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			activity.startActivity(intent);
+			break;
 		case 2:
 			Uri packageURI = Uri.parse("package:" + app.getPackage());
 			Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
 			uninstallIntent.putExtra("package", app.getPackage());
 			activity.startActivityForResult(uninstallIntent, 1);
+			break;
 		}
 	}
 

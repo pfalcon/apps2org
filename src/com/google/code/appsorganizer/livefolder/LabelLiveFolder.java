@@ -46,7 +46,7 @@ public class LabelLiveFolder extends ListActivity {
 		final Intent intent = getIntent();
 		final String action = intent.getAction();
 
-		dbHelper = new DatabaseHelper(this);
+		dbHelper = DatabaseHelper.initOrSingleton(this);
 
 		if (LiveFolders.ACTION_CREATE_LIVE_FOLDER.equals(action)) {
 			final List<Label> labels = dbHelper.labelDao.getLabels();
@@ -75,14 +75,6 @@ public class LabelLiveFolder extends ListActivity {
 		} else {
 			setResult(RESULT_CANCELED);
 			finish();
-		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (dbHelper != null) {
-			dbHelper.close();
 		}
 	}
 

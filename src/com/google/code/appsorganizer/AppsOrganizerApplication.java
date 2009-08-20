@@ -18,14 +18,24 @@
  */
 package com.google.code.appsorganizer;
 
-import android.app.Activity;
-import android.os.Bundle;
+import android.app.Application;
 
-public class SplashScreenActivity extends Activity {
+import com.google.code.appsorganizer.db.DatabaseHelper;
+
+/**
+ * @author fabio
+ * 
+ */
+public class AppsOrganizerApplication extends Application {
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		new AppsReloader(this, true).reload();
+	public void onCreate() {
+		super.onCreate();
+	}
+
+	@Override
+	public void onTerminate() {
+		super.onTerminate();
+		DatabaseHelper.singleton().close();
 	}
 }

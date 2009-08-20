@@ -217,19 +217,4 @@ public abstract class DbDao<T> {
 		this.db = db;
 	}
 
-	private final List<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
-
-	public boolean addListener(DbChangeListener object) {
-		return listeners.add(object);
-	}
-
-	public boolean removeListener(DbChangeListener object) {
-		return listeners.remove(object);
-	}
-
-	public void notifyDataSetChanged() {
-		for (DbChangeListener a : listeners) {
-			a.notifyDataSetChanged();
-		}
-	}
 }

@@ -49,6 +49,7 @@ import android.os.Handler;
 import android.provider.BaseColumns;
 import android.provider.LiveFolders;
 
+import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.model.AppLabel;
 
 public class ApplicationInfoManager {
@@ -67,6 +68,13 @@ public class ApplicationInfoManager {
 		}
 	}
 
+	public void reloadAll(Handler handler) {
+		loadAppsMap();
+		apps = createAppsArray(handler);
+	}
+
+	// private int tot = 4;
+
 	public void loadAppsMap() {
 		synchronized (this) {
 			applicationMap = new HashMap<String, Application>();
@@ -79,6 +87,10 @@ public class ApplicationInfoManager {
 					Application app = new ApplicationImpl(resolveInfo.activityInfo, pos++);
 					applicationMap.put(app.getName(), app);
 				}
+				// if (pos == tot) {
+				// tot++;
+				// break;
+				// }
 			}
 		}
 	}
@@ -150,6 +162,17 @@ public class ApplicationInfoManager {
 		return ret;
 	}
 
+	public Collection<Application> convertToApplicationListFromString(List<String> l) {
+		TreeSet<Application> ret = new TreeSet<Application>();
+		for (String app : l) {
+			Application application = getApplication(app);
+			if (application != null) {
+				ret.add(application);
+			}
+		}
+		return ret;
+	}
+
 	private Application getApplication(String app) {
 		Application ret = applicationMap.get(app);
 		// if (ret == null) {
@@ -210,7 +233,11 @@ public class ApplicationInfoManager {
 		}
 
 		public int compareTo(Application another) {
-			return getLabel().compareToIgnoreCase(another.getLabel());
+			int r = getLabel().compareToIgnoreCase(another.getLabel());
+			if (r == 0) {
+				r = getName().compareToIgnoreCase(another.getName());
+			}
+			return r;
 		}
 
 		public Long getId() {
@@ -301,8 +328,20 @@ public class ApplicationInfoManager {
 
 	public Cursor convertToCursor(List<AppLabel> l, String[] cursorColumns) throws NameNotFoundException {
 		final ArrayList<Application> applications = new ArrayList<Application>(convertToApplicationList(l));
+		return convertToCursorFromApplications(applications, cursorColumns);
+	}
+
+	public Cursor convertToCursorFromApplications(final List<Application> applications, String[] cursorColumns) {
+		MatrixCursor m = createCursor(cursorColumns, applications);
+		for (Application application : applications) {
+			m.addRow(application.getIterable(cursorColumns));
+		}
+		return m;
+	}
+
+	private MatrixCursor createCursor(String[] cursorColumns, final List<Application> applications) {
 		// override 2 methods to manage blob field
-		MatrixCursor m = new MatrixCursor(cursorColumns, l.size()) {
+		MatrixCursor m = new MatrixCursor(cursorColumns, applications.size()) {
 			@Override
 			public byte[] getBlob(int column) {
 				Application app = applications.get(getPosition());
@@ -363,10 +402,22 @@ public class ApplicationInfoManager {
 				}
 			}
 		};
-		for (Application application : applications) {
-			m.addRow(application.getIterable(cursorColumns));
-		}
 		return m;
 	}
 
+	private final List<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
+
+	public boolean addListener(DbChangeListener object) {
+		return listeners.add(object);
+	}
+
+	public boolean removeListener(DbChangeListener object) {
+		return listeners.remove(object);
+	}
+
+	public void notifyDataSetChanged() {
+		for (DbChangeListener a : listeners) {
+			a.notifyDataSetChanged();
+		}
+	}
 }

@@ -18,23 +18,21 @@
  */
 package com.google.code.appsorganizer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
@@ -52,51 +50,52 @@ public class AppsListActivity extends ListActivity {
 
 	private GenericDialogManager genericDialogManager;
 
-	private List<? extends Map<String, ?>> convertToMapArray(List<Application> apps) {
-		List<Map<String, Object>> l = new ArrayList<Map<String, Object>>();
-		for (Application application : apps) {
-			Map<String, Object> m = new HashMap<String, Object>();
-			m.put("image", application.getIcon());
-			m.put("name", application.getLabel());
-			m.put("appInfo", application);
-			l.add(m);
-		}
-		return l;
-	}
+	private ApplicationInfoManager applicationInfoManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		dbHelper = new DatabaseHelper(this);
+		dbHelper = DatabaseHelper.singleton();
 		setContentView(R.layout.main);
 		genericDialogManager = new GenericDialogManager(this);
-		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper);
+		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
+		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
 		genericDialogManager.addDialog(chooseLabelDialog);
-		apps = ApplicationInfoManager.singleton(getPackageManager()).getAppsArray(null);
+		apps = applicationInfoManager.getAppsArray(null);
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 				chooseLabelDialog.setCurrentApp(apps.get(position));
 				showDialog(chooseLabelDialog.getDialogId());
 			}
 		});
-		final SimpleAdapter appsAdapter = new AppsListAdapter(AppsListActivity.this, convertToMapArray(apps), R.layout.app_row,
-				new String[] { "image", "name", "appInfo" }, new int[] { R.id.image, R.id.name, R.id.labels });
-		dbHelper.appsLabelDao.addListener(new DbChangeListener() {
+
+		final ArrayAdapter<Application> appsAdapter = new ArrayAdapter<Application>(this, R.layout.app_row, apps) {
+			@Override
+			public View getView(int position, View v, ViewGroup parent) {
+				if (v == null) {
+					LayoutInflater factory = LayoutInflater.from(getContext());
+					v = factory.inflate(R.layout.app_row, null);
+				}
+				Application a = getItem(position);
+				((ImageView) v.findViewById(R.id.image)).setImageDrawable(a.getIcon());
+				((TextView) v.findViewById(R.id.labels)).setText(dbHelper.labelDao.getLabelsString(a));
+				((TextView) v.findViewById(R.id.name)).setText(a.getLabel());
+				return v;
+			}
+		};
+		applicationInfoManager.addListener(new DbChangeListener() {
 			public void notifyDataSetChanged() {
+				appsAdapter.clear();
+				List<Application> appsArray = applicationInfoManager.getAppsArray(null);
+				for (Application application : appsArray) {
+					appsAdapter.add(application);
+				}
 				appsAdapter.notifyDataSetChanged();
 			}
 		});
 		setListAdapter(appsAdapter);
 
 		registerForContextMenu(getListView());
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (dbHelper != null) {
-			dbHelper.close();
-		}
 	}
 
 	@Override
@@ -117,29 +116,7 @@ public class AppsListActivity extends ListActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-	}
-
-	public final class AppsListAdapter extends SimpleAdapter {
-
-		public AppsListAdapter(AppsListActivity homeActivity, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {
-			super(homeActivity, data, resource, from, to);
-
-			setViewBinder(new SimpleAdapter.ViewBinder() {
-
-				public boolean setViewValue(View view, Object data, String textRepresentation) {
-					switch (view.getId()) {
-					case R.id.image:
-						((ImageView) view).setImageDrawable((Drawable) data);
-						return true;
-					case R.id.labels:
-						((TextView) view).setText(dbHelper.labelDao.getLabelsString((Application) data));
-						return true;
-					default:
-						return false;
-					}
-				}
-			});
-		}
+		new AppsReloader(this, false).reload();
 	}
 
 	@Override

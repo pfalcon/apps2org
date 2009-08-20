@@ -45,6 +45,10 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 	private static final Map<Integer, Integer> iconsMapInv;
 	private static final List<Integer> iconsList;
 
+	public static Integer convertToIconDb(Integer icon) {
+		return iconsMapInv.get(icon);
+	}
+
 	static {
 		iconsMap = new TreeMap<Integer, Integer>();
 		int i = 2130837504;
@@ -183,7 +187,7 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 	}
 
 	public void setIcon(Integer icon) {
-		this.iconDb = iconsMapInv.get(icon);
+		this.iconDb = convertToIconDb(icon);
 	}
 
 	public Integer getIconDb() {
