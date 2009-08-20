@@ -38,8 +38,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public DatabaseHelper(Context context) {
 		super(context, "data", null, DATABASE_VERSION);
-		labelDao = LabelDao.getSingleton();
-		appsLabelDao = AppLabelDao.getSingleton();
+		labelDao = new LabelDao();
+		appsLabelDao = new AppLabelDao();
 		SQLiteDatabase db = getWritableDatabase();
 		labelDao.setDb(db);
 		appsLabelDao.setDb(db);

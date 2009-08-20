@@ -56,9 +56,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		}
 	};
 
-	private static LabelDao singleton = new LabelDao();
-
-	private LabelDao() {
+	LabelDao() {
 		super(NAME);
 		addColumn(LABEL);
 		addColumn(ICON);
@@ -114,9 +112,5 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public Label getLabel(String name) {
 		return queryForObject(columns, Collections.singletonMap(LABEL, name), null, null);
-	}
-
-	public static LabelDao getSingleton() {
-		return singleton;
 	}
 }

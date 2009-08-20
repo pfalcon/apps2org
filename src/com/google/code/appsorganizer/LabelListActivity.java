@@ -43,7 +43,6 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
-import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
@@ -144,7 +143,7 @@ public class LabelListActivity extends ExpandableListActivity {
 				textEntryDialog.setOnOkListener(new OnOkClickListener() {
 					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
 						label.setName(charSequence.toString());
-						LabelDao.getSingleton().update(label);
+						dbHelper.labelDao.update(label);
 					}
 				});
 				showDialog(textEntryDialog.getDialogId());
@@ -164,7 +163,7 @@ public class LabelListActivity extends ExpandableListActivity {
 			int icon = data.getIntExtra("icon", -1);
 			Label label = mAdapter.getGroup(requestCode);
 			label.setIcon(icon);
-			LabelDao.getSingleton().update(label);
+			dbHelper.labelDao.update(label);
 			mAdapter.notifyDataSetChanged();
 		}
 	}

@@ -53,9 +53,7 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		}
 	};
 
-	private static AppLabelDao singleton = new AppLabelDao();
-
-	private AppLabelDao() {
+	AppLabelDao() {
 		super(NAME);
 		addColumn(APP);
 		addColumn(LABEL_ID);
@@ -87,9 +85,5 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 
 	public Cursor getAppsCursor(Long labelId) {
 		return query(columns, Collections.singletonMap(LABEL_ID, labelId.toString()), null, null, null);
-	}
-
-	public static AppLabelDao getSingleton() {
-		return singleton;
 	}
 }
