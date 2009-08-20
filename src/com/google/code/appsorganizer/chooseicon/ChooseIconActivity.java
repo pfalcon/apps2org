@@ -41,6 +41,7 @@ public class ChooseIconActivity extends Activity {
 
 		loadIcons();
 
+		final int group = getIntent().getIntExtra("group", -1);
 		setContentView(com.google.code.appsorganizer.R.layout.icon_grid);
 		mGrid = (GridView) findViewById(com.google.code.appsorganizer.R.id.iconGrid);
 		mGrid.setAdapter(new AppsAdapter());
@@ -49,6 +50,7 @@ public class ChooseIconActivity extends Activity {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
 				Intent res = new Intent();
 				res.putExtra("icon", mIcons.get(pos));
+				res.putExtra("group", group);
 				setResult(RESULT_OK, res);
 				finish();
 			}

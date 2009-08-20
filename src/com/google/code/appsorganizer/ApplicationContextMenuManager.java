@@ -66,4 +66,10 @@ public class ApplicationContextMenuManager {
 		}
 	}
 
+	public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+		if (requestCode == 1) {
+			new AppsReloader(activity, false).reload();
+		}
+	}
+
 }

@@ -55,16 +55,9 @@ public class HomeActivity extends TabActivity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
 		menu.getItem(0).setIcon(android.R.drawable.ic_menu_rotate);
+		// TODO info dialog
+		menu.getItem(1).setVisible(false);
 		menu.getItem(1).setIcon(android.R.drawable.ic_menu_info_details);
-
-		// // Disable the spinner since we've already created the menu and the
-		// user
-		// // can no longer pick a different menu XML.
-		// mSpinner.setEnabled(false);
-		//        
-		// // Change instructions
-		// mInstructionsText.setText(getResources().getString(
-		// R.string.menu_from_xml_instructions_go_back));
 
 		return true;
 	}

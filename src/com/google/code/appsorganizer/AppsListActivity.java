@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Dialog;
@@ -69,7 +70,8 @@ public class AppsListActivity extends ListActivity {
 			}
 		});
 
-		final ArrayAdapter<Application> appsAdapter = new ArrayAdapter<Application>(this, R.layout.app_row, apps) {
+		final ArrayAdapter<Application> appsAdapter = new ArrayAdapter<Application>(this, R.layout.app_row,
+				new ArrayList<Application>(apps)) {
 			@Override
 			public View getView(int position, View v, ViewGroup parent) {
 				if (v == null) {
@@ -116,7 +118,7 @@ public class AppsListActivity extends ListActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		new AppsReloader(this, false).reload();
+		ApplicationContextMenuManager.singleton().onActivityResult(this, requestCode, resultCode, data);
 	}
 
 	@Override

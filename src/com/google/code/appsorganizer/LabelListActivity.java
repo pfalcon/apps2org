@@ -140,7 +140,9 @@ public class LabelListActivity extends ExpandableListActivity {
 				});
 				showDialog(textEntryDialog.getDialogId());
 			} else if (item.getItemId() == 1) {
-				startActivityForResult(new Intent(this, ChooseIconActivity.class), groupPos);
+				Intent intent = new Intent(this, ChooseIconActivity.class);
+				intent.putExtra("group", groupPos);
+				startActivityForResult(intent, 2);
 				return true;
 			}
 		}
@@ -151,9 +153,10 @@ public class LabelListActivity extends ExpandableListActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == RESULT_OK) {
+		ApplicationContextMenuManager.singleton().onActivityResult(this, requestCode, resultCode, data);
+		if (resultCode == RESULT_OK && requestCode == 2) {
 			int icon = data.getIntExtra("icon", -1);
-			Label label = mAdapter.getGroup(requestCode);
+			Label label = mAdapter.getGroup(data.getIntExtra("group", -1));
 			label.setIcon(icon);
 			dbHelper.labelDao.update(label);
 			mAdapter.notifyDataSetChanged();
