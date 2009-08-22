@@ -61,7 +61,7 @@ public class LabelShortcut extends Activity {
 		if (Intent.ACTION_CREATE_SHORTCUT.equals(action)) {
 			final List<Label> labels = dbHelper.labelDao.getLabels();
 			ListView listView = new ListView(this);
-			setTitle(R.string.choose_labels_header);
+			setTitle(R.string.choose_labels_for_shortcut);
 			setContentView(listView);
 			listView.setAdapter(new ArrayAdapter<Label>(this, android.R.layout.simple_list_item_1, labels));
 
