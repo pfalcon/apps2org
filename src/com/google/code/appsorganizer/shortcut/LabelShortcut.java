@@ -26,14 +26,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -99,63 +95,30 @@ public class LabelShortcut extends Activity {
 			setContentView(R.layout.shortcut_grid);
 			GridView mGrid = (GridView) findViewById(R.id.shortcutGrid);
 			mGrid.setColumnWidth(50);
-			final BaseAdapter gridAdapter = new BaseAdapter() {
-				public View getView(int position, View convertView, ViewGroup parent) {
-					ImageView i;
-					TextView t;
-
-					if (convertView == null) {
-						LayoutInflater factory = LayoutInflater.from(LabelShortcut.this);
-						convertView = factory.inflate(R.layout.app_cell_with_icon, null);
-						i = (ImageView) convertView.findViewById(R.id.image);
-						i.setScaleType(ImageView.ScaleType.FIT_CENTER);
-						convertView.setLayoutParams(new GridView.LayoutParams(50, 78));
-						t = (TextView) convertView.findViewById(R.id.name);
-					} else {
-						i = (ImageView) convertView.findViewById(R.id.image);
-						t = (TextView) convertView.findViewById(R.id.name);
-					}
-
-					Application a = applicationList.get(position);
-					i.setImageDrawable(a.getIcon());
-					t.setText(a.getLabel());
-					return convertView;
-				}
-
-				public final int getCount() {
-					return applicationList.size();
-				}
-
-				public final Application getItem(int position) {
-					return applicationList.get(position);
-				}
-
-				public final long getItemId(int position) {
-					return position;
-				}
-			};
+			final AppGridAdapter gridAdapter = new AppGridAdapter(applicationList, this);
 			mGrid.setAdapter(gridAdapter);
 
 			applicationInfoManager.addListener(new DbChangeListener() {
 				public void notifyDataSetChanged() {
 					List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
 					Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
-					applicationList.clear();
-					applicationList.addAll(newList);
-					gridAdapter.notifyDataSetChanged();
+					gridAdapter.setApplicationList(new ArrayList<Application>(newList));
 				}
 			});
 
-			mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-					Application a = applicationList.get(pos);
-					Intent i = a.getIntent();
-					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(i);
-				}
-			});
+			addOnItemClick(mGrid);
 		}
+	}
+
+	private void addOnItemClick(final GridView mGrid) {
+		mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
+				Application a = (Application) mGrid.getAdapter().getItem(pos);
+				Intent i = a.getIntent();
+				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(i);
+			}
+		});
 	}
 
 	private void setupShortcut(Label label) {
