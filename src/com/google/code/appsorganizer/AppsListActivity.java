@@ -40,6 +40,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.model.Application;
 
 public class AppsListActivity extends ListActivity {
 

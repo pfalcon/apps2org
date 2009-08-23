@@ -36,6 +36,7 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.AppLabelSaver;
+import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {

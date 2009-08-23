@@ -25,115 +25,119 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import com.google.code.appsorganizer.Application;
 import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.model.AppLabel;
+import com.google.code.appsorganizer.model.Application;
+import com.google.code.appsorganizer.model.GridObject;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelShortcut extends Activity {
 
-	private static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
+	public static final long ALL_LABELS_ID = -2l;
+	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
+
+	private ApplicationInfoManager applicationInfoManager;
+
+	private DatabaseHelper dbHelper;
+
+	private Label label;
+
+	private boolean allLabelsSelected;
+
+	private static Label ALL_LABELS;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 
-		// Resolve the intent
+		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
+		applicationInfoManager.reloadAppsMap();
+		dbHelper = DatabaseHelper.initOrSingleton(this);
 
+		if (ALL_LABELS == null) {
+			ALL_LABELS = new Label(LabelShortcut.ALL_LABELS_ID, getString(R.string.all_labels), R.drawable.icon);
+		}
 		final Intent intent = getIntent();
-		final String action = intent.getAction();
 
-		// If the intent is a request to create a shortcut, we'll do that and
-		// exit
-		final DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(this);
-
-		if (Intent.ACTION_CREATE_SHORTCUT.equals(action)) {
-			final List<Label> labels = dbHelper.labelDao.getLabels();
-			ListView listView = new ListView(this);
-			setTitle(R.string.choose_labels_for_shortcut);
-			setContentView(listView);
-			listView.setAdapter(new ArrayAdapter<Label>(this, android.R.layout.simple_list_item_1, labels));
-
-			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-				public void onItemClick(AdapterView<?> arg0, View v, int arg2, long arg3) {
-					CharSequence label = ((TextView) v).getText();
-					Label labelObject = getLabelId(label);
-					setupShortcut(labelObject);
-					finish();
-				}
-
-				private Label getLabelId(CharSequence label) {
-					for (Label l : labels) {
-						if (l.getName().equals(label.toString())) {
-							return l;
-						}
-					}
-					throw new RuntimeException("Label " + label + " non trovata");
-				}
-			});
+		long labelId = intent.getLongExtra(LABEL_ID, ALL_LABELS_ID);
+		if (labelId == ALL_LABELS_ID) {
+			allLabelsSelected = true;
+			label = ALL_LABELS;
 		} else {
-			final long labelId = intent.getLongExtra(LABEL_ID, 2);
-			Label label = dbHelper.labelDao.queryById(labelId);
+			allLabelsSelected = false;
+			label = dbHelper.labelDao.queryById(labelId);
+		}
+		getOrCreateGrid();
+		reloadGrid();
+	}
+
+	private void reloadGrid() {
+		if (label != null) {
+			@SuppressWarnings("unchecked")
+			final AppGridAdapter<GridObject> gridAdapter = (AppGridAdapter<GridObject>) grid.getAdapter();
 			setTitle(label.getName());
-
-			List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
-			final ApplicationInfoManager applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-			applicationInfoManager.reloadAppsMap();
-			final List<Application> applicationList = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(apps));
-			setContentView(R.layout.shortcut_grid);
-			GridView mGrid = (GridView) findViewById(R.id.shortcutGrid);
-			mGrid.setColumnWidth(50);
-			final AppGridAdapter gridAdapter = new AppGridAdapter(applicationList, this);
-			mGrid.setAdapter(gridAdapter);
-
-			applicationInfoManager.addListener(new DbChangeListener() {
-				public void notifyDataSetChanged() {
-					List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
-					Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
-					gridAdapter.setApplicationList(new ArrayList<Application>(newList));
-				}
-			});
-
-			addOnItemClick(mGrid);
+			if (label.getId() == ALL_LABELS_ID) {
+				List<Label> labels = dbHelper.labelDao.getLabels();
+				gridAdapter.setObjectList(labels);
+			} else {
+				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(label.getId());
+				Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
+				gridAdapter.setObjectList(new ArrayList<Application>(newList));
+			}
 		}
 	}
 
-	private void addOnItemClick(final GridView mGrid) {
-		mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-				Application a = (Application) mGrid.getAdapter().getItem(pos);
-				Intent i = a.getIntent();
-				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(i);
-			}
-		});
+	private GridView grid;
+
+	private GridView getOrCreateGrid() {
+		if (grid == null) {
+			setContentView(R.layout.shortcut_grid);
+
+			grid = (GridView) findViewById(R.id.shortcutGrid);
+			grid.setColumnWidth(50);
+			final AppGridAdapter<GridObject> adapter = new AppGridAdapter<GridObject>(new ArrayList<GridObject>(), this);
+			grid.setAdapter(adapter);
+
+			applicationInfoManager.addListener(new DbChangeListener() {
+				public void notifyDataSetChanged() {
+					reloadGrid();
+				}
+			});
+
+			grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
+					if (label.getId() == ALL_LABELS_ID) {
+						label = (Label) adapter.getItem(pos);
+						reloadGrid();
+					} else {
+						Application a = (Application) grid.getAdapter().getItem(pos);
+						Intent i = a.getIntent();
+						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						startActivity(i);
+					}
+				}
+			});
+		}
+		return grid;
 	}
 
-	private void setupShortcut(Label label) {
-		Intent shortcutIntent = new Intent(Intent.ACTION_MAIN);
-		shortcutIntent.setClassName(this, this.getClass().getName());
-		shortcutIntent.putExtra(LABEL_ID, label.getId());
-		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-		Intent intent = new Intent();
-		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, label.getName());
-		Parcelable iconResource = Intent.ShortcutIconResource.fromContext(this, label.getIcon());
-		intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
-
-		setResult(RESULT_OK, intent);
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK && allLabelsSelected) {
+			if (label != null && label.getId() != ALL_LABELS_ID) {
+				label = ALL_LABELS;
+				reloadGrid();
+				return true;
+			}
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }

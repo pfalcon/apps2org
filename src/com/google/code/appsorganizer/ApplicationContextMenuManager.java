@@ -18,6 +18,8 @@
  */
 package com.google.code.appsorganizer;
 
+import com.google.code.appsorganizer.model.Application;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;

@@ -48,9 +48,11 @@ import android.net.Uri;
 import android.os.Handler;
 import android.provider.BaseColumns;
 import android.provider.LiveFolders;
+import android.widget.ImageView;
 
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.model.AppLabel;
+import com.google.code.appsorganizer.model.Application;
 
 public class ApplicationInfoManager {
 
@@ -323,6 +325,10 @@ public class ApplicationInfoManager {
 				bitmap.compress(CompressFormat.JPEG, 100, os);
 				return os.toByteArray();
 			}
+		}
+
+		public void showIcon(ImageView imageView) {
+			imageView.setImageDrawable(getIcon());
 		}
 	}
 

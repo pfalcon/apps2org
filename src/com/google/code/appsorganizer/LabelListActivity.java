@@ -47,6 +47,7 @@ import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.AppLabel;
+import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelListActivity extends ExpandableListActivity {

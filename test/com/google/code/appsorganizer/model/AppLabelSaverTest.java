@@ -24,7 +24,6 @@ import java.util.List;
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.google.code.appsorganizer.AppLabelBinding;
-import com.google.code.appsorganizer.Application;
 import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.AppsListActivity;
 import com.google.code.appsorganizer.MockApplication;

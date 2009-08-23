@@ -16,19 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.google.code.appsorganizer;
+package com.google.code.appsorganizer.model;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
-public interface Application extends Comparable<Application> {
+public interface Application extends Comparable<Application>, GridObject {
 
 	Long getId();
 
 	String getName();
 
-	String getLabel();
+	Drawable getIcon();
 
 	String getPackage();
 
@@ -37,8 +37,6 @@ public interface Application extends Comparable<Application> {
 	Intent getIntent();
 
 	Uri getIntentUri();
-
-	Drawable getIcon();
 
 	byte[] getIconBytes();
 

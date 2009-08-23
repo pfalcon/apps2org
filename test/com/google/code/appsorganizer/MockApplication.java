@@ -21,6 +21,9 @@ package com.google.code.appsorganizer;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.widget.ImageView;
+
+import com.google.code.appsorganizer.model.Application;
 
 /**
  * @author fabio
@@ -123,6 +126,11 @@ public class MockApplication implements Application {
 	public byte[] getIconBytes() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void showIcon(ImageView imageView) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.google.code.appsorganizer.Application;
+import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {

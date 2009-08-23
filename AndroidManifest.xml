@@ -18,7 +18,7 @@
 		<activity android:name=".HomeActivity"></activity>
 		<activity android:name=".AppsListActivity"></activity>
 		<activity android:name=".LabelListActivity"></activity>
-		<activity android:name=".chooseicon.ChooseIconActivity" android:launchMode="singleInstance"></activity>
+		<activity android:name=".chooseicon.ChooseIconActivity"></activity>
         <!-- This section of sample code shows how your application can add shortcuts to -->
         <!-- the launcher (home screen).  Shortcuts have a three step life cycle. -->
         
@@ -54,8 +54,8 @@
         <!-- intent-filter.  This gives you a way to set the text (and optionally the -->
         <!-- icon) that will be seen in the launcher's create-shortcut user interface. -->
 
-        <activity-alias android:name=".app.CreateShortcuts"
-            android:targetActivity=".shortcut.LabelShortcut"
+        <activity 
+            android:name=".shortcut.ShortcutCreator"
             android:label="@string/app_name">
 
             <!--  This intent-filter allows your shortcuts to be created in the launcher. -->
@@ -64,7 +64,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
-        </activity-alias>
+        </activity>
+        
         	</application>
 	<uses-sdk android:minSdkVersion="3" />
 	<instrumentation android:name="android.test.InstrumentationTestRunner"

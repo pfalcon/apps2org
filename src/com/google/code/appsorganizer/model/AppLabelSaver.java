@@ -21,7 +21,6 @@ package com.google.code.appsorganizer.model;
 import java.util.List;
 
 import com.google.code.appsorganizer.AppLabelBinding;
-import com.google.code.appsorganizer.Application;
 import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 

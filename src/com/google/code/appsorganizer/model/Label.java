@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import android.widget.ImageView;
+
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.ObjectWithId;
 
@@ -32,7 +34,7 @@ import com.google.code.appsorganizer.db.ObjectWithId;
  * @author fabio
  * 
  */
-public class Label extends ObjectWithId implements Comparable<Label> {
+public class Label extends ObjectWithId implements Comparable<Label>, GridObject {
 
 	private String name;
 	private Integer iconDb;
@@ -128,6 +130,12 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 	public Label() {
 	}
 
+	public Label(Long id, String name, Integer icon) {
+		setId(id);
+		this.name = name;
+		setIcon(icon);
+	}
+
 	public Label(String name) {
 		this.name = name;
 	}
@@ -196,5 +204,13 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 
 	public void setIconDb(Integer icon) {
 		this.iconDb = icon;
+	}
+
+	public String getLabel() {
+		return name;
+	}
+
+	public void showIcon(ImageView imageView) {
+		imageView.setImageResource(getIcon());
 	}
 }

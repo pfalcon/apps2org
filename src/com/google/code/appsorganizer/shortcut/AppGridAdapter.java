@@ -29,16 +29,16 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.code.appsorganizer.Application;
 import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.model.GridObject;
 
-public final class AppGridAdapter extends BaseAdapter {
-	private List<Application> applicationList;
+public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
+	private List<? extends T> objectList;
 
 	private final Context context;
 
-	public AppGridAdapter(List<Application> applicationList, Context context) {
-		this.applicationList = applicationList;
+	public AppGridAdapter(List<? extends T> objectList, Context context) {
+		this.objectList = objectList;
 		this.context = context;
 	}
 
@@ -58,26 +58,26 @@ public final class AppGridAdapter extends BaseAdapter {
 			t = (TextView) convertView.findViewById(R.id.name);
 		}
 
-		Application a = applicationList.get(position);
-		i.setImageDrawable(a.getIcon());
+		T a = objectList.get(position);
+		a.showIcon(i);
 		t.setText(a.getLabel());
 		return convertView;
 	}
 
 	public final int getCount() {
-		return applicationList.size();
+		return objectList.size();
 	}
 
-	public final Application getItem(int position) {
-		return applicationList.get(position);
+	public final T getItem(int position) {
+		return objectList.get(position);
 	}
 
 	public final long getItemId(int position) {
 		return position;
 	}
 
-	public void setApplicationList(List<Application> applicationList) {
-		this.applicationList = applicationList;
+	public void setObjectList(List<? extends T> objectList) {
+		this.objectList = objectList;
 		this.notifyDataSetChanged();
 	}
 }
