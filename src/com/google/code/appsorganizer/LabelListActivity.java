@@ -57,6 +57,8 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
+	private ChooseAppsDialogCreator chooseAppsDialogCreator;
+
 	private TextEntryDialog textEntryDialog;
 
 	private ApplicationInfoManager applicationInfoManager;
@@ -77,8 +79,10 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 		genericDialogManager = new GenericDialogManager(this);
 		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
+		chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
 		textEntryDialog = new TextEntryDialog(getString(R.string.rename_label), getString(R.string.label_name));
 		genericDialogManager.addDialog(chooseLabelDialog);
+		genericDialogManager.addDialog(chooseAppsDialogCreator);
 		genericDialogManager.addDialog(textEntryDialog);
 
 		getExpandableListView().setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
@@ -117,9 +121,11 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 			menu.setHeaderTitle(label.getName());
 			MenuItem renameItem = menu.add(0, 0, 0, R.string.rename);
 			MenuItem changeIconItem = menu.add(0, 1, 1, R.string.change_icon);
+			MenuItem chooseAppsItem = menu.add(0, 2, 2, R.string.select_apps);
 			if (label.getId() == -1l) {
 				renameItem.setEnabled(false);
 				changeIconItem.setEnabled(false);
+				chooseAppsItem.setEnabled(false);
 			}
 		}
 	}
@@ -151,6 +157,9 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 				intent.putExtra("group", groupPos);
 				startActivityForResult(intent, 2);
 				return true;
+			} else if (item.getItemId() == 2) {
+				chooseAppsDialogCreator.setCurrentLabel(label);
+				showDialog(chooseAppsDialogCreator.getDialogId());
 			}
 		}
 

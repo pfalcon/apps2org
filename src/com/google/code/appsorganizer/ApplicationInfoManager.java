@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,24 +74,21 @@ public class ApplicationInfoManager {
 		apps = createAppsArray(handler);
 	}
 
-	// private int tot = 4;
-
 	public void loadAppsMap() {
 		synchronized (this) {
+			Map<String, Application> oldApps = applicationMap;
 			applicationMap = new HashMap<String, Application>();
 			List<ResolveInfo> installedApplications = getAllResolveInfo();
 			long pos = 0;
-			for (Iterator<ResolveInfo> iterator = installedApplications.iterator(); iterator.hasNext();) {
-				ResolveInfo resolveInfo = iterator.next();
+			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
-					Application app = new ApplicationImpl(resolveInfo.activityInfo, pos++);
+					Application app = oldApps.get(resolveInfo.activityInfo.name);
+					if (app == null) {
+						app = new ApplicationImpl(resolveInfo.activityInfo, pos++);
+					}
 					applicationMap.put(app.getName(), app);
 				}
-				// if (pos == tot) {
-				// tot++;
-				// break;
-				// }
 			}
 		}
 	}
@@ -132,8 +128,8 @@ public class ApplicationInfoManager {
 		Collection<Application> values = applicationMap.values();
 		for (Application app : values) {
 			l.add(app);
-			app.getLabel();
-			app.getIcon();
+			// app.getLabel();
+			// app.getIcon();
 			if (handler != null) {
 				handler.sendEmptyMessage(l.size());
 			}
@@ -330,6 +326,12 @@ public class ApplicationInfoManager {
 		public void showIcon(ImageView imageView) {
 			imageView.setImageDrawable(getIcon());
 		}
+
+		@Override
+		public String toString() {
+			return getLabel();
+		}
+
 	}
 
 	public Cursor convertToCursor(List<AppLabel> l, String[] cursorColumns) throws NameNotFoundException {

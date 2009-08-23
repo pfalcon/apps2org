@@ -18,7 +18,7 @@
  */
 package com.google.code.appsorganizer;
 
-public class AppLabelBinding {
+public class AppLabelBinding implements Comparable<AppLabelBinding> {
 
 	private Long appLabelId;
 	private Long labelId;
@@ -109,4 +109,15 @@ public class AppLabelBinding {
 		this.labelId = labelId;
 	}
 
+	@Override
+	public String toString() {
+		return label;
+	}
+
+	public int compareTo(AppLabelBinding another) {
+		if (checked != another.checked) {
+			return checked ? -1 : 1;
+		}
+		return label.compareToIgnoreCase(another.label);
+	}
 }

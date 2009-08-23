@@ -196,7 +196,7 @@ public abstract class DbDao<T> {
 		}
 	}
 
-	private String[] columnsToStringArray(List<DbColumns<T>> cols) {
+	protected String[] columnsToStringArray(List<DbColumns<T>> cols) {
 		String[] ret = new String[cols.size()];
 		int pos = 0;
 		for (DbColumns<T> dbColumns : cols) {

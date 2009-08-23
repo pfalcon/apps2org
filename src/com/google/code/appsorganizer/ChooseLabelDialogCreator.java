@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -54,14 +55,23 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		this.applicationInfoManager = applicationInfoManager;
 	}
 
+	private ListView listView;
+
 	@Override
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		adapter = new ChooseLabelListAdapter(owner, getAllLabels(application.getName()));
+		List<AppLabelBinding> allLabels = getAllLabels(application.getName());
+		adapter = new ChooseLabelListAdapter(owner, allLabels);
+		listView.setAdapter(adapter);
 
-		ListView l = (ListView) dialog.findViewById(R.id.labelList);
-		l.setAdapter(adapter);
+		int pos = 0;
+		for (AppLabelBinding appLabelBinding : allLabels) {
+			if (appLabelBinding.isChecked()) {
+				listView.setItemChecked(pos, true);
+			}
+			pos++;
+		}
 
 		ImageButton btn = (ImageButton) dialog.findViewById(R.id.newLabelButton);
 		btn.setOnClickListener(new View.OnClickListener() {
@@ -69,6 +79,9 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 				CharSequence t = tv.getText();
 				if (t != null && t.length() > 0) {
 					adapter.addLabel(t.toString());
+					for (int i = 0; i < adapter.getCount(); i++) {
+						listView.setItemChecked(i, adapter.getItem(i).isChecked());
+					}
 				}
 			}
 		});
@@ -97,6 +110,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 			b.setLabelId(l.getId());
 			ret.add(b);
 		}
+		Collections.sort(ret);
 		return ret;
 	}
 
@@ -104,11 +118,18 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public Dialog createDialog() {
 		View body = getChooseDialogBody();
 
+		listView = (ListView) body.findViewById(R.id.labelList);
+		listView.setItemsCanFocus(false);
+		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+
 		AlertDialog.Builder builder = new AlertDialog.Builder(owner);
 		builder = builder.setTitle(R.string.choose_labels_header);
 		builder = builder.setView(body);
 		builder = builder.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
+				for (int i = 0; i < adapter.getCount(); i++) {
+					adapter.getItem(i).setChecked(listView.isItemChecked(i));
+				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
 				new AppLabelSaver(labelAdapter, applicationInfoManager).save(application, modifiedLabels);
 			}

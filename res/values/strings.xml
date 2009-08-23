@@ -24,4 +24,5 @@
 	<string name="alert_0_4">Since version 0.4 live folders are no longer supported. Pleace replace existing live folders with shortcuts</string>
 	<string name="choose_labels_for_shortcut">Choose labels</string>
 	<string name="all_labels">All labels</string>
+	<string name="select_apps">Select apps</string>
 </resources>

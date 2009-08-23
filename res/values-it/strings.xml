@@ -24,4 +24,5 @@
 	<string name="alert_0_4">Dalla versione 0.4 i live folders non sono più supportati. Sostituire i live folder attualmenti usati con collegamenti nella home</string>
 	<string name="choose_labels_for_shortcut">Scegli label</string>
 	<string name="all_labels">All labels</string>
+	<string name="select_apps">Seleziona applicazioni</string>
 </resources>
