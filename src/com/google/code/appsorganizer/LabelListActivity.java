@@ -50,7 +50,7 @@ import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
-public class LabelListActivity extends ExpandableListActivity {
+public class LabelListActivity extends ExpandableListActivity implements DbChangeListener {
 	private MyExpandableListAdapter mAdapter;
 
 	private DatabaseHelper dbHelper;
@@ -71,11 +71,7 @@ public class LabelListActivity extends ExpandableListActivity {
 
 		mAdapter = new MyExpandableListAdapter();
 
-		applicationInfoManager.addListener(new DbChangeListener() {
-			public void notifyDataSetChanged() {
-				mAdapter.reloadAndNotify();
-			}
-		});
+		applicationInfoManager.addListener(this);
 
 		setListAdapter(mAdapter);
 
@@ -95,6 +91,16 @@ public class LabelListActivity extends ExpandableListActivity {
 		});
 
 		registerForContextMenu(getExpandableListView());
+	}
+
+	public void dataSetChanged() {
+		mAdapter.reloadAndNotify();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		applicationInfoManager.removeListener(this);
 	}
 
 	@Override

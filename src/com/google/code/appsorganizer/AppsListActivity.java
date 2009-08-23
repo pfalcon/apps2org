@@ -42,7 +42,7 @@ import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.model.Application;
 
-public class AppsListActivity extends ListActivity {
+public class AppsListActivity extends ListActivity implements DbChangeListener {
 
 	private DatabaseHelper dbHelper;
 
@@ -86,19 +86,16 @@ public class AppsListActivity extends ListActivity {
 				return v;
 			}
 		};
-		applicationInfoManager.addListener(new DbChangeListener() {
-			public void notifyDataSetChanged() {
-				appsAdapter.clear();
-				List<Application> appsArray = applicationInfoManager.getAppsArray(null);
-				for (Application application : appsArray) {
-					appsAdapter.add(application);
-				}
-				appsAdapter.notifyDataSetChanged();
-			}
-		});
+		applicationInfoManager.addListener(this);
 		setListAdapter(appsAdapter);
 
 		registerForContextMenu(getListView());
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		applicationInfoManager.removeListener(this);
 	}
 
 	@Override
@@ -134,6 +131,17 @@ public class AppsListActivity extends ListActivity {
 
 	public ChooseLabelDialogCreator getChooseLabelDialog() {
 		return chooseLabelDialog;
+	}
+
+	public void dataSetChanged() {
+		@SuppressWarnings("unchecked")
+		ArrayAdapter<Application> appsAdapter = (ArrayAdapter<Application>) getListAdapter();
+		appsAdapter.clear();
+		List<Application> appsArray = applicationInfoManager.getAppsArray(null);
+		for (Application application : appsArray) {
+			appsAdapter.add(application);
+		}
+		appsAdapter.notifyDataSetChanged();
 	}
 
 }

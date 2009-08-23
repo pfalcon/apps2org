@@ -39,7 +39,7 @@ import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.GridObject;
 import com.google.code.appsorganizer.model.Label;
 
-public class LabelShortcut extends Activity {
+public class LabelShortcut extends Activity implements DbChangeListener {
 
 	public static final long ALL_LABELS_ID = -2l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
@@ -79,6 +79,12 @@ public class LabelShortcut extends Activity {
 		reloadGrid();
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		applicationInfoManager.removeListener(this);
+	}
+
 	private void reloadGrid() {
 		if (label != null) {
 			@SuppressWarnings("unchecked")
@@ -106,11 +112,7 @@ public class LabelShortcut extends Activity {
 			final AppGridAdapter<GridObject> adapter = new AppGridAdapter<GridObject>(new ArrayList<GridObject>(), this);
 			grid.setAdapter(adapter);
 
-			applicationInfoManager.addListener(new DbChangeListener() {
-				public void notifyDataSetChanged() {
-					reloadGrid();
-				}
-			});
+			applicationInfoManager.addListener(this);
 
 			grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
@@ -139,5 +141,9 @@ public class LabelShortcut extends Activity {
 			}
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	public void dataSetChanged() {
+		reloadGrid();
 	}
 }

@@ -423,7 +423,7 @@ public class ApplicationInfoManager {
 
 	public void notifyDataSetChanged() {
 		for (DbChangeListener a : listeners) {
-			a.notifyDataSetChanged();
+			a.dataSetChanged();
 		}
 	}
 }
