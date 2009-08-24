@@ -75,7 +75,7 @@ public class ShortcutCreator extends ListActivity {
 		Intent shortcutIntent = new Intent(Intent.ACTION_MAIN);
 		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		shortcutIntent.setClassName(this, getClass().getName());
+		shortcutIntent.setClassName(this, LabelShortcut.class.getName());
 		shortcutIntent.putExtra(LabelShortcut.LABEL_ID, id);
 		return shortcutIntent;
 	}

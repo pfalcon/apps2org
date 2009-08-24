@@ -28,14 +28,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.code.appsorganizer.ApplicationInfoManager;
@@ -67,7 +66,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private TextView titleView;
 
-	private ImageView titleButton;
+	private Button titleButton;
 
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
@@ -94,9 +93,9 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		getOrCreateGrid();
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_shortcut_title);
 		titleView = (TextView) findViewById(R.id.title_text);
-		titleButton = (ImageView) findViewById(R.id.editButton);
+		// titleButton = (Button) findViewById(R.id.editButton);
 
-		long labelId = intent.getLongExtra(LABEL_ID, ALL_LABELS_ID);
+		long labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_LABELS_ID);
 		if (labelId == ALL_LABELS_ID) {
 			allLabelsSelected = true;
 			label = ALL_LABELS;
@@ -122,19 +121,23 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			if (label.getId() == ALL_LABELS_ID) {
 				List<Label> labels = dbHelper.labelDao.getLabels();
 				gridAdapter.setObjectList(labels);
-				titleButton.setVisibility(View.INVISIBLE);
+				if (titleButton != null) {
+					titleButton.setVisibility(View.INVISIBLE);
+				}
 			} else {
 				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(label.getId());
 				Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
 				gridAdapter.setObjectList(new ArrayList<Application>(newList));
 
-				titleButton.setVisibility(View.VISIBLE);
-				titleButton.setOnClickListener(new OnClickListener() {
-					public void onClick(View v) {
-						chooseAppsDialogCreator.setCurrentLabel(label);
-						showDialog(chooseAppsDialogCreator.getDialogId());
-					}
-				});
+				if (titleButton != null) {
+					titleButton.setVisibility(View.VISIBLE);
+					titleButton.setOnClickListener(new OnClickListener() {
+						public void onClick(View v) {
+							chooseAppsDialogCreator.setCurrentLabel(label);
+							showDialog(chooseAppsDialogCreator.getDialogId());
+						}
+					});
+				}
 			}
 		}
 	}
@@ -187,18 +190,17 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Hold on to this
-		// mMenu = menu;
-
-		// Inflate the currently selected menu XML resource.
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.home_menu, menu);
-		menu.getItem(0).setIcon(android.R.drawable.ic_menu_rotate);
-		// TODO info dialog
-		menu.getItem(1).setVisible(false);
-		menu.getItem(1).setIcon(android.R.drawable.ic_menu_info_details);
-
 		return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		boolean ret = super.onPrepareOptionsMenu(menu);
+		if (label.getId() != ALL_LABELS_ID) {
+			chooseAppsDialogCreator.setCurrentLabel(label);
+			showDialog(chooseAppsDialogCreator.getDialogId());
+		}
+		return ret;
 	}
 
 	@Override

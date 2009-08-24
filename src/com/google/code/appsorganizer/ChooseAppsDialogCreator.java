@@ -89,7 +89,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(owner);
-		builder = builder.setTitle(R.string.choose_labels_header);
+		builder = builder.setTitle(R.string.select_apps);
 		builder = builder.setView(listView);
 		builder = builder.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {

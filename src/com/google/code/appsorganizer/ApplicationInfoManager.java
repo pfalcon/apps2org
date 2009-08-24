@@ -128,8 +128,8 @@ public class ApplicationInfoManager {
 		Collection<Application> values = applicationMap.values();
 		for (Application app : values) {
 			l.add(app);
-			// app.getLabel();
-			// app.getIcon();
+			app.getLabel();
+			app.getIcon();
 			if (handler != null) {
 				handler.sendEmptyMessage(l.size());
 			}
