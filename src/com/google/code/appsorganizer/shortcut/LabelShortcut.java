@@ -26,19 +26,19 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
 
 import com.google.code.appsorganizer.ApplicationInfoManager;
-import com.google.code.appsorganizer.AppsReloader;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.DatabaseHelper;
@@ -66,45 +66,62 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private TextView titleView;
 
-	private Button titleButton;
-
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
 	private GenericDialogManager genericDialogManager;
+
+	private final Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			if (msg.what == -1) {
+				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
+				setContentView(mainView);
+			} else {
+				titleView.setText(label.getName());
+			}
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 
-		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-		applicationInfoManager.reloadAppsMap();
-		dbHelper = DatabaseHelper.initOrSingleton(this);
-
-		genericDialogManager = new GenericDialogManager(this);
-		chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
-		genericDialogManager.addDialog(chooseAppsDialogCreator);
-
-		if (ALL_LABELS == null) {
-			ALL_LABELS = new Label(LabelShortcut.ALL_LABELS_ID, getString(R.string.all_labels), R.drawable.icon);
-		}
-		final Intent intent = getIntent();
-
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		getOrCreateGrid();
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_shortcut_title);
 		titleView = (TextView) findViewById(R.id.title_text);
-		// titleButton = (Button) findViewById(R.id.editButton);
 
-		long labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_LABELS_ID);
-		if (labelId == ALL_LABELS_ID) {
-			allLabelsSelected = true;
-			label = ALL_LABELS;
-		} else {
-			allLabelsSelected = false;
-			label = dbHelper.labelDao.queryById(labelId);
-		}
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
+				applicationInfoManager.addListener(LabelShortcut.this);
 
-		reloadGrid();
+				applicationInfoManager.reloadAppsMap();
+				dbHelper = DatabaseHelper.initOrSingleton(LabelShortcut.this);
+
+				genericDialogManager = new GenericDialogManager(LabelShortcut.this);
+				chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
+				genericDialogManager.addDialog(chooseAppsDialogCreator);
+
+				if (ALL_LABELS == null) {
+					ALL_LABELS = new Label(LabelShortcut.ALL_LABELS_ID, getString(R.string.all_labels), R.drawable.icon);
+				}
+				final Intent intent = getIntent();
+
+				long labelId = intent.getLongExtra(LABEL_ID, ALL_LABELS_ID);
+				if (labelId == ALL_LABELS_ID) {
+					allLabelsSelected = true;
+					label = ALL_LABELS;
+				} else {
+					allLabelsSelected = false;
+					label = dbHelper.labelDao.queryById(labelId);
+				}
+				reloadGrid();
+			}
+		};
+		setContentView(R.layout.shortcut_progress);
+		t.start();
 	}
 
 	@Override
@@ -115,45 +132,41 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private void reloadGrid() {
 		if (label != null) {
+			handler.sendEmptyMessage(-2);
+
 			@SuppressWarnings("unchecked")
 			final AppGridAdapter<GridObject> gridAdapter = (AppGridAdapter<GridObject>) grid.getAdapter();
-			titleView.setText(label.getName());
 			if (label.getId() == ALL_LABELS_ID) {
 				List<Label> labels = dbHelper.labelDao.getLabels();
 				gridAdapter.setObjectList(labels);
-				if (titleButton != null) {
-					titleButton.setVisibility(View.INVISIBLE);
-				}
+				handler.sendEmptyMessage(-1);
 			} else {
 				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(label.getId());
 				Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
-				gridAdapter.setObjectList(new ArrayList<Application>(newList));
-
-				if (titleButton != null) {
-					titleButton.setVisibility(View.VISIBLE);
-					titleButton.setOnClickListener(new OnClickListener() {
-						public void onClick(View v) {
-							chooseAppsDialogCreator.setCurrentLabel(label);
-							showDialog(chooseAppsDialogCreator.getDialogId());
-						}
-					});
+				for (Application a : newList) {
+					a.getLabel();
+					a.getIcon();
 				}
+				gridAdapter.setObjectList(new ArrayList<Application>(newList));
+				handler.sendEmptyMessage(-1);
 			}
 		}
 	}
 
 	private GridView grid;
 
+	private View mainView;
+
 	private GridView getOrCreateGrid() {
 		if (grid == null) {
-			setContentView(R.layout.shortcut_grid);
+			LayoutInflater layoutInflater = LayoutInflater.from(this);
+			mainView = layoutInflater.inflate(R.layout.shortcut_grid, null);
+			setContentView(mainView);
 
 			grid = (GridView) findViewById(R.id.shortcutGrid);
 			grid.setColumnWidth(50);
 			final AppGridAdapter<GridObject> adapter = new AppGridAdapter<GridObject>(new ArrayList<GridObject>(), this);
 			grid.setAdapter(adapter);
-
-			applicationInfoManager.addListener(this);
 
 			grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
@@ -190,26 +203,21 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, 0, 0, R.string.select_apps);
 		return true;
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		boolean ret = super.onPrepareOptionsMenu(menu);
-		if (label.getId() != ALL_LABELS_ID) {
-			chooseAppsDialogCreator.setCurrentLabel(label);
-			showDialog(chooseAppsDialogCreator.getDialogId());
-		}
-		return ret;
+		return label != null && label.getId() != ALL_LABELS_ID;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.reload_apps:
-			new AppsReloader(this, false).reload();
-			return true;
-		case R.id.about:
+		case 0:
+			chooseAppsDialogCreator.setCurrentLabel(label);
+			showDialog(chooseAppsDialogCreator.getDialogId());
 			return true;
 		}
 		return false;

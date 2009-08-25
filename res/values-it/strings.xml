@@ -25,4 +25,5 @@
 	<string name="choose_labels_for_shortcut">Scegli label</string>
 	<string name="all_labels">All labels</string>
 	<string name="select_apps">Seleziona applicazioni</string>
+	<string name="loading_shortcut_grid">Caricamento in corso...</string>
 </resources>

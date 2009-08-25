@@ -78,6 +78,5 @@ public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
 
 	public void setObjectList(List<? extends T> objectList) {
 		this.objectList = objectList;
-		this.notifyDataSetChanged();
 	}
 }
