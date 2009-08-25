@@ -133,4 +133,9 @@ public class MockApplication implements Application {
 
 	}
 
+	public void loadIcon() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

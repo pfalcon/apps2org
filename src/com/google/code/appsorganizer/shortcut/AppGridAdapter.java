@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.GridObject;
 
 public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
@@ -43,25 +44,35 @@ public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
-		ImageView i;
-		TextView t;
+		ViewHolder holder;
 
 		if (convertView == null) {
 			LayoutInflater factory = LayoutInflater.from(context);
 			convertView = factory.inflate(R.layout.app_cell_with_icon, null);
-			i = (ImageView) convertView.findViewById(R.id.image);
-			i.setScaleType(ImageView.ScaleType.FIT_CENTER);
+			holder = new ViewHolder();
+			holder.icon = (ImageView) convertView.findViewById(R.id.image);
+			holder.icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
 			convertView.setLayoutParams(new GridView.LayoutParams(50, 78));
-			t = (TextView) convertView.findViewById(R.id.name);
+			holder.text = (TextView) convertView.findViewById(R.id.name);
+
+			convertView.setTag(holder);
 		} else {
-			i = (ImageView) convertView.findViewById(R.id.image);
-			t = (TextView) convertView.findViewById(R.id.name);
+			holder = (ViewHolder) convertView.getTag();
 		}
 
 		T a = objectList.get(position);
-		a.showIcon(i);
-		t.setText(a.getLabel());
+		if (!(a instanceof Application) || ((Application) a).getIcon() != null) {
+			a.showIcon(holder.icon);
+		} else {
+			holder.icon.setImageDrawable(LabelShortcut.DRAWABLE_DEFAULT);
+		}
+		holder.text.setText(a.getLabel());
 		return convertView;
+	}
+
+	private static final class ViewHolder {
+		TextView text;
+		ImageView icon;
 	}
 
 	public final int getCount() {

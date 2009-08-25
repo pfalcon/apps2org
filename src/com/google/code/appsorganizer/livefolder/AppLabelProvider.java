@@ -100,7 +100,7 @@ public class AppLabelProvider extends ContentProvider {
 			Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
 			try {
 				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
-				applicationInfoManager.reloadAppsMap();
+				applicationInfoManager.getOrReloadAppsMap(dbHelper.appCacheDao);
 				return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
 			} catch (Throwable e) {
 				return sErrorCursor;

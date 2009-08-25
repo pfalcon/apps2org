@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.db;
 
-import java.util.Collections;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 
@@ -62,7 +60,7 @@ public abstract class ObjectWithIdDao<T extends ObjectWithId> extends DbDao<T> {
 	}
 
 	public T queryById(Long id) {
-		Cursor c = query(columns, Collections.singletonMap(ID, id.toString()), null, null, null);
+		Cursor c = query(columns, ID, id.toString(), null, null, null);
 		return convertCursorToObject(c, columns);
 	}
 

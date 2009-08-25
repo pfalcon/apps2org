@@ -34,8 +34,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public final AppLabelDao appsLabelDao;
 	public final LabelDao labelDao;
+	public final AppCacheDao appCacheDao;
 
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 
 	private static DatabaseHelper singleton;
 
@@ -58,15 +59,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		super(context, "data", null, DATABASE_VERSION);
 		labelDao = new LabelDao();
 		appsLabelDao = new AppLabelDao();
+		appCacheDao = new AppCacheDao();
 		SQLiteDatabase db = getWritableDatabase();
 		labelDao.setDb(db);
 		appsLabelDao.setDb(db);
+		appCacheDao.setDb(db);
 	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(labelDao.getCreateTableScript());
 		db.execSQL(appsLabelDao.getCreateTableScript());
+		db.execSQL(appCacheDao.getCreateTableScript());
 
 		long internetId = insertLabel(db, "Internet", Label.convertToIconDb(R.drawable.globe));
 		long androidId = insertLabel(db, "Android", Label.convertToIconDb(R.drawable.pda_black));
@@ -101,18 +105,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		insertApp(db, "com.android.contacts.DialtactsContactsEntryActivity", id);
 		insertApp(db, "com.android.mms.ui.ConversationList", id);
 		insertApp(db, "com.android.calculator2.Calculator", id);
-
-		// insertApp(db, "com.android.contacts", id);
-		// insertApp(db, "com.android.mms", id);
-		// insertApp(db, "com.android.vending", id);
-		//
-		// insertApp(db, "com.android.launcher", id);
-		// insertApp(db, "com.android.music", id);
-		//
-		// insertApp(db, "com.android.calculator2", id);
-		// insertApp(db, "com.android.settings", id);
-		// insertApp(db, "com.android.camera", id);
-		// insertApp(db, "com.android.alarmclock", id);
 	}
 
 	private void insertInterneApps(SQLiteDatabase db, long id) {
@@ -127,13 +119,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
-		// if (oldVersion <= 20) {
-		// db.execSQL("alter table " + labelDao.getName() + " add " +
-		// LabelDao.ICON.getName() + " " + LabelDao.ICON.getDescription());
-		// }
-		db.execSQL(appsLabelDao.getDropTableScript());
-		db.execSQL(labelDao.getDropTableScript());
-		onCreate(db);
+		if (oldVersion <= 11) {
+			db.execSQL(appCacheDao.getCreateTableScript());
+		}
+		// db.execSQL(appsLabelDao.getDropTableScript());
+		// db.execSQL(labelDao.getDropTableScript());
+		// onCreate(db);
 	}
 
 	private long insertLabel(SQLiteDatabase db, String value, Integer icon) {

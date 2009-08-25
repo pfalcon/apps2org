@@ -18,7 +18,6 @@
  */
 package com.google.code.appsorganizer.db;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -69,12 +68,19 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public String getLabelsString(Application application) {
 		StringBuilder b = new StringBuilder();
-		List<Label> l = getLabels(application);
-		for (Label label : l) {
-			if (b.length() > 0) {
-				b.append(", ");
+		Cursor c = db.rawQuery(
+				"select l.label from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
+				new String[] { application.getName() });
+		try {
+			// c.moveToFirst();
+			while (c.moveToNext()) {
+				if (b.length() > 0) {
+					b.append(", ");
+				}
+				b.append(c.getString(0));
 			}
-			b.append(label.getName());
+		} finally {
+			c.close();
 		}
 		return b.toString();
 	}
@@ -111,6 +117,6 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public Label getLabel(String name) {
-		return queryForObject(columns, Collections.singletonMap(LABEL, name), null, null);
+		return queryForObject(columns, LABEL, name, null, null);
 	}
 }

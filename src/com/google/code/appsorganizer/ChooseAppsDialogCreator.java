@@ -66,7 +66,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		checkedApps = createSet(l1);
 		List<Application> allApps = new ArrayList<Application>();
 		allApps.addAll(l1);
-		Collection<Application> tmp = applicationInfoManager.getAppsArray(null);
+		ArrayList<Application> tmp = applicationInfoManager.getAppsArray();
 		for (Application application : tmp) {
 			if (!checkedApps.contains(application.getName())) {
 				allApps.add(application);
@@ -77,7 +77,8 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 		listView.setAdapter(adapter);
 
-		for (int i = 0; i < l1.size(); i++) {
+		int size = l1.size();
+		for (int i = 0; i < size; i++) {
 			listView.setItemChecked(i, true);
 		}
 	}

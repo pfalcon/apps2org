@@ -18,27 +18,34 @@
  */
 package com.google.code.appsorganizer.model;
 
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import com.google.code.appsorganizer.db.ObjectWithId;
 
-public interface Application extends Comparable<Application>, GridObject {
+public class AppCache extends ObjectWithId {
 
-	Long getId();
+	private String name;
+	private String label;
 
-	String getName();
+	public AppCache() {
+	}
 
-	Drawable getIcon();
+	public AppCache(String name, String label) {
+		this.name = name;
+		this.label = label;
+	}
 
-	String getPackage();
+	public String getName() {
+		return name;
+	}
 
-	int getIconResource();
+	public void setName(String name) {
+		this.name = name;
+	}
 
-	Intent getIntent();
+	public String getLabel() {
+		return label;
+	}
 
-	Uri getIntentUri();
-
-	void loadIcon();
-
-	Iterable<Object> getIterable(String[] cursorColumns);
+	public void setLabel(String label) {
+		this.label = label;
+	}
 }

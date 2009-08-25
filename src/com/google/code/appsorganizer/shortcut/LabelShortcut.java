@@ -25,7 +25,9 @@ import java.util.List;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
@@ -70,14 +72,18 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private GenericDialogManager genericDialogManager;
 
+	public static Drawable DRAWABLE_DEFAULT;
+
 	private final Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
 				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
 				setContentView(mainView);
-			} else {
+			} else if (msg.what == -2) {
 				titleView.setText(label.getName());
+			} else if (msg.what == -3) {
+				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
 			}
 		}
 	};
@@ -94,11 +100,15 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
+				if (DRAWABLE_DEFAULT == null) {
+					DRAWABLE_DEFAULT = getResources().getDrawable(R.drawable.icon_default);
+				}
+
 				applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 				applicationInfoManager.addListener(LabelShortcut.this);
 
-				applicationInfoManager.reloadAppsMap();
 				dbHelper = DatabaseHelper.initOrSingleton(LabelShortcut.this);
+				applicationInfoManager.getOrReloadAppsMap(dbHelper.appCacheDao);
 
 				genericDialogManager = new GenericDialogManager(LabelShortcut.this);
 				chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
@@ -109,7 +119,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				}
 				final Intent intent = getIntent();
 
-				long labelId = intent.getLongExtra(LABEL_ID, ALL_LABELS_ID);
+				long labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_LABELS_ID);
 				if (labelId == ALL_LABELS_ID) {
 					allLabelsSelected = true;
 					label = ALL_LABELS;
@@ -130,7 +140,17 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		applicationInfoManager.removeListener(this);
 	}
 
+	private void reloadGridInThread() {
+		new Thread() {
+			@Override
+			public void run() {
+				reloadGrid();
+			}
+		}.start();
+	}
+
 	private void reloadGrid() {
+		Debug.startMethodTracing("calc");
 		if (label != null) {
 			handler.sendEmptyMessage(-2);
 
@@ -143,14 +163,17 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			} else {
 				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(label.getId());
 				Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
-				for (Application a : newList) {
-					a.getLabel();
-					a.getIcon();
-				}
 				gridAdapter.setObjectList(new ArrayList<Application>(newList));
 				handler.sendEmptyMessage(-1);
+				for (Application a : newList) {
+					if (a.getIcon() == null) {
+						a.loadIcon();
+						handler.sendEmptyMessage(-3);
+					}
+				}
 			}
 		}
+		Debug.stopMethodTracing();
 	}
 
 	private GridView grid;
@@ -172,7 +195,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
 					if (label.getId() == ALL_LABELS_ID) {
 						label = (Label) adapter.getItem(pos);
-						reloadGrid();
+						reloadGridInThread();
 					} else {
 						Application a = (Application) grid.getAdapter().getItem(pos);
 						Intent i = a.getIntent();
@@ -190,7 +213,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		if (keyCode == KeyEvent.KEYCODE_BACK && allLabelsSelected) {
 			if (label != null && label.getId() != ALL_LABELS_ID) {
 				label = ALL_LABELS;
-				reloadGrid();
+				reloadGridInThread();
 				return true;
 			}
 		}

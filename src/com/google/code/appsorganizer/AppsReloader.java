@@ -65,8 +65,8 @@ public class AppsReloader {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				DatabaseHelper.initOrSingleton(context);
-				singleton.reloadAll(handler);
+				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
+				singleton.reloadAll(dbHelper.appCacheDao, handler);
 				handler.sendEmptyMessage(-1);
 			}
 		};

@@ -19,12 +19,14 @@
 package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Debug;
+import android.os.Handler;
+import android.os.Message;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -46,8 +48,6 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 
 	private DatabaseHelper dbHelper;
 
-	private List<Application> apps;
-
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
 	private GenericDialogManager genericDialogManager;
@@ -57,39 +57,57 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Debug.startMethodTracing("AppsListActivity");
 		dbHelper = DatabaseHelper.singleton();
 		setContentView(R.layout.main);
 		genericDialogManager = new GenericDialogManager(this);
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
 		genericDialogManager.addDialog(chooseLabelDialog);
-		apps = applicationInfoManager.getAppsArray(null);
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-				chooseLabelDialog.setCurrentApp(apps.get(position));
+				chooseLabelDialog.setCurrentApp((Application) getListAdapter().getItem(position));
 				showDialog(chooseLabelDialog.getDialogId());
 			}
 		});
 
-		final ArrayAdapter<Application> appsAdapter = new ArrayAdapter<Application>(this, R.layout.app_row,
-				new ArrayList<Application>(apps)) {
+		final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
+
+		final ArrayAdapter<Application> appsAdapter = new ArrayAdapter<Application>(this, R.layout.app_row, new ArrayList<Application>(
+				appsArray)) {
 			@Override
 			public View getView(int position, View v, ViewGroup parent) {
+				ViewHolder viewHolder;
 				if (v == null) {
 					LayoutInflater factory = LayoutInflater.from(getContext());
 					v = factory.inflate(R.layout.app_row, null);
+					viewHolder = new ViewHolder();
+					viewHolder.image = (ImageView) v.findViewById(R.id.image);
+					viewHolder.labels = (TextView) v.findViewById(R.id.labels);
+					viewHolder.name = (TextView) v.findViewById(R.id.name);
+					v.setTag(viewHolder);
+				} else {
+					viewHolder = (ViewHolder) v.getTag();
 				}
 				Application a = getItem(position);
-				((ImageView) v.findViewById(R.id.image)).setImageDrawable(a.getIcon());
-				((TextView) v.findViewById(R.id.labels)).setText(dbHelper.labelDao.getLabelsString(a));
-				((TextView) v.findViewById(R.id.name)).setText(a.getLabel());
+				viewHolder.image.setImageDrawable(a.getIcon());
+				viewHolder.labels.setText(dbHelper.labelDao.getLabelsString(a));
+				viewHolder.name.setText(a.getLabel());
 				return v;
 			}
+
 		};
 		applicationInfoManager.addListener(this);
 		setListAdapter(appsAdapter);
 
 		registerForContextMenu(getListView());
+		loadInconsInThread(appsArray);
+	}
+
+	static class ViewHolder {
+		ImageView image;
+		TextView labels;
+		TextView name;
 	}
 
 	@Override
@@ -101,14 +119,14 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-		Application app = apps.get(info.position);
+		Application app = (Application) getListAdapter().getItem(info.position);
 		ApplicationContextMenuManager.singleton().createMenu(menu, app);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		Application app = apps.get(info.position);
+		Application app = (Application) getListAdapter().getItem(info.position);
 		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog);
 		return true;
 	}
@@ -133,15 +151,38 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 		return chooseLabelDialog;
 	}
 
+	private final Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			((ArrayAdapter<?>) getListAdapter()).notifyDataSetChanged();
+		}
+	};
+
 	public void dataSetChanged() {
 		@SuppressWarnings("unchecked")
 		ArrayAdapter<Application> appsAdapter = (ArrayAdapter<Application>) getListAdapter();
 		appsAdapter.clear();
-		List<Application> appsArray = applicationInfoManager.getAppsArray(null);
+		final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
 		for (Application application : appsArray) {
 			appsAdapter.add(application);
 		}
 		appsAdapter.notifyDataSetChanged();
+		loadInconsInThread(appsArray);
+	}
+
+	private void loadInconsInThread(final ArrayList<Application> appsArray) {
+		new Thread() {
+			@Override
+			public void run() {
+				for (Application application : appsArray) {
+					if (application.getIcon() == null) {
+						application.loadIcon();
+						handler.sendEmptyMessage(-1);
+					}
+				}
+				Debug.stopMethodTracing();
+			}
+		}.start();
 	}
 
 }

@@ -19,7 +19,9 @@
 package com.google.code.appsorganizer.db;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -90,17 +92,28 @@ public abstract class DbDao<T> {
 
 	public abstract T createNewObject();
 
-	public List<T> queryForList(List<DbColumns<T>> cols, Map<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
+	public List<T> queryForList(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String orderBy, String groupBy,
+			String having) {
+		Cursor c = query(cols, filterCol, filterValue, orderBy, groupBy, having);
+		return convertCursorToList(c, cols);
+	}
+
+	public List<T> queryForList(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
 		Cursor c = query(cols, filter, orderBy, groupBy, having);
 		return convertCursorToList(c, cols);
 	}
 
-	public T queryForObject(List<DbColumns<T>> cols, Map<DbColumns<T>, String> filter, String groupBy, String having) {
+	public T queryForObject(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String groupBy, String having) {
 		Cursor c = query(cols, filter, null, groupBy, having);
 		return convertCursorToObject(c, cols);
 	}
 
-	public List<String> queryForStringList(boolean distinct, DbColumns<T> col, Map<DbColumns<T>, String> filter, String orderBy,
+	public T queryForObject(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String groupBy, String having) {
+		Cursor c = query(cols, filterCol, filterValue, null, groupBy, having);
+		return convertCursorToObject(c, cols);
+	}
+
+	public List<String> queryForStringList(boolean distinct, DbColumns<T> col, HashMap<DbColumns<T>, String> filter, String orderBy,
 			String groupBy, String having) {
 		Cursor c = query(distinct, Collections.singletonList(col), filter, orderBy, groupBy, having);
 		return convertCursorToStringList(c, col);
@@ -116,6 +129,26 @@ public abstract class DbDao<T> {
 			c.close();
 		}
 		return l;
+	}
+
+	public HashMap<String, String> queryForStringMap(boolean distinct, DbColumns<T> colKey, DbColumns<T> colValue,
+			HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
+		@SuppressWarnings("unchecked")
+		List<DbColumns<T>> l = Arrays.asList(colKey, colValue);
+		Cursor c = query(distinct, l, filter, orderBy, groupBy, having);
+		return convertCursorToStringMap(c, colKey, colValue);
+	}
+
+	protected HashMap<String, String> convertCursorToStringMap(Cursor c, DbColumns<T> colKey, DbColumns<T> colValue) {
+		HashMap<String, String> m = new HashMap<String, String>();
+		try {
+			while (c.moveToNext()) {
+				m.put(colKey.getString(c), colValue.getString(c));
+			}
+		} finally {
+			c.close();
+		}
+		return m;
 	}
 
 	protected List<T> convertCursorToList(Cursor c, List<DbColumns<T>> cols) {
@@ -156,14 +189,19 @@ public abstract class DbDao<T> {
 		return null;
 	}
 
-	public Cursor query(boolean distinct, List<DbColumns<T>> cols, Map<DbColumns<T>, String> filter, String orderBy, String groupBy,
+	public Cursor query(boolean distinct, List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy,
 			String having) {
 		return db.query(distinct, name, columnsToStringArray(cols), filterToSelection(filter), filterToSelectionArgs(filter), groupBy,
 				having, orderBy, null);
 	}
 
-	public Cursor query(List<DbColumns<T>> cols, Map<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
+	public Cursor query(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
 		return db.query(name, columnsToStringArray(cols), filterToSelection(filter), filterToSelectionArgs(filter), groupBy, having,
+				orderBy);
+	}
+
+	public Cursor query(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String orderBy, String groupBy, String having) {
+		return db.query(name, columnsToStringArray(cols), filterCol.getName() + "=?", new String[] { filterValue }, groupBy, having,
 				orderBy);
 	}
 

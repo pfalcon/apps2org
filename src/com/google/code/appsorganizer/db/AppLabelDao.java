@@ -18,7 +18,6 @@
  */
 package com.google.code.appsorganizer.db;
 
-import java.util.Collections;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -76,14 +75,14 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 	}
 
 	public List<AppLabel> getApps(Long labelId) {
-		return queryForList(columns, Collections.singletonMap(LABEL_ID, labelId.toString()), null, null, null);
+		return queryForList(columns, LABEL_ID, labelId.toString(), null, null, null);
 	}
 
 	public List<AppLabel> getApps(String app) {
-		return queryForList(columns, Collections.singletonMap(APP, app), null, null, null);
+		return queryForList(columns, APP, app, null, null, null);
 	}
 
 	public Cursor getAppsCursor(Long labelId) {
-		return query(columns, Collections.singletonMap(LABEL_ID, labelId.toString()), null, null, null);
+		return query(columns, LABEL_ID, labelId.toString(), null, null, null);
 	}
 }

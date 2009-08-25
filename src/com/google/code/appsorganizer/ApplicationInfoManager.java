@@ -18,7 +18,6 @@
  */
 package com.google.code.appsorganizer;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import android.content.ComponentName;
@@ -37,11 +35,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
-import android.database.CursorWindow;
 import android.database.MatrixCursor;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
@@ -49,7 +43,9 @@ import android.provider.BaseColumns;
 import android.provider.LiveFolders;
 import android.widget.ImageView;
 
+import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DbChangeListener;
+import com.google.code.appsorganizer.model.AppCache;
 import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
 
@@ -63,33 +59,48 @@ public class ApplicationInfoManager {
 		this.pm = pm;
 	}
 
-	public void reloadAppsMap() {
+	public void getOrReloadAppsMap(AppCacheDao appCacheDao) {
 		if (applicationMap.isEmpty()) {
-			loadAppsMap();
+			loadAppsMap(appCacheDao, null);
 		}
 	}
 
-	public void reloadAll(Handler handler) {
-		loadAppsMap();
-		apps = createAppsArray(handler);
+	public void reloadAll(AppCacheDao appCacheDao, Handler handler) {
+		loadAppsMap(appCacheDao, handler);
 	}
 
-	public void loadAppsMap() {
+	private void loadAppsMap(AppCacheDao appCacheDao, Handler handler) {
 		synchronized (this) {
+			HashMap<String, String> nameCache = appCacheDao.queryForStringMap(false, AppCacheDao.NAME, AppCacheDao.LABEL, null, null, null,
+					null);
 			Map<String, Application> oldApps = applicationMap;
 			applicationMap = new HashMap<String, Application>();
 			List<ResolveInfo> installedApplications = getAllResolveInfo();
 			long pos = 0;
+			apps = new ArrayList<Application>();
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
-					Application app = oldApps.get(resolveInfo.activityInfo.name);
+					String name = resolveInfo.activityInfo.name;
+					ApplicationImpl app = (ApplicationImpl) oldApps.get(resolveInfo.activityInfo.name);
 					if (app == null) {
 						app = new ApplicationImpl(resolveInfo.activityInfo, pos++);
+						String n = nameCache.get(name);
+						app.setLabel(n);
 					}
-					applicationMap.put(app.getName(), app);
+					applicationMap.put(name, app);
+					apps.add(app);
+					// if label is not in cache table
+					if (app.label == null) {
+						// retrieve and store label
+						appCacheDao.insert(new AppCache(name, app.getLabel()));
+					}
+					if (handler != null) {
+						handler.sendEmptyMessage(apps.size());
+					}
 				}
 			}
+			Collections.sort(apps);
 		}
 	}
 
@@ -111,35 +122,16 @@ public class ApplicationInfoManager {
 		return singleton;
 	}
 
-	private Map<String, Application> applicationMap = new HashMap<String, Application>();
+	private HashMap<String, Application> applicationMap = new HashMap<String, Application>();
 
-	private List<Application> apps;
+	private ArrayList<Application> apps;
 
-	public List<Application> getAppsArray(Handler handler) {
-		if (apps == null) {
-			apps = createAppsArray(handler);
-		}
+	public ArrayList<Application> getAppsArray() {
 		return apps;
 	}
 
-	private ArrayList<Application> createAppsArray(Handler handler) {
-		ArrayList<Application> l = new ArrayList<Application>();
-
-		Collection<Application> values = applicationMap.values();
-		for (Application app : values) {
-			l.add(app);
-			app.getLabel();
-			app.getIcon();
-			if (handler != null) {
-				handler.sendEmptyMessage(l.size());
-			}
-		}
-		Collections.sort(l);
-		return l;
-	}
-
 	public Collection<Application> convertToApplicationListNot(List<String> l) {
-		Set<String> s = new HashSet<String>(l);
+		HashSet<String> s = new HashSet<String>(l);
 		TreeSet<Application> ret = new TreeSet<Application>();
 		for (Application application : apps) {
 			if (!s.contains(application.getName())) {
@@ -151,6 +143,17 @@ public class ApplicationInfoManager {
 
 	public Collection<Application> convertToApplicationList(List<AppLabel> l) {
 		TreeSet<Application> ret = new TreeSet<Application>();
+		for (AppLabel appLabel : l) {
+			Application application = getApplication(appLabel.getApp());
+			if (application != null) {
+				ret.add(application);
+			}
+		}
+		return ret;
+	}
+
+	public Collection<Application> convertToApplicationListNotSorted(List<AppLabel> l) {
+		List<Application> ret = new ArrayList<Application>();
 		for (AppLabel appLabel : l) {
 			Application application = getApplication(appLabel.getApp());
 			if (application != null) {
@@ -207,13 +210,11 @@ public class ApplicationInfoManager {
 
 		private final ActivityInfo activityInfo;
 
+		private Drawable drawableIcon;
+
 		private String label;
 
 		private Intent intent;
-
-		private Drawable drawableIcon;
-
-		private byte[] iconBytes;
 
 		public ApplicationImpl(ActivityInfo activityInfo, Long id) {
 			this.id = id;
@@ -221,6 +222,7 @@ public class ApplicationInfoManager {
 		}
 
 		public String getLabel() {
+			// return getName();
 			if (label == null) {
 				CharSequence l = activityInfo.loadLabel(pm);
 				if (l != null) {
@@ -282,8 +284,6 @@ public class ApplicationInfoManager {
 					values.add(getId());
 				} else if (col.equals(LiveFolders.NAME)) {
 					values.add(getLabel());
-				} else if (col.equals(LiveFolders.ICON_BITMAP)) {
-					values.add(getIconBytes());
 				} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
 					values.add(getPackage());
 				} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
@@ -296,31 +296,11 @@ public class ApplicationInfoManager {
 		}
 
 		public Drawable getIcon() {
-			if (drawableIcon == null) {
-				drawableIcon = activityInfo.loadIcon(pm);
-			}
 			return drawableIcon;
 		}
 
-		public byte[] getIconBytes() {
-			if (iconBytes == null) {
-				iconBytes = createIconBytes();
-			}
-			return iconBytes;
-		}
-
-		private byte[] createIconBytes() {
-			BitmapDrawable b = (BitmapDrawable) getIcon();
-			Bitmap bitmap = b.getBitmap();
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			boolean compress = bitmap.compress(CompressFormat.PNG, 100, os);
-			if (compress) {
-				return os.toByteArray();
-			} else {
-				os = new ByteArrayOutputStream();
-				bitmap.compress(CompressFormat.JPEG, 100, os);
-				return os.toByteArray();
-			}
+		public void loadIcon() {
+			drawableIcon = activityInfo.loadIcon(pm);
 		}
 
 		public void showIcon(ImageView imageView) {
@@ -330,6 +310,10 @@ public class ApplicationInfoManager {
 		@Override
 		public String toString() {
 			return getLabel();
+		}
+
+		public void setLabel(String label) {
+			this.label = label;
 		}
 
 	}
@@ -348,69 +332,7 @@ public class ApplicationInfoManager {
 	}
 
 	private MatrixCursor createCursor(String[] cursorColumns, final List<Application> applications) {
-		// override 2 methods to manage blob field
-		MatrixCursor m = new MatrixCursor(cursorColumns, applications.size()) {
-			@Override
-			public byte[] getBlob(int column) {
-				Application app = applications.get(getPosition());
-				byte[] iconBytes = app.getIconBytes();
-				return iconBytes;
-			}
-
-			@Override
-			public void fillWindow(int position, CursorWindow window) {
-				if (position < 0 || position > getCount()) {
-					return;
-				}
-				window.acquireReference();
-				try {
-					int oldpos = mPos;
-					mPos = position - 1;
-					window.clear();
-					window.setStartPosition(position);
-					int columnNum = getColumnCount();
-					window.setNumColumns(columnNum);
-					while (moveToNext() && window.allocRow()) {
-						for (int i = 0; i < columnNum; i++) {
-							if (i == 2) {
-								byte[] field = getBlob(i);
-								if (field != null) {
-									if (!window.putBlob(field, mPos, i)) {
-										window.freeLastRow();
-										break;
-									}
-								} else {
-									if (!window.putNull(mPos, i)) {
-										window.freeLastRow();
-										break;
-									}
-								}
-							} else {
-								String field = getString(i);
-								if (field != null) {
-									if (!window.putString(field, mPos, i)) {
-										window.freeLastRow();
-										break;
-									}
-								} else {
-									if (!window.putNull(mPos, i)) {
-										window.freeLastRow();
-										break;
-									}
-								}
-							}
-						}
-					}
-
-					mPos = oldpos;
-				} catch (IllegalStateException e) {
-					// simply ignore it
-				} finally {
-					window.releaseReference();
-				}
-			}
-		};
-		return m;
+		return new MatrixCursor(cursorColumns, applications.size());
 	}
 
 	private final List<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
