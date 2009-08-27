@@ -18,7 +18,10 @@
  */
 package com.google.code.appsorganizer.db;
 
+import java.util.HashMap;
+
 import android.content.ContentValues;
+import android.database.Cursor;
 
 import com.google.code.appsorganizer.model.AppCache;
 
@@ -60,4 +63,20 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		return new AppCache();
 	}
 
+	public HashMap<String, String> queryForCacheMap() {
+		Cursor c = db.query(false, name, new String[] { "name", "label" }, null, null, null, null, null, null);
+		return convertCursorToCacheMap(c);
+	}
+
+	protected HashMap<String, String> convertCursorToCacheMap(Cursor c) {
+		HashMap<String, String> m = new HashMap<String, String>(c.getCount());
+		try {
+			while (c.moveToNext()) {
+				m.put(c.getString(0), c.getString(1));
+			}
+		} finally {
+			c.close();
+		}
+		return m;
+	}
 }

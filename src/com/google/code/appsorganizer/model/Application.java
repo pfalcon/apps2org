@@ -18,27 +18,130 @@
  */
 package com.google.code.appsorganizer.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.provider.BaseColumns;
+import android.provider.LiveFolders;
+import android.widget.ImageView;
 
-public interface Application extends Comparable<Application>, GridObject {
+public class Application implements Comparable<Application>, GridObject {
 
-	Long getId();
+	private final Long id;
 
-	String getName();
+	private final ActivityInfo activityInfo;
 
-	Drawable getIcon();
+	private Drawable drawableIcon;
 
-	String getPackage();
+	private String label;
 
-	int getIconResource();
+	private Intent intent;
 
-	Intent getIntent();
+	private String labelListString;
 
-	Uri getIntentUri();
+	public Application(ActivityInfo activityInfo, Long id) {
+		this.id = id;
+		this.activityInfo = activityInfo;
+	}
 
-	void loadIcon();
+	public String getLabel() {
+		return label;
+	}
 
-	Iterable<Object> getIterable(String[] cursorColumns);
+	public int compareTo(Application another) {
+		int r = getLabel().compareToIgnoreCase(another.getLabel());
+		if (r == 0) {
+			r = getName().compareToIgnoreCase(another.getName());
+		}
+		return r;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getName() {
+		return activityInfo.name;
+	}
+
+	public String getPackage() {
+		return activityInfo.packageName;
+	}
+
+	public int getIconResource() {
+		if (activityInfo.icon > 0) {
+			return activityInfo.icon;
+		}
+		return activityInfo.applicationInfo.icon;
+	}
+
+	public Intent getIntent() {
+		if (intent == null) {
+			intent = new Intent(Intent.ACTION_MAIN);
+			intent.addCategory(Intent.CATEGORY_LAUNCHER);
+			intent.setClassName(getPackage(), getName());
+		}
+		return intent;
+	}
+
+	public Uri getIntentUri() {
+		Intent intent = getIntent();
+		Uri intentUri = null;
+		if (intent != null) {
+			intentUri = Uri.parse(intent.toURI());
+		}
+		return intentUri;
+	}
+
+	public Iterable<Object> getIterable(String[] cursorColumns) {
+		List<Object> values = new ArrayList<Object>();
+		for (String col : cursorColumns) {
+			if (col.equals(BaseColumns._ID)) {
+				values.add(getId());
+			} else if (col.equals(LiveFolders.NAME)) {
+				values.add(getLabel());
+			} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
+				values.add(getPackage());
+			} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
+				values.add(getIconResource());
+			} else if (col.equals(LiveFolders.INTENT)) {
+				values.add(getIntentUri());
+			}
+		}
+		return values;
+	}
+
+	public Drawable getIcon() {
+		return drawableIcon;
+	}
+
+	public void loadIcon(PackageManager pm) {
+		drawableIcon = activityInfo.loadIcon(pm);
+	}
+
+	public void showIcon(ImageView imageView) {
+		imageView.setImageDrawable(getIcon());
+	}
+
+	@Override
+	public String toString() {
+		return getLabel();
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public String getLabelListString() {
+		return labelListString;
+	}
+
+	public void setLabelListString(String labelListString) {
+		this.labelListString = labelListString;
+	}
 }

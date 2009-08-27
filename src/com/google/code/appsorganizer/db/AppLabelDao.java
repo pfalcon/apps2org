@@ -27,9 +27,15 @@ import com.google.code.appsorganizer.model.AppLabel;
 
 public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 
+	private static final String APP_COL_NAME = "app";
+
+	private static final String LABEL_ID_COL_NAME = "id_label";
+
 	public static final String NAME = "apps_labels";
 
-	public static final DbColumns<AppLabel> APP = new DbColumns<AppLabel>("app", "text not null") {
+	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, APP_COL_NAME, LABEL_ID_COL_NAME };
+
+	public static final DbColumns<AppLabel> APP = new DbColumns<AppLabel>(APP_COL_NAME, "text not null") {
 		@Override
 		public void populateObject(AppLabel obj, android.database.Cursor c) {
 			obj.setApp(getString(c));
@@ -40,7 +46,7 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 			c.put(name, obj.getApp());
 		}
 	};
-	public static final DbColumns<AppLabel> LABEL_ID = new DbColumns<AppLabel>("id_label", "integer not null") {
+	public static final DbColumns<AppLabel> LABEL_ID = new DbColumns<AppLabel>(LABEL_ID_COL_NAME, "integer not null") {
 		@Override
 		public void populateObject(AppLabel obj, android.database.Cursor c) {
 			obj.setLabelId(getLong(c));
@@ -74,8 +80,22 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return queryForStringList(true, APP, null, null, null, null);
 	}
 
-	public List<AppLabel> getApps(Long labelId) {
-		return queryForList(columns, LABEL_ID, labelId.toString(), null, null, null);
+	public AppLabel[] getApps(Long labelId) {
+		Cursor c = db.query(name, COLS_STRING, LABEL_ID_COL_NAME + "=?", new String[] { labelId.toString() }, null, null, null);
+		AppLabel[] l = new AppLabel[c.getCount()];
+		try {
+			int i = 0;
+			while (c.moveToNext()) {
+				AppLabel t = new AppLabel();
+				t.setId(c.getLong(0));
+				t.setApp(c.getString(1));
+				t.setLabelId(c.getLong(2));
+				l[i++] = t;
+			}
+		} finally {
+			c.close();
+		}
+		return l;
 	}
 
 	public List<AppLabel> getApps(String app) {

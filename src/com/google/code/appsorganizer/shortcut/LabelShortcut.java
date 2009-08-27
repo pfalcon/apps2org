@@ -20,14 +20,12 @@ package com.google.code.appsorganizer.shortcut;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
@@ -36,6 +34,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -91,11 +90,19 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-
+		// Debug.startMethodTracing("grid");
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		getOrCreateGrid();
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_shortcut_title);
 		titleView = (TextView) findViewById(R.id.title_text);
+
+		findViewById(R.id.shortcut_title).setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				if (!onBack()) {
+					finish();
+				}
+			}
+		});
 
 		Thread t = new Thread() {
 			@Override
@@ -128,6 +135,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 					label = dbHelper.labelDao.queryById(labelId);
 				}
 				reloadGrid();
+				// Debug.stopMethodTracing();
 			}
 		};
 		setContentView(R.layout.shortcut_progress);
@@ -150,30 +158,35 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	}
 
 	private void reloadGrid() {
-		Debug.startMethodTracing("calc");
 		if (label != null) {
 			handler.sendEmptyMessage(-2);
 
 			@SuppressWarnings("unchecked")
 			final AppGridAdapter<GridObject> gridAdapter = (AppGridAdapter<GridObject>) grid.getAdapter();
 			if (label.getId() == ALL_LABELS_ID) {
-				List<Label> labels = dbHelper.labelDao.getLabels();
+				ArrayList<Label> labels = dbHelper.labelDao.getLabels();
 				gridAdapter.setObjectList(labels);
 				handler.sendEmptyMessage(-1);
 			} else {
-				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(label.getId());
+				AppLabel[] apps = dbHelper.appsLabelDao.getApps(label.getId());
 				Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
 				gridAdapter.setObjectList(new ArrayList<Application>(newList));
 				handler.sendEmptyMessage(-1);
+				int pos = 0;
 				for (Application a : newList) {
 					if (a.getIcon() == null) {
-						a.loadIcon();
-						handler.sendEmptyMessage(-3);
+						a.loadIcon(getPackageManager());
+						if (pos == 4) {
+							handler.sendEmptyMessage(-3);
+							pos = 0;
+						}
 					}
+				}
+				if (pos > 0) {
+					handler.sendEmptyMessage(-3);
 				}
 			}
 		}
-		Debug.stopMethodTracing();
 	}
 
 	private GridView grid;
@@ -187,7 +200,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			setContentView(mainView);
 
 			grid = (GridView) findViewById(R.id.shortcutGrid);
-			grid.setColumnWidth(50);
+			grid.setColumnWidth(65);
 			final AppGridAdapter<GridObject> adapter = new AppGridAdapter<GridObject>(new ArrayList<GridObject>(), this);
 			grid.setAdapter(adapter);
 
@@ -210,14 +223,24 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK && allLabelsSelected) {
-			if (label != null && label.getId() != ALL_LABELS_ID) {
-				label = ALL_LABELS;
-				reloadGridInThread();
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (onBack()) {
 				return true;
 			}
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	private boolean onBack() {
+		boolean ret = false;
+		if (allLabelsSelected) {
+			if (label != null && label.getId() != ALL_LABELS_ID) {
+				label = ALL_LABELS;
+				reloadGridInThread();
+				ret = true;
+			}
+		}
+		return ret;
 	}
 
 	public void dataSetChanged() {

@@ -57,7 +57,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private Set<String> checkedApps;
 
-	private List<AppLabel> appsWithLabel;
+	private AppLabel[] appsWithLabel;
 
 	@Override
 	public void prepareDialog(Dialog dialog) {

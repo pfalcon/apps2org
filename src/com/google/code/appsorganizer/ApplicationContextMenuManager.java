@@ -41,8 +41,8 @@ public class ApplicationContextMenuManager {
 	private ApplicationContextMenuManager() {
 	}
 
-	public void createMenu(ContextMenu menu, Application app) {
-		menu.setHeaderTitle(app.getLabel());
+	public void createMenu(ContextMenu menu, String label) {
+		menu.setHeaderTitle(label);
 		menu.add(0, 0, 0, R.string.choose_labels_header);
 		menu.add(0, 1, 1, R.string.launch);
 		menu.add(0, 2, 2, R.string.uninstall);

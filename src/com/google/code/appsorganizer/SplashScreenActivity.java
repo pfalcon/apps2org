@@ -18,44 +18,17 @@
  */
 package com.google.code.appsorganizer;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
+import android.app.TabActivity;
+import android.content.Intent;
 import android.os.Bundle;
 
-public class SplashScreenActivity extends Activity {
-
-	private static final String ALERT_0_4_PREF = "alert_0_4";
+public class SplashScreenActivity extends TabActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		SharedPreferences pref = getPreferences(Activity.MODE_PRIVATE);
-		if (pref.getBoolean(ALERT_0_4_PREF, false)) {
-			reloadApps();
-		} else {
-			showDialog(1);
-		}
-	}
+		// Debug.startMethodTracing("splash");
 
-	private void reloadApps() {
-		new AppsReloader(this, true).reload();
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		return new AlertDialog.Builder(SplashScreenActivity.this).setMessage(R.string.alert_0_4).setPositiveButton(
-				R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						SharedPreferences pref = getPreferences(Activity.MODE_PRIVATE);
-						SharedPreferences.Editor editor = pref.edit();
-						editor.putBoolean(ALERT_0_4_PREF, true);
-						editor.commit();
-
-						reloadApps();
-					}
-				}).create();
+		startActivity(new Intent(this, HomeActivity.class));
 	}
 }

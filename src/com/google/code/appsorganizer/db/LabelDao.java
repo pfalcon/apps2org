@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer.db;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -29,9 +30,15 @@ import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
 
+	private static final String ICON_COL_NAME = "icon";
+
+	private static final String LABEL_COL_NAME = "label";
+
 	public static final String NAME = "labels";
 
-	public static final DbColumns<Label> LABEL = new DbColumns<Label>("label", "text not null unique") {
+	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME };
+
+	public static final DbColumns<Label> LABEL = new DbColumns<Label>(LABEL_COL_NAME, "text not null unique") {
 		@Override
 		public void populateObject(Label obj, Cursor c) {
 			obj.setName(getString(c));
@@ -43,7 +50,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		}
 	};
 
-	public static final DbColumns<Label> ICON = new DbColumns<Label>("icon", "integer") {
+	public static final DbColumns<Label> ICON = new DbColumns<Label>(ICON_COL_NAME, "integer") {
 		@Override
 		public void populateObject(Label obj, Cursor c) {
 			obj.setIconDb(getInt(c));
@@ -66,11 +73,11 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return new Label();
 	}
 
-	public String getLabelsString(Application application) {
+	public String getLabelsString(String name) {
 		StringBuilder b = new StringBuilder();
 		Cursor c = db.rawQuery(
 				"select l.label from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
-				new String[] { application.getName() });
+				new String[] { name });
 		try {
 			// c.moveToFirst();
 			while (c.moveToNext()) {
@@ -93,16 +100,36 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return convertCursorToList(c, columns);
 	}
 
+	public DoubleArray getAppsLabels() {
+		Cursor c = db.rawQuery(
+				"select al.app, l.label from labels l inner join apps_labels al on l._id = al.id_label order by al.app, l.label",
+				new String[] {});
+		int tot = c.getCount();
+		String[] keys = new String[tot];
+		String[] values = new String[tot];
+		int pos = 0;
+		try {
+			// c.moveToFirst();
+			while (c.moveToNext()) {
+				keys[pos] = c.getString(0);
+				values[pos++] = c.getString(1);
+			}
+		} finally {
+			c.close();
+		}
+		return new DoubleArray(keys, values);
+	}
+
 	public TreeMap<Long, Label> getLabelsTreeMap() {
 		TreeMap<Long, Label> m = new TreeMap<Long, Label>();
-		List<Label> labels = getLabels();
+		ArrayList<Label> labels = getLabels();
 		for (Label label : labels) {
 			m.put(label.getId(), label);
 		}
 		return m;
 	}
 
-	public List<Label> getLabels() {
+	public ArrayList<Label> getLabels() {
 		return queryForList(columns, null, "upper(" + LABEL.getName() + ")", null, null);
 	}
 
@@ -119,4 +146,22 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	public Label getLabel(String name) {
 		return queryForObject(columns, LABEL, name, null, null);
 	}
+
+	@Override
+	public Label queryById(Long id) {
+		Cursor c = db.query(name, COLS_STRING, ID_COL_NAME + "=?", new String[] { id.toString() }, null, null, null);
+		try {
+			if (c.moveToNext()) {
+				Label t = new Label();
+				t.setId(c.getLong(0));
+				t.setName(c.getString(1));
+				t.setIcon(c.getInt(2));
+				return t;
+			}
+		} finally {
+			c.close();
+		}
+		return null;
+	}
+
 }

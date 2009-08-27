@@ -22,9 +22,9 @@ import java.util.ArrayList;
 
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.ContextMenu;
@@ -57,51 +57,106 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Debug.startMethodTracing("AppsListActivity");
-		dbHelper = DatabaseHelper.singleton();
+		// Debug.startMethodTracing("splash");
 		setContentView(R.layout.main);
-		genericDialogManager = new GenericDialogManager(this);
-		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
-		genericDialogManager.addDialog(chooseLabelDialog);
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-				chooseLabelDialog.setCurrentApp((Application) getListAdapter().getItem(position));
+				chooseLabelDialog.setCurrentApp(((ApplicationBinding) getListAdapter().getItem(position)).application);
 				showDialog(chooseLabelDialog.getDialogId());
 			}
 		});
 
-		final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
+		// SharedPreferences pref = getPreferences(Activity.MODE_PRIVATE);
+		// if (pref.getBoolean(ALERT_0_4_PREF, false)) {
 
-		final ArrayAdapter<Application> appsAdapter = new ArrayAdapter<Application>(this, R.layout.app_row, new ArrayList<Application>(
-				appsArray)) {
-			@Override
-			public View getView(int position, View v, ViewGroup parent) {
-				ViewHolder viewHolder;
-				if (v == null) {
-					LayoutInflater factory = LayoutInflater.from(getContext());
-					v = factory.inflate(R.layout.app_row, null);
-					viewHolder = new ViewHolder();
-					viewHolder.image = (ImageView) v.findViewById(R.id.image);
-					viewHolder.labels = (TextView) v.findViewById(R.id.labels);
-					viewHolder.name = (TextView) v.findViewById(R.id.name);
-					v.setTag(viewHolder);
-				} else {
-					viewHolder = (ViewHolder) v.getTag();
-				}
-				Application a = getItem(position);
-				viewHolder.image.setImageDrawable(a.getIcon());
-				viewHolder.labels.setText(dbHelper.labelDao.getLabelsString(a));
-				viewHolder.name.setText(a.getLabel());
-				return v;
+		reload();
+
+		// } else {
+		// showDialog(1);
+		// }
+
+	}
+
+	private final Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			if (msg.what == -1) {
+				pd.setMessage(getText(R.string.preparing_apps_list));
+			} else if (msg.what == -2) {
+				setListAdapter(appsAdapter);
+			} else if (msg.what == -3) {
+				pd.hide();
+			} else {
+				pd.setMessage(getString(R.string.total_apps) + ": " + msg.what);
 			}
+		}
+	};
 
+	private ProgressDialog pd;
+
+	private ArrayAdapter<ApplicationBinding> appsAdapter;
+
+	public void reload() {
+		pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list), getText(R.string.please_wait_loading), true, false);
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				genericDialogManager = new GenericDialogManager(AppsListActivity.this);
+				applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
+				dbHelper = DatabaseHelper.initOrSingleton(AppsListActivity.this);
+				chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
+				genericDialogManager.addDialog(chooseLabelDialog);
+
+				applicationInfoManager.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler);
+				handler.sendEmptyMessage(-1);
+
+				final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
+				ArrayList<ApplicationBinding> appBindingArray = convertToBinding(appsArray);
+				appsAdapter = new ArrayAdapter<ApplicationBinding>(AppsListActivity.this, R.layout.app_row, appBindingArray) {
+					@Override
+					public View getView(int position, View v, ViewGroup parent) {
+						ViewHolder viewHolder;
+						if (v == null) {
+							LayoutInflater factory = LayoutInflater.from(getContext());
+							v = factory.inflate(R.layout.app_row, null);
+							viewHolder = new ViewHolder();
+							viewHolder.image = (ImageView) v.findViewById(R.id.image);
+							viewHolder.labels = (TextView) v.findViewById(R.id.labels);
+							viewHolder.name = (TextView) v.findViewById(R.id.name);
+							v.setTag(viewHolder);
+						} else {
+							viewHolder = (ViewHolder) v.getTag();
+						}
+						ApplicationBinding a = getItem(position);
+						viewHolder.image.setImageDrawable(a.icon);
+						viewHolder.labels.setText(a.application.getLabelListString());
+						viewHolder.name.setText(a.label);
+						return v;
+					}
+
+				};
+				handler.sendEmptyMessage(-2);
+
+				registerForContextMenu(getListView());
+				handler.sendEmptyMessage(-3);
+				loadIcons(appBindingArray);
+				applicationInfoManager.addListener(AppsListActivity.this);
+			}
 		};
-		applicationInfoManager.addListener(this);
-		setListAdapter(appsAdapter);
+		t.start();
+	}
 
-		registerForContextMenu(getListView());
-		loadInconsInThread(appsArray);
+	private ArrayList<ApplicationBinding> convertToBinding(final ArrayList<Application> appsArray) {
+		ArrayList<ApplicationBinding> appBindingArray = new ArrayList<ApplicationBinding>(appsArray.size());
+		for (Application application : appsArray) {
+			ApplicationBinding ab = new ApplicationBinding();
+			ab.application = application;
+			ab.label = application.getLabel();
+			ab.packageName = application.getPackage();
+			ab.icon = application.getIcon();
+			appBindingArray.add(ab);
+		}
+		return appBindingArray;
 	}
 
 	static class ViewHolder {
@@ -119,15 +174,15 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-		Application app = (Application) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.singleton().createMenu(menu, app);
+		ApplicationBinding app = (ApplicationBinding) getListAdapter().getItem(info.position);
+		ApplicationContextMenuManager.singleton().createMenu(menu, app.label);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		Application app = (Application) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog);
+		ApplicationBinding app = (ApplicationBinding) getListAdapter().getItem(info.position);
+		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app.application, this, chooseLabelDialog);
 		return true;
 	}
 
@@ -151,7 +206,7 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 		return chooseLabelDialog;
 	}
 
-	private final Handler handler = new Handler() {
+	private final Handler listHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			((ArrayAdapter<?>) getListAdapter()).notifyDataSetChanged();
@@ -160,29 +215,43 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 
 	public void dataSetChanged() {
 		@SuppressWarnings("unchecked")
-		ArrayAdapter<Application> appsAdapter = (ArrayAdapter<Application>) getListAdapter();
+		ArrayAdapter<ApplicationBinding> appsAdapter = (ArrayAdapter<ApplicationBinding>) getListAdapter();
 		appsAdapter.clear();
 		final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
-		for (Application application : appsArray) {
-			appsAdapter.add(application);
+		ArrayList<ApplicationBinding> appBindingVector = convertToBinding(appsArray);
+		for (ApplicationBinding applicationBinding : appBindingVector) {
+			appsAdapter.add(applicationBinding);
 		}
 		appsAdapter.notifyDataSetChanged();
-		loadInconsInThread(appsArray);
+		loadInconsInThread(appBindingVector);
 	}
 
-	private void loadInconsInThread(final ArrayList<Application> appsArray) {
-		new Thread() {
+	private void loadInconsInThread(final ArrayList<ApplicationBinding> appBindingVector) {
+		Thread t = new Thread() {
 			@Override
 			public void run() {
-				for (Application application : appsArray) {
-					if (application.getIcon() == null) {
-						application.loadIcon();
-						handler.sendEmptyMessage(-1);
-					}
-				}
-				Debug.stopMethodTracing();
+				loadIcons(appBindingVector);
 			}
-		}.start();
+		};
+		t.start();
 	}
 
+	private void loadIcons(final ArrayList<ApplicationBinding> appBindingVector) {
+		int pos = 0;
+		for (ApplicationBinding ab : appBindingVector) {
+			if (ab.icon == null) {
+				ab.application.loadIcon(getPackageManager());
+				ab.icon = ab.application.getIcon();
+				pos++;
+			}
+			if (pos == 50) {
+				listHandler.sendEmptyMessage(-1);
+				pos = 0;
+			}
+		}
+		if (pos > 0) {
+			listHandler.sendEmptyMessage(-1);
+		}
+		// Debug.stopMethodTracing();
+	}
 }

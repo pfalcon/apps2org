@@ -32,7 +32,7 @@ public class AppInformationTest extends ActivityInstrumentationTestCase2<SplashS
 		long start = System.currentTimeMillis();
 		ApplicationInfoManager singleton = ApplicationInfoManager.singleton(getActivity().getPackageManager());
 		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(getActivity());
-		singleton.reloadAll(dbHelper.appCacheDao, null);
+		singleton.reloadAll(dbHelper.appCacheDao, null, null);
 		long durata = System.currentTimeMillis() - start;
 		System.out.println("Durata " + durata);
 	}

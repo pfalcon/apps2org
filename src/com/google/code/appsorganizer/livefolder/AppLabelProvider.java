@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.livefolder;
 
-import java.util.List;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -30,8 +28,6 @@ import android.provider.BaseColumns;
 import android.provider.LiveFolders;
 
 import com.google.code.appsorganizer.ApplicationInfoManager;
-import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.model.AppLabel;
 
 public class AppLabelProvider extends ContentProvider {
 
@@ -90,26 +86,27 @@ public class AppLabelProvider extends ContentProvider {
 			return sErrorCursor;
 		}
 
-		DatabaseHelper dbHelper = null;
-		try {
-			dbHelper = new DatabaseHelper(getContext());
-			if (applicationInfoManager == null) {
-				applicationInfoManager = ApplicationInfoManager.singleton(getContext().getPackageManager());
-			}
-			String p = uri.getPath();
-			Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
-			try {
-				List<AppLabel> apps = dbHelper.appsLabelDao.getApps(labelId);
-				applicationInfoManager.getOrReloadAppsMap(dbHelper.appCacheDao);
-				return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
-			} catch (Throwable e) {
-				return sErrorCursor;
-			}
-		} finally {
-			if (dbHelper != null) {
-				dbHelper.close();
-			}
-		}
+		return sErrorCursor;
+		// DatabaseHelper dbHelper = null;
+		// try {
+		// dbHelper = new DatabaseHelper(getContext());
+		// if (applicationInfoManager == null) {
+		// applicationInfoManager =
+		// ApplicationInfoManager.singleton(getContext().getPackageManager());
+		// }
+		// String p = uri.getPath();
+		// Long labelId = Long.parseLong(p.substring(p.lastIndexOf('/') + 1));
+		// try {
+		// AppLabel[] apps = dbHelper.appsLabelDao.getApps(labelId);
+		// applicationInfoManager.getOrReloadAppsMap(dbHelper.appCacheDao);
+		// return applicationInfoManager.convertToCursor(apps, CURSOR_COLUMNS);
+		// } catch (Throwable e) {
+		// }
+		// } finally {
+		// if (dbHelper != null) {
+		// dbHelper.close();
+		// }
+		// }
 	}
 
 	@Override

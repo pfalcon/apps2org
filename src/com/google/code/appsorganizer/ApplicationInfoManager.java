@@ -24,27 +24,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.ComponentInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
-import android.provider.BaseColumns;
-import android.provider.LiveFolders;
-import android.widget.ImageView;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DbChangeListener;
+import com.google.code.appsorganizer.db.DoubleArray;
+import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.model.AppCache;
 import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
@@ -61,39 +55,51 @@ public class ApplicationInfoManager {
 
 	public void getOrReloadAppsMap(AppCacheDao appCacheDao) {
 		if (applicationMap.isEmpty()) {
-			loadAppsMap(appCacheDao, null);
+			loadAppsMap(appCacheDao, null, null);
 		}
 	}
 
-	public void reloadAll(AppCacheDao appCacheDao, Handler handler) {
-		loadAppsMap(appCacheDao, handler);
+	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
+		loadAppsMap(appCacheDao, labelDao, handler);
 	}
 
-	private void loadAppsMap(AppCacheDao appCacheDao, Handler handler) {
+	private void loadAppsMap(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
 		synchronized (this) {
-			HashMap<String, String> nameCache = appCacheDao.queryForStringMap(false, AppCacheDao.NAME, AppCacheDao.LABEL, null, null, null,
-					null);
-			Map<String, Application> oldApps = applicationMap;
+			String[] keys = null;
+			String[] values = null;
+			if (labelDao != null) {
+				DoubleArray appsLabels = labelDao.getAppsLabels();
+				keys = appsLabels.keys;
+				values = appsLabels.values;
+			}
+			HashMap<String, String> nameCache = appCacheDao.queryForCacheMap();
+			HashMap<String, Application> oldApps = applicationMap;
 			applicationMap = new HashMap<String, Application>();
 			List<ResolveInfo> installedApplications = getAllResolveInfo();
 			long pos = 0;
-			apps = new ArrayList<Application>();
+			apps = new ArrayList<Application>(installedApplications.size());
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
 					String name = resolveInfo.activityInfo.name;
-					ApplicationImpl app = (ApplicationImpl) oldApps.get(resolveInfo.activityInfo.name);
+					Application app = oldApps.get(resolveInfo.activityInfo.name);
 					if (app == null) {
-						app = new ApplicationImpl(resolveInfo.activityInfo, pos++);
-						String n = nameCache.get(name);
-						app.setLabel(n);
+						app = new Application(resolveInfo.activityInfo, pos++);
+						app.setLabel(nameCache.get(name));
 					}
 					applicationMap.put(name, app);
 					apps.add(app);
 					// if label is not in cache table
-					if (app.label == null) {
+					if (app.getLabel() == null) {
 						// retrieve and store label
-						appCacheDao.insert(new AppCache(name, app.getLabel()));
+						CharSequence l = a.loadLabel(pm);
+						if (l != null) {
+							app.setLabel(l.toString());
+							appCacheDao.insert(new AppCache(name, app.getLabel()));
+						}
+					}
+					if (keys != null) {
+						app.setLabelListString(createLabelListString(keys, values, name).toString());
 					}
 					if (handler != null) {
 						handler.sendEmptyMessage(apps.size());
@@ -102,6 +108,26 @@ public class ApplicationInfoManager {
 			}
 			Collections.sort(apps);
 		}
+	}
+
+	private StringBuilder createLabelListString(String[] keys, String[] values, String name) {
+		StringBuilder b = new StringBuilder();
+		boolean found = false;
+		for (int i = 0; i < keys.length; i++) {
+			String k = keys[i];
+			if (k.equals(name)) {
+				if (found) {
+					b.append(", ");
+				}
+				b.append(values[i]);
+				found = true;
+			} else {
+				if (found) {
+					break;
+				}
+			}
+		}
+		return b;
 	}
 
 	private List<ResolveInfo> getAllResolveInfo() {
@@ -135,6 +161,18 @@ public class ApplicationInfoManager {
 		TreeSet<Application> ret = new TreeSet<Application>();
 		for (Application application : apps) {
 			if (!s.contains(application.getName())) {
+				ret.add(application);
+			}
+		}
+		return ret;
+	}
+
+	public Collection<Application> convertToApplicationList(AppLabel[] l) {
+		TreeSet<Application> ret = new TreeSet<Application>();
+		for (int i = 0; i < l.length; i++) {
+			AppLabel appLabel = l[i];
+			Application application = getApplication(appLabel.getApp());
+			if (application != null) {
 				ret.add(application);
 			}
 		}
@@ -183,139 +221,6 @@ public class ApplicationInfoManager {
 		// }
 		// }
 		return ret;
-	}
-
-	private Application retrieveActivityInfo(String pack, String app) {
-		int lastIndexOf = pack.lastIndexOf('.');
-		if (lastIndexOf == -1) {
-			return null;
-		}
-		pack = pack.substring(0, lastIndexOf);
-		try {
-			ComponentName componentName = new ComponentName(pack, app);
-			ActivityInfo activityInfo = pm.getActivityInfo(componentName, 0);
-			if (activityInfo != null) {
-				return new ApplicationImpl(activityInfo, (long) applicationMap.size());
-			} else {
-				return null;
-			}
-		} catch (NameNotFoundException e) {
-			return retrieveActivityInfo(pack, app);
-		}
-	}
-
-	private class ApplicationImpl implements Application, Comparable<Application> {
-
-		private final Long id;
-
-		private final ActivityInfo activityInfo;
-
-		private Drawable drawableIcon;
-
-		private String label;
-
-		private Intent intent;
-
-		public ApplicationImpl(ActivityInfo activityInfo, Long id) {
-			this.id = id;
-			this.activityInfo = activityInfo;
-		}
-
-		public String getLabel() {
-			// return getName();
-			if (label == null) {
-				CharSequence l = activityInfo.loadLabel(pm);
-				if (l != null) {
-					label = l.toString();
-				}
-			}
-			return label;
-		}
-
-		public int compareTo(Application another) {
-			int r = getLabel().compareToIgnoreCase(another.getLabel());
-			if (r == 0) {
-				r = getName().compareToIgnoreCase(another.getName());
-			}
-			return r;
-		}
-
-		public Long getId() {
-			return id;
-		}
-
-		public String getName() {
-			return activityInfo.name;
-		}
-
-		public String getPackage() {
-			return activityInfo.packageName;
-		}
-
-		public int getIconResource() {
-			if (activityInfo.icon > 0) {
-				return activityInfo.icon;
-			}
-			return activityInfo.applicationInfo.icon;
-		}
-
-		public Intent getIntent() {
-			if (intent == null) {
-				intent = new Intent(Intent.ACTION_MAIN);
-				intent.addCategory(Intent.CATEGORY_LAUNCHER);
-				intent.setClassName(getPackage(), getName());
-			}
-			return intent;
-		}
-
-		public Uri getIntentUri() {
-			Intent intent = getIntent();
-			Uri intentUri = null;
-			if (intent != null) {
-				intentUri = Uri.parse(intent.toURI());
-			}
-			return intentUri;
-		}
-
-		public Iterable<Object> getIterable(String[] cursorColumns) {
-			List<Object> values = new ArrayList<Object>();
-			for (String col : cursorColumns) {
-				if (col.equals(BaseColumns._ID)) {
-					values.add(getId());
-				} else if (col.equals(LiveFolders.NAME)) {
-					values.add(getLabel());
-				} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
-					values.add(getPackage());
-				} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
-					values.add(getIconResource());
-				} else if (col.equals(LiveFolders.INTENT)) {
-					values.add(getIntentUri());
-				}
-			}
-			return values;
-		}
-
-		public Drawable getIcon() {
-			return drawableIcon;
-		}
-
-		public void loadIcon() {
-			drawableIcon = activityInfo.loadIcon(pm);
-		}
-
-		public void showIcon(ImageView imageView) {
-			imageView.setImageDrawable(getIcon());
-		}
-
-		@Override
-		public String toString() {
-			return getLabel();
-		}
-
-		public void setLabel(String label) {
-			this.label = label;
-		}
-
 	}
 
 	public Cursor convertToCursor(List<AppLabel> l, String[] cursorColumns) throws NameNotFoundException {

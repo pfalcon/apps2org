@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.chooseicon;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -49,7 +47,7 @@ public class ChooseIconActivity extends Activity {
 
 			public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
 				Intent res = new Intent();
-				res.putExtra("icon", mIcons.get(pos));
+				res.putExtra("icon", mIcons[pos]);
 				res.putExtra("group", group);
 				setResult(RESULT_OK, res);
 				finish();
@@ -57,7 +55,7 @@ public class ChooseIconActivity extends Activity {
 		});
 	}
 
-	private List<Integer> mIcons;
+	private int[] mIcons;
 
 	private void loadIcons() {
 		mIcons = Label.getIconsList();
@@ -75,16 +73,16 @@ public class ChooseIconActivity extends Activity {
 				i = (ImageView) convertView;
 			}
 
-			i.setImageResource(mIcons.get(position));
+			i.setImageResource(mIcons[position]);
 			return i;
 		}
 
 		public final int getCount() {
-			return mIcons.size();
+			return mIcons.length;
 		}
 
 		public final Object getItem(int position) {
-			return mIcons.get(position);
+			return mIcons[position];
 		}
 
 		public final long getItemId(int position) {

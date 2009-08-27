@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.db;
 
-import java.util.List;
-
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.google.code.appsorganizer.AppsListActivity;
@@ -44,16 +42,16 @@ public class AppLabelDaoTest extends ActivityInstrumentationTestCase2<AppsListAc
 		Long id2 = null;
 		try {
 			lab1Id = labelDao.insert("lab1");
-			List<AppLabel> l = appsLabelDao.getApps(lab1Id);
-			assertEquals(0, l.size());
+			AppLabel[] l = appsLabelDao.getApps(lab1Id);
+			assertEquals(0, l.length);
 
 			id1 = appsLabelDao.insert(appId1, lab1Id);
 			id2 = appsLabelDao.insert(appId2, lab1Id);
 
 			l = appsLabelDao.getApps(lab1Id);
-			assertEquals(2, l.size());
-			assertEquals(appId1, l.get(0).getApp());
-			assertEquals(appId2, l.get(1).getApp());
+			assertEquals(2, l.length);
+			assertEquals(appId1, l[0].getApp());
+			assertEquals(appId2, l[1].getApp());
 		} finally {
 			if (lab1Id != null) {
 				labelDao.delete(lab1Id);
@@ -64,11 +62,10 @@ public class AppLabelDaoTest extends ActivityInstrumentationTestCase2<AppsListAc
 			if (id2 != null) {
 				appsLabelDao.delete(id2);
 			}
-			List<AppLabel> l = appsLabelDao.getApps(lab1Id);
-			assertEquals(0, l.size());
+			AppLabel[] l = appsLabelDao.getApps(lab1Id);
+			assertEquals(0, l.length);
 		}
 	}
-
 	// public void testSalva() {
 	// DatabaseHelper dbHelper = new DatabaseHelper(getActivity());
 	// LabelDao labelDao = dbHelper.labelDao;

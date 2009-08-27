@@ -23,7 +23,9 @@ import android.database.Cursor;
 
 public abstract class ObjectWithIdDao<T extends ObjectWithId> extends DbDao<T> {
 
-	public final DbColumns<T> ID = new DbColumns<T>("_id", "integer primary key autoincrement") {
+	protected static final String ID_COL_NAME = "_id";
+
+	public final DbColumns<T> ID = new DbColumns<T>(ID_COL_NAME, "integer primary key autoincrement") {
 		@Override
 		public void populateObject(T obj, Cursor c) {
 			obj.setId(getLong(c));

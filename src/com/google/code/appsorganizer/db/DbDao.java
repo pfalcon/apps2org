@@ -98,7 +98,8 @@ public abstract class DbDao<T> {
 		return convertCursorToList(c, cols);
 	}
 
-	public List<T> queryForList(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
+	public ArrayList<T> queryForList(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy,
+			String having) {
 		Cursor c = query(cols, filter, orderBy, groupBy, having);
 		return convertCursorToList(c, cols);
 	}
@@ -151,8 +152,8 @@ public abstract class DbDao<T> {
 		return m;
 	}
 
-	protected List<T> convertCursorToList(Cursor c, List<DbColumns<T>> cols) {
-		List<T> l = new ArrayList<T>();
+	protected ArrayList<T> convertCursorToList(Cursor c, List<DbColumns<T>> cols) {
+		ArrayList<T> l = new ArrayList<T>();
 		try {
 			// c.moveToFirst();
 			while (c.moveToNext()) {

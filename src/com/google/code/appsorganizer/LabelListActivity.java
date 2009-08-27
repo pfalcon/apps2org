@@ -115,7 +115,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
 			Application app = mAdapter.getChild(groupPos, childPos);
-			ApplicationContextMenuManager.singleton().createMenu(menu, app);
+			ApplicationContextMenuManager.singleton().createMenu(menu, app.getLabel());
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Label label = mAdapter.getGroup(groupPos);
 			menu.setHeaderTitle(label.getName());
@@ -218,7 +218,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 					List<String> l = dbHelper.appsLabelDao.getAppsWithLabel();
 					ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationListNot(l));
 				} else {
-					List<AppLabel> l = dbHelper.appsLabelDao.getApps(labelId);
+					AppLabel[] l = dbHelper.appsLabelDao.getApps(labelId);
 					ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
 				}
 				apps.put(labelId, ret);
@@ -249,7 +249,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 			Application application = getChild(groupPosition, childPosition);
 
-			vl.setText(dbHelper.labelDao.getLabelsString(application));
+			vl.setText(dbHelper.labelDao.getLabelsString(application.getName()));
 			v.setText(application.getLabel());
 			image.setImageDrawable(application.getIcon());
 			return cv;
