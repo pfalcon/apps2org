@@ -18,13 +18,8 @@
  */
 package com.google.code.appsorganizer;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.TabActivity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,25 +46,6 @@ public class HomeActivity extends TabActivity {
 				new Intent(this, LabelListActivity.class)));
 		// setProgressBarIndeterminateVisibility(true);
 
-	}
-
-	private void reloadApps() {
-		new AppsReloader(this, true).reload();
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		return new AlertDialog.Builder(HomeActivity.this).setMessage(R.string.alert_0_4).setPositiveButton(R.string.alert_dialog_ok,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						SharedPreferences pref = getPreferences(Activity.MODE_PRIVATE);
-						SharedPreferences.Editor editor = pref.edit();
-						editor.putBoolean(ALERT_0_4_PREF, true);
-						editor.commit();
-
-						reloadApps();
-					}
-				}).create();
 	}
 
 	@Override

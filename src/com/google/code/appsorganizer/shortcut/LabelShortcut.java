@@ -77,8 +77,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
-				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
 				setContentView(mainView);
+				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
 			} else if (msg.what == -2) {
 				titleView.setText(label.getName());
 			} else if (msg.what == -3) {
@@ -107,6 +107,10 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+				}
 				if (DRAWABLE_DEFAULT == null) {
 					DRAWABLE_DEFAULT = getResources().getDrawable(R.drawable.icon_default);
 				}
@@ -135,11 +139,11 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 					label = dbHelper.labelDao.queryById(labelId);
 				}
 				reloadGrid();
-				// Debug.stopMethodTracing();
 			}
 		};
 		setContentView(R.layout.shortcut_progress);
 		t.start();
+		// Debug.stopMethodTracing();
 	}
 
 	@Override
@@ -176,7 +180,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				for (Application a : newList) {
 					if (a.getIcon() == null) {
 						a.loadIcon(getPackageManager());
-						if (pos == 4) {
+						pos++;
+						if (pos == 20) {
 							handler.sendEmptyMessage(-3);
 							pos = 0;
 						}

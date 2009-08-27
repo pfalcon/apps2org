@@ -101,6 +101,10 @@ public class AppsListActivity extends ListActivity implements DbChangeListener {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+				}
 				genericDialogManager = new GenericDialogManager(AppsListActivity.this);
 				applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 				dbHelper = DatabaseHelper.initOrSingleton(AppsListActivity.this);

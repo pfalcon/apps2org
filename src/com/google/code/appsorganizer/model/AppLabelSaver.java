@@ -48,6 +48,7 @@ public class AppLabelSaver {
 					dbHelper.appsLabelDao.delete(b.getAppLabelId());
 				}
 			}
+			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
 			applicationInfoManager.notifyDataSetChanged();
 		}
 	}

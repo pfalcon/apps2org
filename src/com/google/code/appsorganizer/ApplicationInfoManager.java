@@ -99,7 +99,7 @@ public class ApplicationInfoManager {
 						}
 					}
 					if (keys != null) {
-						app.setLabelListString(createLabelListString(keys, values, name).toString());
+						app.setLabelListString(createLabelListString(keys, values, name));
 					}
 					if (handler != null) {
 						handler.sendEmptyMessage(apps.size());
@@ -110,7 +110,16 @@ public class ApplicationInfoManager {
 		}
 	}
 
-	private StringBuilder createLabelListString(String[] keys, String[] values, String name) {
+	public void reloadAppsLabel(LabelDao labelDao) {
+		DoubleArray appsLabels = labelDao.getAppsLabels();
+		String[] keys = appsLabels.keys;
+		String[] values = appsLabels.values;
+		for (Application app : apps) {
+			app.setLabelListString(createLabelListString(keys, values, app.getName()));
+		}
+	}
+
+	private String createLabelListString(String[] keys, String[] values, String name) {
 		StringBuilder b = new StringBuilder();
 		boolean found = false;
 		for (int i = 0; i < keys.length; i++) {
@@ -127,7 +136,7 @@ public class ApplicationInfoManager {
 				}
 			}
 		}
-		return b;
+		return b.toString();
 	}
 
 	private List<ResolveInfo> getAllResolveInfo() {
@@ -255,4 +264,5 @@ public class ApplicationInfoManager {
 			a.dataSetChanged();
 		}
 	}
+
 }
