@@ -249,7 +249,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 			Application application = getChild(groupPosition, childPosition);
 
-			vl.setText(dbHelper.labelDao.getLabelsString(application.getName()));
+			vl.setText(application.getLabelListString());
 			v.setText(application.getLabel());
 			image.setImageDrawable(application.getIcon());
 			return cv;

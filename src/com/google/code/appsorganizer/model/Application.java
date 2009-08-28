@@ -54,9 +54,9 @@ public class Application implements Comparable<Application>, GridObject {
 	}
 
 	public int compareTo(Application another) {
-		int r = getLabel().compareToIgnoreCase(another.getLabel());
+		int r = label.compareToIgnoreCase(another.label);
 		if (r == 0) {
-			r = getName().compareToIgnoreCase(another.getName());
+			r = activityInfo.name.compareToIgnoreCase(another.activityInfo.name);
 		}
 		return r;
 	}
@@ -143,5 +143,9 @@ public class Application implements Comparable<Application>, GridObject {
 
 	public void setLabelListString(String labelListString) {
 		this.labelListString = labelListString;
+	}
+
+	public void setIcon(Drawable drawableIcon) {
+		this.drawableIcon = drawableIcon;
 	}
 }

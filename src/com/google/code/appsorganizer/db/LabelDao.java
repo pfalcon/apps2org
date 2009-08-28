@@ -19,13 +19,11 @@
 package com.google.code.appsorganizer.db;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.TreeMap;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
@@ -71,33 +69,6 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	@Override
 	public Label createNewObject() {
 		return new Label();
-	}
-
-	public String getLabelsString(String name) {
-		StringBuilder b = new StringBuilder();
-		Cursor c = db.rawQuery(
-				"select l.label from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
-				new String[] { name });
-		try {
-			// c.moveToFirst();
-			while (c.moveToNext()) {
-				if (b.length() > 0) {
-					b.append(", ");
-				}
-				b.append(c.getString(0));
-			}
-		} finally {
-			c.close();
-		}
-		return b.toString();
-	}
-
-	public List<Label> getLabels(Application application) {
-		Cursor c = db
-				.rawQuery(
-						"select l._id, l.label, l.icon from labels l inner join apps_labels al on l._id = al.id_label where al.app=? order by l.label",
-						new String[] { application.getName() });
-		return convertCursorToList(c, columns);
 	}
 
 	public DoubleArray getAppsLabels() {

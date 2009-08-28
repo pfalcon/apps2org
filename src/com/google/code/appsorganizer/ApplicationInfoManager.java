@@ -82,7 +82,7 @@ public class ApplicationInfoManager {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
 					String name = resolveInfo.activityInfo.name;
-					Application app = oldApps.get(resolveInfo.activityInfo.name);
+					Application app = oldApps.get(name);
 					if (app == null) {
 						app = new Application(resolveInfo.activityInfo, pos++);
 						app.setLabel(nameCache.get(name));
