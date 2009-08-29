@@ -105,4 +105,9 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 	public Cursor getAppsCursor(Long labelId) {
 		return query(columns, LABEL_ID, labelId.toString(), null, null, null);
 	}
+
+	public int deleteAppsOfLabel(Long labelId) {
+		return db.delete(name, LABEL_ID_COL_NAME + " = ?", new String[] { labelId.toString() });
+	}
+
 }

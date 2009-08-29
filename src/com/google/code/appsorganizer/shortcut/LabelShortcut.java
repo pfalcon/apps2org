@@ -191,6 +191,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 					handler.sendEmptyMessage(-3);
 				}
 			}
+		} else {
+			handler.sendEmptyMessage(-1);
 		}
 	}
 

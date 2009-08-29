@@ -46,6 +46,7 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
+import com.google.code.appsorganizer.dialogs.ConfirmDialog;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
@@ -54,6 +55,14 @@ import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelListActivity extends ExpandableListActivity implements DbChangeListener {
+	private static final int MENU_ITEM_SELECT_APPS = 2;
+
+	private static final int MENU_ITEM_CHANGE_ICON = 1;
+
+	private static final int MENU_ITEM_RENAME = 0;
+
+	private static final int MENU_ITEM_DELETE = 3;
+
 	private MyExpandableListAdapter mAdapter;
 
 	private DatabaseHelper dbHelper;
@@ -63,6 +72,8 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
 	private TextEntryDialog textEntryDialog;
+
+	private ConfirmDialog confirmDialog;
 
 	private ApplicationInfoManager applicationInfoManager;
 
@@ -89,9 +100,11 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
 		chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
 		textEntryDialog = new TextEntryDialog(getString(R.string.rename_label), getString(R.string.label_name));
+		confirmDialog = new ConfirmDialog(getString(R.string.delete_confirm));
 		genericDialogManager.addDialog(chooseLabelDialog);
 		genericDialogManager.addDialog(chooseAppsDialogCreator);
 		genericDialogManager.addDialog(textEntryDialog);
+		genericDialogManager.addDialog(confirmDialog);
 
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
 		appButton = (ToggleButton) findViewById(R.id.appButton);
@@ -146,10 +159,12 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Label label = mAdapter.getGroup(groupPos);
 			menu.setHeaderTitle(label.getName());
-			MenuItem renameItem = menu.add(0, 0, 0, R.string.rename);
-			MenuItem changeIconItem = menu.add(0, 1, 1, R.string.change_icon);
-			MenuItem chooseAppsItem = menu.add(0, 2, 2, R.string.select_apps);
+			MenuItem renameItem = menu.add(0, MENU_ITEM_RENAME, 0, R.string.rename);
+			MenuItem deleteItem = menu.add(0, MENU_ITEM_DELETE, 1, R.string.delete);
+			MenuItem changeIconItem = menu.add(0, MENU_ITEM_CHANGE_ICON, 2, R.string.change_icon);
+			MenuItem chooseAppsItem = menu.add(0, MENU_ITEM_SELECT_APPS, 3, R.string.select_apps);
 			if (label.getId() == -1l) {
+				deleteItem.setEnabled(false);
 				renameItem.setEnabled(false);
 				changeIconItem.setEnabled(false);
 				chooseAppsItem.setEnabled(false);
@@ -170,7 +185,8 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 			return true;
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			final Label label = mAdapter.getGroup(groupPos);
-			if (item.getItemId() == 0) {
+			switch (item.getItemId()) {
+			case MENU_ITEM_RENAME:
 				textEntryDialog.setDefaultValue(label.getName());
 				textEntryDialog.setOnOkListener(new OnOkClickListener() {
 					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
@@ -181,14 +197,27 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 					}
 				});
 				showDialog(textEntryDialog.getDialogId());
-			} else if (item.getItemId() == 1) {
+				break;
+			case MENU_ITEM_DELETE:
+				confirmDialog.setOnOkListener(new OnOkClickListener() {
+					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+						dbHelper.appsLabelDao.deleteAppsOfLabel(label.getId());
+						dbHelper.labelDao.delete(label.getId());
+						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
+						applicationInfoManager.notifyDataSetChanged();
+					}
+				});
+				showDialog(confirmDialog.getDialogId());
+				break;
+			case MENU_ITEM_CHANGE_ICON:
 				Intent intent = new Intent(this, ChooseIconActivity.class);
 				intent.putExtra("group", groupPos);
 				startActivityForResult(intent, 2);
 				return true;
-			} else if (item.getItemId() == 2) {
+			case MENU_ITEM_SELECT_APPS:
 				chooseAppsDialogCreator.setCurrentLabel(label);
 				showDialog(chooseAppsDialogCreator.getDialogId());
+				break;
 			}
 		}
 
