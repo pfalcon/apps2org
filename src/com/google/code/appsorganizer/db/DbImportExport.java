@@ -83,7 +83,7 @@ public class DbImportExport {
 	private static void writeLabels(LabelDao labelDao, BufferedWriter bout) throws IOException {
 		ArrayList<Label> labels = labelDao.getLabels();
 		for (Label l : labels) {
-			bout.write(l.getIcon() + ICON_NAME_SEPARATOR + l.getName());
+			bout.write(l.getIconDb() + ICON_NAME_SEPARATOR + l.getName());
 			bout.newLine();
 		}
 	}
@@ -170,7 +170,7 @@ public class DbImportExport {
 	private static long insertOrUpdateLabel(LabelDao labelDao, ArrayList<Label> labels, int icon, String name) {
 		Label label = searchExistingLabel(labels, name);
 		if (label != null) {
-			if (label.getIcon() != icon) {
+			if (label.getIconDb() != icon) {
 				label.setIconDb(icon);
 				labelDao.update(label);
 			}
