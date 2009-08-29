@@ -55,12 +55,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return singleton;
 	}
 
+	private final SQLiteDatabase db;
+
 	public DatabaseHelper(Context context) {
 		super(context, "data", null, DATABASE_VERSION);
 		labelDao = new LabelDao();
 		appsLabelDao = new AppLabelDao();
 		appCacheDao = new AppCacheDao();
-		SQLiteDatabase db = getWritableDatabase();
+		db = getWritableDatabase();
 		labelDao.setDb(db);
 		appsLabelDao.setDb(db);
 		appCacheDao.setDb(db);
@@ -140,4 +142,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		v.put(AppLabelDao.LABEL_ID.getName(), labelId);
 		db.insert(AppLabelDao.NAME, null, v);
 	}
+
+	public void beginTransaction() {
+		db.beginTransaction();
+	}
+
+	public void setTransactionSuccessful() {
+		db.setTransactionSuccessful();
+	}
+
+	public void endTransaction() {
+		db.endTransaction();
+	}
+
 }

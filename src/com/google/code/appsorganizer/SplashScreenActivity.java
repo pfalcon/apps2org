@@ -46,9 +46,10 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.model.Application;
 
-public class SplashScreenActivity extends ListActivity implements DbChangeListener {
+public class SplashScreenActivity extends ListActivity implements DbChangeListener, GenericDialogManagerActivity {
 
 	private DatabaseHelper dbHelper;
 
@@ -61,6 +62,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	private ToggleButton labelButton;
 
 	private ToggleButton appButton;
+
+	private OptionMenuManager optionMenuManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +134,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
 				chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
 				genericDialogManager.addDialog(chooseLabelDialog);
+
+				optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 
 				applicationInfoManager.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler);
 				handler.sendEmptyMessage(-1);
@@ -271,11 +276,15 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		return OptionMenuManager.onCreateOptionsMenu(this, menu);
+		return optionMenuManager.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return OptionMenuManager.onOptionsItemSelected(this, item);
+		return optionMenuManager.onOptionsItemSelected(item);
+	}
+
+	public GenericDialogManager getGenericDialogManager() {
+		return genericDialogManager;
 	}
 }

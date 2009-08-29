@@ -58,6 +58,39 @@ public class ChooseIconActivity extends Activity {
 	private int[] mIcons;
 
 	private void loadIcons() {
+		// mIcons = new int[] { android.R.drawable.ic_menu_add,
+		// android.R.drawable.ic_menu_agenda,
+		// android.R.drawable.ic_menu_always_landscape_portrait,
+		// android.R.drawable.ic_menu_call, android.R.drawable.ic_menu_camera,
+		// android.R.drawable.ic_menu_close_clear_cancel,
+		// android.R.drawable.ic_menu_compass, android.R.drawable.ic_menu_crop,
+		// android.R.drawable.ic_menu_day, android.R.drawable.ic_menu_delete,
+		// android.R.drawable.ic_menu_directions,
+		// android.R.drawable.ic_menu_edit, android.R.drawable.ic_menu_gallery,
+		// android.R.drawable.ic_menu_help,
+		// android.R.drawable.ic_menu_info_details,
+		// android.R.drawable.ic_menu_manage,
+		// android.R.drawable.ic_menu_mapmode,
+		// android.R.drawable.ic_menu_month, android.R.drawable.ic_menu_more,
+		// android.R.drawable.ic_menu_my_calendar,
+		// android.R.drawable.ic_menu_mylocation,
+		// android.R.drawable.ic_menu_myplaces,
+		// android.R.drawable.ic_menu_preferences,
+		// android.R.drawable.ic_menu_recent_history,
+		// android.R.drawable.ic_menu_report_image,
+		// android.R.drawable.ic_menu_revert,
+		// android.R.drawable.ic_menu_rotate, android.R.drawable.ic_menu_save,
+		// android.R.drawable.ic_menu_search,
+		// android.R.drawable.ic_menu_send, android.R.drawable.ic_menu_set_as,
+		// android.R.drawable.ic_menu_share,
+		// android.R.drawable.ic_menu_slideshow,
+		// android.R.drawable.ic_menu_sort_alphabetically,
+		// android.R.drawable.ic_menu_sort_by_size,
+		// android.R.drawable.ic_menu_today, android.R.drawable.ic_menu_upload,
+		// android.R.drawable.ic_menu_upload_you_tube,
+		// android.R.drawable.ic_menu_view, android.R.drawable.ic_menu_week,
+		// android.R.drawable.ic_menu_zoom
+		// };
 		mIcons = Label.getIconsList();
 	}
 

@@ -78,9 +78,14 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 			public void onClick(View v) {
 				CharSequence t = tv.getText();
 				if (t != null && t.length() > 0) {
+					int count = adapter.getCount();
+					boolean[] checked = new boolean[count];
+					for (int i = 0; i < count; i++) {
+						checked[i] = listView.isItemChecked(i);
+					}
 					adapter.addLabel(t.toString());
-					for (int i = 0; i < adapter.getCount(); i++) {
-						listView.setItemChecked(i, adapter.getItem(i).isChecked());
+					for (int i = 1; i < count + 1; i++) {
+						listView.setItemChecked(i, checked[i - 1]);
 					}
 				}
 			}
@@ -127,7 +132,8 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		builder = builder.setView(body);
 		builder = builder.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
-				for (int i = 0; i < adapter.getCount(); i++) {
+				int count = adapter.getCount();
+				for (int i = 0; i < count; i++) {
 					adapter.getItem(i).setChecked(listView.isItemChecked(i));
 				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();

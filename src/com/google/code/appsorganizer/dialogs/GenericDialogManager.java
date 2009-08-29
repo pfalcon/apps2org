@@ -48,4 +48,17 @@ public class GenericDialogManager {
 	public Dialog onCreateDialog(int id) {
 		return dialogs.get(id).createDialog();
 	}
+
+	private SimpleDialog simpleDialog;
+
+	public void showSimpleDialog(String title, boolean showNegativeButton, OnOkClickListener onOkListener) {
+		if (simpleDialog == null) {
+			simpleDialog = new SimpleDialog();
+			addDialog(simpleDialog);
+		}
+		simpleDialog.setTitle(title);
+		simpleDialog.setOnOkListener(onOkListener);
+		simpleDialog.setShowNegativeButton(showNegativeButton);
+		owner.showDialog(simpleDialog.getDialogId());
+	}
 }

@@ -19,9 +19,17 @@
 package com.google.code.appsorganizer;
 
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import com.google.code.appsorganizer.db.DatabaseHelper;
+import com.google.code.appsorganizer.db.DbImportExport;
+import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 
 /**
  * @author fabio
@@ -29,28 +37,62 @@ import android.view.MenuItem;
  */
 public class OptionMenuManager {
 
-	public static boolean onCreateOptionsMenu(Activity context, Menu menu) {
+	private final Activity context;
+
+	private final TextEntryDialog textEntryDialog;
+
+	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper) {
+		this.context = context;
+		textEntryDialog = new TextEntryDialog(context.getString(R.string.export_menu), context.getString(R.string.file_name),
+				new OnOkClickListener() {
+					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+						String fileName = FileImporter.EXPORT_DIR + charSequence;
+						if (!fileName.endsWith("." + FileImporter.FILE_EXTENSION)) {
+							fileName += "." + FileImporter.FILE_EXTENSION;
+						}
+						try {
+							DbImportExport.export(dbHelper, fileName);
+						} catch (Throwable e) {
+							((GenericDialogManagerActivity) context).getGenericDialogManager().showSimpleDialog(
+									context.getString(R.string.export_error) + ": " + e.getMessage(), false, null);
+						}
+					}
+				});
+		((GenericDialogManagerActivity) context).getGenericDialogManager().addDialog(textEntryDialog);
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
 		// Hold on to this
 		// mMenu = menu;
 
 		// Inflate the currently selected menu XML resource.
 		MenuInflater inflater = context.getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
+
 		menu.getItem(0).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.getItem(1).setIcon(android.R.drawable.ic_menu_upload);
+		menu.getItem(2).setIcon(android.R.drawable.ic_menu_set_as);
+
 		// TODO info dialog
-		menu.getItem(1).setVisible(false);
-		menu.getItem(1).setIcon(android.R.drawable.ic_menu_info_details);
+		// menu.getItem(1).setVisible(false);
+		// menu.getItem(1).setIcon(android.R.drawable.ic_menu_info_details);
 
 		return true;
 	}
 
-	public static boolean onOptionsItemSelected(Activity context, MenuItem item) {
+	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.reload_apps:
 			new AppsReloader(context, false).reload();
 			return true;
-		case R.id.about:
+		case R.id.export_menu:
+			context.showDialog(textEntryDialog.getDialogId());
 			return true;
+		case R.id.import_menu:
+			context.startActivity(new Intent(context, FileImporter.class));
+			return true;
+			// case R.id.about:
+			// return true;
 		}
 		return false;
 	}

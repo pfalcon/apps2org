@@ -27,5 +27,13 @@
 	<string name="select_apps">Seleziona applicazioni</string>
 	<string name="loading_shortcut_grid">Caricamento in corso...</string>
 	<string name="delete">Elimina</string>
-	<string name="delete_confirm">Vuoi veramente eliminare la label selezionata?</string>
+	<string name="delete_confirm">Vuoi veramente eliminare la label %s?</string>
+	<string name="export_menu">Esporta</string>
+	<string name="import_menu">Importa</string>
+	<string name="export_error">Errore esportazione</string>
+	<string name="import_error">Errore importazione</string>
+	<string name="sdcard_error">Sdcart error</string>
+	<string name="directory_error">Errore directory</string>
+	<string name="file_name">Nome file</string>
+	<string name="no_files_error">Nessun file trovato nella directory AppsOrganizer nella sd card</string>
 </resources>

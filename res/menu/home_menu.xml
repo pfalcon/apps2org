@@ -4,7 +4,15 @@
     <item android:id="@+id/reload_apps"
         android:title="@string/reload_apps" />
 
+    <item android:id="@+id/export_menu"
+        android:title="@string/export_menu" />
+
+    <item android:id="@+id/import_menu"
+        android:title="@string/import_menu" />
+
+<!-- 
     <item android:id="@+id/about"
         android:title="@string/about" />
+ -->
 
 </menu>

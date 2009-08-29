@@ -20,38 +20,63 @@ package com.google.code.appsorganizer.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 
 import com.google.code.appsorganizer.R;
 
-public class ConfirmDialog extends GenericDialogCreator {
+public class SimpleDialog extends GenericDialogCreator {
 
 	private String title;
+	private boolean showNegativeButton = true;
 	private OnOkClickListener onOkListener;
 
-	public ConfirmDialog() {
+	public SimpleDialog() {
 	}
 
-	public ConfirmDialog(String title) {
+	public SimpleDialog(String title) {
 		this.title = title;
 	}
 
-	public ConfirmDialog(String title, OnOkClickListener onOkListener) {
+	public SimpleDialog(String title, OnOkClickListener onOkListener) {
 		this.title = title;
 		this.onOkListener = onOkListener;
 	}
 
+	public SimpleDialog(String title, boolean showNegativeButton) {
+		this.title = title;
+		this.showNegativeButton = showNegativeButton;
+	}
+
+	public SimpleDialog(String title, boolean showNegativeButton, OnOkClickListener onOkListener) {
+		this.title = title;
+		this.showNegativeButton = showNegativeButton;
+		this.onOkListener = onOkListener;
+	}
+
+	@Override
+	public void prepareDialog(Dialog dialog) {
+		super.prepareDialog(dialog);
+		dialog.setTitle(title);
+	}
+
 	@Override
 	public Dialog createDialog() {
-		return new AlertDialog.Builder(owner).setIcon(R.drawable.alert_dialog_icon).setTitle(title).setPositiveButton(
+		Builder d = new AlertDialog.Builder(owner).setIcon(R.drawable.alert_dialog_icon).setTitle(title).setPositiveButton(
 				R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
-						onOkListener.onClick(null, dialog, which);
+						if (onOkListener != null) {
+							onOkListener.onClick(null, dialog, which);
+						}
 					}
-				}).setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-			}
-		}).create();
+				});
+		if (showNegativeButton) {
+			d = d.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+				}
+			});
+		}
+		return d.create();
 	}
 
 	public String getTitle() {
@@ -68,5 +93,13 @@ public class ConfirmDialog extends GenericDialogCreator {
 
 	public void setOnOkListener(OnOkClickListener onOkListener) {
 		this.onOkListener = onOkListener;
+	}
+
+	public boolean isShowNegativeButton() {
+		return showNegativeButton;
+	}
+
+	public void setShowNegativeButton(boolean showNegativeButton) {
+		this.showNegativeButton = showNegativeButton;
 	}
 }
