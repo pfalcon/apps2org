@@ -5,7 +5,7 @@
 	<application android:icon="@drawable/icon" android:label="@string/app_name"
 		android:name="AppsOrganizerApplication">
 		<uses-library android:name="android.test.runner" />
-		<activity android:name=".SplashScreenActivity" android:label="@string/app_name" android:launchMode="singleInstance">
+		<activity android:name=".SplashScreenActivity" android:label="@string/app_name" android:launchMode="singleTask">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -14,7 +14,7 @@
 
 		<provider android:authorities="com.google.code.appsorganizer"
 			android:multiprocess="true" android:name=".livefolder.AppLabelProvider" />
-		<activity android:name=".LabelListActivity" android:launchMode="singleInstance"></activity>
+		<activity android:name=".LabelListActivity" android:launchMode="singleTask"></activity>
 		<activity android:name=".chooseicon.ChooseIconActivity"></activity>
         <!-- This section of sample code shows how your application can add shortcuts to -->
         <!-- the launcher (home screen).  Shortcuts have a three step life cycle. -->

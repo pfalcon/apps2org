@@ -176,6 +176,8 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
 						label.setName(charSequence.toString());
 						dbHelper.labelDao.update(label);
+						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
+						applicationInfoManager.notifyDataSetChanged();
 					}
 				});
 				showDialog(textEntryDialog.getDialogId());
