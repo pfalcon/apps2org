@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="app_name">Apps Organizer</string>
+	<string name="choose_labels_header">Sélectionner un libellé</string>
+	<string name="alert_dialog_ok">OK</string>
+	<string name="alert_dialog_hide">Cacher</string>
+	<string name="alert_dialog_cancel">Annuler</string>
+	<string name="alert_dialog_new">Nouveau</string>
+	<string name="tab_apps">Applis</string>
+	<string name="tab_labels">Libellés</string>
+	<string name="preparing_apps_list">Chargement de la liste des applications</string>
+	<string name="total_apps">Total applis</string>
+	<string name="please_wait_loading">Veuillez patienter pendant le chargement...</string>
+	<string name="rename">Renommer</string>
+	<string name="change_icon">Changer icône</string>
+	<string name="launch">Ouvrir</string>
+	<string name="rename_label">Renommer libellé</string>
+	<string name="label_name">Nom libellé</string>
+	<string name="other_label">Autres applis</string>
+	<string name="uninstall">Désinstaller</string>
+	<string name="reload_apps">Recharger</string>
+	<string name="about">A propos</string>
+	<string name="Apps_organizer_label">Libellé applis</string>
+	<string name="alert_0_4">Depuis la version 0.4 live folders n'est plus supporté. Remplacez les live folders existants par des raccourcis svp</string>
+	<string name="choose_labels_for_shortcut">Sélectionner un libellé</string>
+	<string name="all_labels">Tous les libellés</string>
+	<string name="select_apps">Sélectionner applis</string>
+	<string name="loading_shortcut_grid">Chargement...</string>
+</resources>
