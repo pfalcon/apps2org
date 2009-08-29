@@ -20,10 +20,10 @@ package com.google.code.appsorganizer;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-public class LabelDbManagerTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+public class LabelDbManagerTest extends ActivityInstrumentationTestCase2<SplashScreenActivity> {
 
 	public LabelDbManagerTest() {
-		super("com.google.code.appsorganizer", AppsListActivity.class);
+		super("com.google.code.appsorganizer", SplashScreenActivity.class);
 	}
 
 	private static final String appId = "aaaaaa";

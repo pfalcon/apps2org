@@ -6,16 +6,16 @@
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
 		<ToggleButton android:id="@+id/appButton"
-			android:layout_width="fill_parent" android:checked="true"
+			android:layout_width="fill_parent" android:checked="false"
 			android:layout_height="wrap_content" android:textOn="@string/tab_apps"
 			android:textOff="@string/tab_apps" android:layout_weight="1" />
 		<ToggleButton android:id="@+id/labelButton"
-			android:layout_width="fill_parent" android:checked="false"
+			android:layout_width="fill_parent" android:checked="true"
 			android:layout_height="wrap_content" android:textOff="@string/tab_labels"
 			android:textOn="@string/tab_labels" android:layout_weight="1" />
 	</LinearLayout>
-	<ListView android:id="@+id/android:list" android:layout_width="fill_parent"
-		android:layout_height="wrap_content"></ListView>
+	<ExpandableListView android:id="@+id/android:list" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" />
 
 </LinearLayout>
 

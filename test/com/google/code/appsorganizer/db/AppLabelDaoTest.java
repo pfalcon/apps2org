@@ -20,13 +20,13 @@ package com.google.code.appsorganizer.db;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-import com.google.code.appsorganizer.AppsListActivity;
+import com.google.code.appsorganizer.SplashScreenActivity;
 import com.google.code.appsorganizer.model.AppLabel;
 
-public class AppLabelDaoTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+public class AppLabelDaoTest extends ActivityInstrumentationTestCase2<SplashScreenActivity> {
 
 	public AppLabelDaoTest() {
-		super("com.google.code.appsorganizer", AppsListActivity.class);
+		super("com.google.code.appsorganizer", SplashScreenActivity.class);
 	}
 
 	private static final String appId1 = "aaaaaa1";

@@ -23,12 +23,12 @@ import java.util.List;
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.google.code.appsorganizer.AppLabelBinding;
-import com.google.code.appsorganizer.AppsListActivity;
+import com.google.code.appsorganizer.SplashScreenActivity;
 
-public class LabelDaoTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+public class LabelDaoTest extends ActivityInstrumentationTestCase2<SplashScreenActivity> {
 
 	public LabelDaoTest() {
-		super("com.google.code.appsorganizer", AppsListActivity.class);
+		super("com.google.code.appsorganizer", SplashScreenActivity.class);
 	}
 
 	// private static final Application appId = new Application(null, "aaaaaa");

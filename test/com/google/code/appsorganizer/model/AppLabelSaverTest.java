@@ -20,12 +20,12 @@ package com.google.code.appsorganizer.model;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-import com.google.code.appsorganizer.AppsListActivity;
+import com.google.code.appsorganizer.SplashScreenActivity;
 
-public class AppLabelSaverTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+public class AppLabelSaverTest extends ActivityInstrumentationTestCase2<SplashScreenActivity> {
 
 	public AppLabelSaverTest() {
-		super("com.google.code.appsorganizer", AppsListActivity.class);
+		super("com.google.code.appsorganizer", SplashScreenActivity.class);
 	}
 
 	// private static final Application appId = new Application("aaaaaa");

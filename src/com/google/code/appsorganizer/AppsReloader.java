@@ -48,7 +48,7 @@ public class AppsReloader {
 				singleton.notifyDataSetChanged();
 				pd.hide();
 				if (startHomeOnComplete) {
-					Intent intent = new Intent(context, HomeActivity.class);
+					Intent intent = new Intent(context, context.getClass());
 					context.startActivity(intent);
 				}
 			} else {

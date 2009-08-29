@@ -21,14 +21,14 @@ package com.google.code.appsorganizer;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.KeyEvent;
 
-public class ChooseLabelDialogTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+public class ChooseLabelDialogTest extends ActivityInstrumentationTestCase2<SplashScreenActivity> {
 
 	public ChooseLabelDialogTest() {
-		super("com.google.code.appsorganizer", AppsListActivity.class);
+		super("com.google.code.appsorganizer", SplashScreenActivity.class);
 	}
 
 	public void testButton() throws Exception {
-		AppsListActivity activity = getActivity();
+		SplashScreenActivity activity = getActivity();
 		getInstrumentation().sendCharacterSync(KeyEvent.KEYCODE_DPAD_DOWN);
 		activity.showDialog(activity.getChooseLabelDialog().getDialogId());
 	}

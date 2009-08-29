@@ -23,14 +23,14 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
-public class HomeActivityTest extends ActivityInstrumentationTestCase2<AppsListActivity> {
+public class HomeActivityTest extends ActivityInstrumentationTestCase2<SplashScreenActivity> {
 
 	public HomeActivityTest() {
-		super("com.google.code.appsorganizer", AppsListActivity.class);
+		super("com.google.code.appsorganizer", SplashScreenActivity.class);
 	}
 
 	public void testButton() throws Exception {
-		AppsListActivity activity = getActivity();
+		SplashScreenActivity activity = getActivity();
 		ListView list = (ListView) activity.findViewById(R.id.list);
 		getInstrumentation().sendCharacterSync(KeyEvent.KEYCODE_DPAD_DOWN);
 		// getInstrumentation().sendCharacterSync(KeyEvent.KEYCODE_DPAD_CENTER);

@@ -30,14 +30,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.View.OnClickListener;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 
 import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
@@ -65,9 +68,14 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 	private GenericDialogManager genericDialogManager;
 
+	private ToggleButton labelButton;
+
+	private ToggleButton appButton;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main_labels);
 		dbHelper = DatabaseHelper.singleton();
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 
@@ -85,6 +93,14 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		genericDialogManager.addDialog(chooseAppsDialogCreator);
 		genericDialogManager.addDialog(textEntryDialog);
 
+		labelButton = (ToggleButton) findViewById(R.id.labelButton);
+		appButton = (ToggleButton) findViewById(R.id.appButton);
+		appButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				startActivity(new Intent(LabelListActivity.this, SplashScreenActivity.class));
+			}
+		});
+
 		getExpandableListView().setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
 			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 				Application app = mAdapter.getChild(groupPosition, childPosition);
@@ -95,6 +111,17 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		});
 
 		registerForContextMenu(getExpandableListView());
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (!labelButton.isChecked()) {
+			labelButton.setChecked(true);
+		}
+		if (appButton.isChecked()) {
+			appButton.setChecked(false);
+		}
 	}
 
 	public void dataSetChanged() {
@@ -305,5 +332,15 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		return genericDialogManager.onCreateDialog(id);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		return OptionMenuManager.onCreateOptionsMenu(this, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		return OptionMenuManager.onOptionsItemSelected(this, item);
 	}
 }
