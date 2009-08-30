@@ -26,4 +26,14 @@
 	<string name="all_labels">Tous les libellés</string>
 	<string name="select_apps">Sélectionner applis</string>
 	<string name="loading_shortcut_grid">Chargement...</string>
+    <string name="delete">Supprimer</string>
+    <string name="delete_confirm">Confirmer la suppression du libellé %s?</string>
+    <string name="export_menu">Exporter</string>
+    <string name="import_menu">Importer</string>
+    <string name="export_error">Erreur lors de l'exportation</string>
+    <string name="import_error">Erreur lors de l'importation</string>
+    <string name="sdcard_error">Erreur SD card</string>
+    <string name="directory_error">Erreur dossier</string>
+    <string name="file_name">Nom du fichier</string>
+    <string name="no_files_error">Aucun fichier trouvé dans le répertoir AppsOrganizer sur la SD card</string>	
 </resources>
