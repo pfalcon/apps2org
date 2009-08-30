@@ -31,7 +31,6 @@ import android.os.Message;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -73,12 +72,19 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	public static Drawable DRAWABLE_DEFAULT;
 
+	private boolean showProgress;
+
 	private final Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
-				setContentView(mainView);
+				if (showProgress) {
+					setContentView(mainView);
+				}
 				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
+				if (!showProgress) {
+					setVisible(true);
+				}
 			} else if (msg.what == -2) {
 				titleView.setText(label.getName());
 			} else if (msg.what == -3) {
@@ -141,7 +147,13 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				reloadGrid();
 			}
 		};
-		setContentView(R.layout.shortcut_progress);
+		if (ApplicationInfoManager.isSingletonNull()) {
+			setContentView(R.layout.shortcut_progress);
+			showProgress = true;
+		} else {
+			setVisible(false);
+			showProgress = false;
+		}
 		t.start();
 		// Debug.stopMethodTracing();
 	}
@@ -256,24 +268,41 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, 0, 0, R.string.select_apps);
 		return true;
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		return label != null && label.getId() != ALL_LABELS_ID;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case 0:
-			chooseAppsDialogCreator.setCurrentLabel(label);
-			showDialog(chooseAppsDialogCreator.getDialogId());
-			return true;
+		if (label != null && label.getId() != ALL_LABELS_ID) {
+			showChooseAppsDialog();
 		}
 		return false;
+	}
+
+	// @Override
+	// public boolean onCreateOptionsMenu(Menu menu) {
+	// menu.add(0, 0, 0, R.string.select_apps);
+	// return true;
+	// }
+	//
+	// @Override
+	// public boolean onPrepareOptionsMenu(Menu menu) {
+	// return label != null && label.getId() != ALL_LABELS_ID;
+	// }
+	//
+	// @Override
+	// public boolean onOptionsItemSelected(MenuItem item) {
+	// switch (item.getItemId()) {
+	// case 0:
+	// showChooseAppsDialog();
+	// return true;
+	// }
+	// return false;
+	// }
+
+	private void showChooseAppsDialog() {
+		chooseAppsDialogCreator.setCurrentLabel(label);
+		showDialog(chooseAppsDialogCreator.getDialogId());
 	}
 
 	@Override

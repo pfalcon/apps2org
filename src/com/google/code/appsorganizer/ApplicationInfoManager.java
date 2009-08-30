@@ -157,6 +157,10 @@ public class ApplicationInfoManager {
 		return singleton;
 	}
 
+	public static boolean isSingletonNull() {
+		return singleton == null;
+	}
+
 	private HashMap<String, Application> applicationMap = new HashMap<String, Application>();
 
 	private ArrayList<Application> apps;
