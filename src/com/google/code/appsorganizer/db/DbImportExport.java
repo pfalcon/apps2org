@@ -159,7 +159,11 @@ public class DbImportExport {
 				break;
 			}
 			String[] split = s.split(ICON_NAME_SEPARATOR);
-			int icon = Integer.parseInt(split[0]);
+			Integer icon = null;
+			try {
+				icon = Integer.parseInt(split[0]);
+			} catch (NumberFormatException ignored) {
+			}
 			String name = split[1];
 			long id = insertOrUpdateLabel(labelDao, labels, icon, name);
 			ret.put(name, id);
@@ -167,10 +171,10 @@ public class DbImportExport {
 		return ret;
 	}
 
-	private static long insertOrUpdateLabel(LabelDao labelDao, ArrayList<Label> labels, int icon, String name) {
+	private static long insertOrUpdateLabel(LabelDao labelDao, ArrayList<Label> labels, Integer icon, String name) {
 		Label label = searchExistingLabel(labels, name);
 		if (label != null) {
-			if (label.getIconDb() != icon) {
+			if (icon != null && label.getIconDb() != icon) {
 				label.setIconDb(icon);
 				labelDao.update(label);
 			}
