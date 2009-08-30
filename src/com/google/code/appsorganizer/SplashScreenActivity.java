@@ -226,8 +226,9 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	private final Handler listHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			((ArrayAdapter<?>) getListAdapter()).notifyDataSetChanged();
-			if (msg.what == -2) {
+			if (msg.what == -1) {
+				((ArrayAdapter<?>) getListAdapter()).notifyDataSetChanged();
+			} else if (msg.what == -2) {
 				setProgressBarIndeterminateVisibility(false);
 			}
 		}
@@ -269,8 +270,9 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 			}
 		}
 		if (pos > 0) {
-			listHandler.sendEmptyMessage(-2);
+			listHandler.sendEmptyMessage(-1);
 		}
+		listHandler.sendEmptyMessage(-2);
 		// Debug.stopMethodTracing();
 	}
 
