@@ -87,6 +87,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 					for (int i = 1; i < count + 1; i++) {
 						listView.setItemChecked(i, checked[i - 1]);
 					}
+					listView.setItemChecked(0, true);
 				}
 			}
 		});
