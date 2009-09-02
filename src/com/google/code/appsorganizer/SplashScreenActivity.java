@@ -70,6 +70,12 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		super.onCreate(savedInstanceState);
 		genericDialogManager = new GenericDialogManager(SplashScreenActivity.this);
 
+		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
+		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
+		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
+		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
+		genericDialogManager.addDialog(chooseLabelDialog);
+
 		// Debug.startMethodTracing("splash");
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -131,12 +137,6 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 				}
-				applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-				dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
-				chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
-				genericDialogManager.addDialog(chooseLabelDialog);
-
-				optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 
 				applicationInfoManager.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler);
 				handler.sendEmptyMessage(-1);
