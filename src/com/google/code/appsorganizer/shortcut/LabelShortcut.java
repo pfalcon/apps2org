@@ -23,7 +23,9 @@ import java.util.Collection;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -74,16 +76,16 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private boolean showProgress;
 
+	private ProgressDialog pd;
+
 	private final Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
-				if (showProgress) {
-					setContentView(mainView);
-				}
 				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
-				if (!showProgress) {
-					setVisible(true);
+				setVisible(true);
+				if (showProgress) {
+					pd.hide();
 				}
 			} else if (msg.what == -2) {
 				titleView.setText(label.getName());
@@ -96,13 +98,16 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		// Debug.startMethodTracing("grid");
-		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-		getOrCreateGrid();
-		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_shortcut_title);
-		titleView = (TextView) findViewById(R.id.title_text);
+		genericDialogManager = new GenericDialogManager(this);
 
-		findViewById(R.id.shortcut_title).setOnClickListener(new OnClickListener() {
+		// Debug.startMethodTracing("grid");
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getOrCreateGrid();
+		View titleLayout = findViewById(R.id.titleLayout);
+		titleLayout.setBackgroundColor(Color.GRAY);
+		titleView = (TextView) findViewById(R.id.title);
+
+		findViewById(R.id.closeButton).setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (!onBack()) {
 					finish();
@@ -127,7 +132,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				dbHelper = DatabaseHelper.initOrSingleton(LabelShortcut.this);
 				applicationInfoManager.getOrReloadAppsMap(dbHelper.appCacheDao);
 
-				genericDialogManager = new GenericDialogManager(LabelShortcut.this);
 				chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
 				genericDialogManager.addDialog(chooseAppsDialogCreator);
 
@@ -147,11 +151,11 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				reloadGrid();
 			}
 		};
+		setVisible(false);
 		if (ApplicationInfoManager.isSingletonNull()) {
-			setContentView(R.layout.shortcut_progress);
+			pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list), getText(R.string.loading_shortcut_grid), true, false);
 			showProgress = true;
 		} else {
-			setVisible(false);
 			showProgress = false;
 		}
 		t.start();

@@ -68,6 +68,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		genericDialogManager = new GenericDialogManager(SplashScreenActivity.this);
+
 		// Debug.startMethodTracing("splash");
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -129,7 +131,6 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 				}
-				genericDialogManager = new GenericDialogManager(SplashScreenActivity.this);
 				applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 				dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
 				chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);

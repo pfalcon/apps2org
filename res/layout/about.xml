@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<TextView android:text="@string/Author" android:gravity="center_horizontal" android:id="@+id/author"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:paddingBottom="8px" android:textSize="18px"></TextView>
+
+	<TextView android:text="code.google.com/p/appsorganizer/"
+		android:gravity="center_horizontal" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:paddingBottom="16px"
+		android:textSize="16px" android:autoLink="web"></TextView>
+
+	<TextView android:text="@string/Any_suggestion_or_bug_to" android:gravity="center_horizontal"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:textSize="16px"></TextView>
+	<TextView android:text="appsorganizer@gmail.com"
+		android:gravity="center_horizontal" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:paddingBottom="16px"
+		android:textSize="16px" android:autoLink="email"></TextView>
+
+	<TextView android:text="@string/Follow_me_on" android:gravity="center_horizontal"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:textSize="16px"></TextView>
+	<TextView android:text="twitter.com/appsorganizer"
+		android:gravity="center_horizontal" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:paddingBottom="16px"
+		android:textSize="16px" android:autoLink="web"></TextView>
+
+	<TextView android:text="@string/How_to" android:gravity="center_horizontal"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:textSize="16px"></TextView>
+	<TextView android:text="code.google.com/p/appsorganizer/wiki/HowTo"
+		android:gravity="center_horizontal" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:paddingBottom="16px"
+		android:textSize="16px" android:autoLink="web"></TextView>
+
+</LinearLayout>
+
+

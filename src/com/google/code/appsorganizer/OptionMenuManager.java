@@ -41,6 +41,8 @@ public class OptionMenuManager {
 
 	private final TextEntryDialog textEntryDialog;
 
+	private final AboutDialogCreator aboutDialogCreator;
+
 	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper) {
 		this.context = context;
 		textEntryDialog = new TextEntryDialog(context.getString(R.string.export_menu), context.getString(R.string.file_name),
@@ -58,7 +60,9 @@ public class OptionMenuManager {
 						}
 					}
 				});
+		aboutDialogCreator = new AboutDialogCreator();
 		((GenericDialogManagerActivity) context).getGenericDialogManager().addDialog(textEntryDialog);
+		((GenericDialogManagerActivity) context).getGenericDialogManager().addDialog(aboutDialogCreator);
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -69,13 +73,11 @@ public class OptionMenuManager {
 		MenuInflater inflater = context.getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
 
-		menu.getItem(0).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.getItem(1).setIcon(android.R.drawable.ic_menu_upload);
-		menu.getItem(2).setIcon(android.R.drawable.ic_menu_set_as);
+		menu.getItem(0).setIcon(R.drawable.fileimport);
+		menu.getItem(1).setIcon(R.drawable.fileexport);
+		menu.getItem(2).setIcon(R.drawable.reload);
 
-		// TODO info dialog
-		// menu.getItem(1).setVisible(false);
-		// menu.getItem(1).setIcon(android.R.drawable.ic_menu_info_details);
+		menu.getItem(3).setIcon(R.drawable.info);
 
 		return true;
 	}
@@ -91,8 +93,9 @@ public class OptionMenuManager {
 		case R.id.import_menu:
 			context.startActivity(new Intent(context, FileImporter.class));
 			return true;
-			// case R.id.about:
-			// return true;
+		case R.id.about:
+			context.showDialog(aboutDialogCreator.getDialogId());
+			return true;
 		}
 		return false;
 	}
