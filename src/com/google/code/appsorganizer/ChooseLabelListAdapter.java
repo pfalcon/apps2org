@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 
 public class ChooseLabelListAdapter extends ArrayAdapter<AppLabelBinding> {
@@ -48,5 +52,14 @@ public class ChooseLabelListAdapter extends ArrayAdapter<AppLabelBinding> {
 			}
 		}
 		return ret;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		View view = super.getView(position, convertView, parent);
+		if (convertView == null) {
+			view.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.FILL_PARENT, 44));
+		}
+		return view;
 	}
 }

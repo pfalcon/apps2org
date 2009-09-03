@@ -155,7 +155,6 @@ public abstract class DbDao<T> {
 	protected ArrayList<T> convertCursorToList(Cursor c, List<DbColumns<T>> cols) {
 		ArrayList<T> l = new ArrayList<T>();
 		try {
-			// c.moveToFirst();
 			while (c.moveToNext()) {
 				T t = createNewObject();
 				for (DbColumns<T> col : cols) {
@@ -170,8 +169,6 @@ public abstract class DbDao<T> {
 	}
 
 	protected T convertCursorToObject(Cursor c, List<DbColumns<T>> cols) {
-		// c.moveToFirst();
-		// ((Activity) context).startManagingCursor(c);
 		try {
 			while (c.moveToNext()) {
 				T t = createNewObject();
@@ -254,6 +251,26 @@ public abstract class DbDao<T> {
 
 	public void setDb(SQLiteDatabase db) {
 		this.db = db;
+	}
+
+	protected T[] convertCursorToArray(Cursor c, T[] l) {
+		try {
+			int i = 0;
+			while (c.moveToNext()) {
+				l[i++] = createObject(c);
+			}
+		} finally {
+			c.close();
+		}
+		return l;
+	}
+
+	protected T createObject(Cursor c) {
+		T t = createNewObject();
+		for (DbColumns<T> col : columns) {
+			col.populateObject(t, c);
+		}
+		return t;
 	}
 
 }

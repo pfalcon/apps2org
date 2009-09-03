@@ -35,6 +35,23 @@ public class AppLabelSaver {
 		this.applicationInfoManager = applicationInfoManager;
 	}
 
+	public static void saveStarred(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
+			boolean starred) {
+		dbHelper.appCacheDao.updateStarred(application.getName(), starred);
+		applicationInfoManager.notifyDataSetChanged();
+	}
+
+	public static void saveIgnored(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
+			boolean ignored) {
+		dbHelper.appCacheDao.updateIgnored(application.getName(), ignored);
+		if (ignored) {
+			applicationInfoManager.ignoreApp(application);
+		} else {
+			applicationInfoManager.dontIgnoreApp(application);
+		}
+		applicationInfoManager.notifyDataSetChanged();
+	}
+
 	public void save(Application application, List<AppLabelBinding> modifiedLabels) {
 		if (!modifiedLabels.isEmpty()) {
 			for (AppLabelBinding b : modifiedLabels) {

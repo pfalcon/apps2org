@@ -36,7 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public final LabelDao labelDao;
 	public final AppCacheDao appCacheDao;
 
-	private static final int DATABASE_VERSION = 12;
+	private static final int DATABASE_VERSION = 14;
 
 	private static DatabaseHelper singleton;
 
@@ -74,11 +74,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(appsLabelDao.getCreateTableScript());
 		db.execSQL(appCacheDao.getCreateTableScript());
 
-		long internetId = insertLabel(db, "Internet", Label.convertToIconDb(R.drawable.globe));
-		long androidId = insertLabel(db, "Android", Label.convertToIconDb(R.drawable.pda_black));
-		long multimediaId = insertLabel(db, "Multimedia", Label.convertToIconDb(R.drawable.multimedia));
-		long utilityId = insertLabel(db, "Utility", Label.convertToIconDb(R.drawable.service_manager));
-		insertLabel(db, "Games", Label.convertToIconDb(R.drawable.joystick));
+		long internetId = insertLabel(db, null, "Internet", Label.convertToIconDb(R.drawable.globe));
+		long androidId = insertLabel(db, null, "Android", Label.convertToIconDb(R.drawable.pda_black));
+		long multimediaId = insertLabel(db, null, "Multimedia", Label.convertToIconDb(R.drawable.multimedia));
+		long utilityId = insertLabel(db, null, "Utility", Label.convertToIconDb(R.drawable.service_manager));
+		insertLabel(db, null, "Games", Label.convertToIconDb(R.drawable.joystick));
 
 		insertInterneApps(db, internetId);
 		insertAndroidApps(db, androidId);
@@ -124,15 +124,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion <= 11) {
 			db.execSQL(appCacheDao.getCreateTableScript());
 		}
+		if (oldVersion <= 13) {
+			db.execSQL("alter table " + appCacheDao.getName() + " add " + AppCacheDao.STARRED_COL_NAME + ' '
+					+ AppCacheDao.STARRED.getDescription());
+			db.execSQL("alter table " + appCacheDao.getName() + " add " + AppCacheDao.IGNORED_COL_NAME + ' '
+					+ AppCacheDao.IGNORED.getDescription());
+		}
 		// db.execSQL(appsLabelDao.getDropTableScript());
 		// db.execSQL(labelDao.getDropTableScript());
 		// onCreate(db);
 	}
 
-	private long insertLabel(SQLiteDatabase db, String value, Integer icon) {
+	private long insertLabel(SQLiteDatabase db, Long id, String value, Integer icon) {
 		ContentValues v = new ContentValues();
 		v.put(LabelDao.LABEL.getName(), value);
 		v.put(LabelDao.ICON.getName(), icon);
+		if (id != null) {
+			v.put(LabelDao.ID_COL_NAME, id);
+		}
 		return db.insert(LabelDao.NAME, null, v);
 	}
 

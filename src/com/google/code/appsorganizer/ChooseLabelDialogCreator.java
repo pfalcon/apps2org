@@ -95,9 +95,10 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	public List<AppLabelBinding> getAllLabels(String appId) {
 		List<AppLabelBinding> ret = new ArrayList<AppLabelBinding>();
-		List<AppLabel> labels = labelAdapter.appsLabelDao.getApps(appId);
+		AppLabel[] labels = labelAdapter.appsLabelDao.getApps(appId);
 		TreeMap<Long, Label> all = labelAdapter.labelDao.getLabelsTreeMap();
-		for (AppLabel l : labels) {
+		for (int i = 0; i < labels.length; i++) {
+			AppLabel l = labels[i];
 			AppLabelBinding b = new AppLabelBinding();
 			b.setChecked(true);
 			b.setOriginalChecked(true);

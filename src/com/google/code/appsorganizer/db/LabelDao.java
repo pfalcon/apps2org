@@ -101,7 +101,16 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public ArrayList<Label> getLabels() {
-		return queryForList(columns, null, "upper(" + LABEL.getName() + ")", null, null);
+		Cursor c = db.query(name, COLS_STRING, null, null, null, null, ("upper(" + LABEL.getName() + ")"));
+		ArrayList<Label> l = new ArrayList<Label>(c.getColumnCount());
+		try {
+			while (c.moveToNext()) {
+				l.add(createObject(c));
+			}
+		} finally {
+			c.close();
+		}
+		return l;
 	}
 
 	public Cursor getLabelsCursor() {
@@ -123,16 +132,21 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		Cursor c = db.query(name, COLS_STRING, ID_COL_NAME + "=?", new String[] { id.toString() }, null, null, null);
 		try {
 			if (c.moveToNext()) {
-				Label t = new Label();
-				t.setId(c.getLong(0));
-				t.setName(c.getString(1));
-				t.setIcon(c.getInt(2));
-				return t;
+				return createObject(c);
 			}
 		} finally {
 			c.close();
 		}
 		return null;
+	}
+
+	@Override
+	protected Label createObject(Cursor c) {
+		Label t = new Label();
+		t.setId(c.getLong(0));
+		t.setName(c.getString(1));
+		t.setIconDb(c.getInt(2));
+		return t;
 	}
 
 }

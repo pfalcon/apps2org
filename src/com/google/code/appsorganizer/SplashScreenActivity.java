@@ -20,6 +20,7 @@ package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -36,17 +37,22 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
+import com.google.code.appsorganizer.model.AppLabelSaver;
 import com.google.code.appsorganizer.model.Application;
 
 public class SplashScreenActivity extends ListActivity implements DbChangeListener, GenericDialogManagerActivity {
@@ -80,12 +86,15 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
+
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 				chooseLabelDialog.setCurrentApp(((Application) getListAdapter().getItem(position)));
 				showDialog(chooseLabelDialog.getDialogId());
 			}
 		});
+		getListView().setClickable(true);
+
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
 		appButton = (ToggleButton) findViewById(R.id.appButton);
 		labelButton.setOnClickListener(new OnClickListener() {
@@ -146,23 +155,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 						appsArray)) {
 					@Override
 					public View getView(int position, View v, ViewGroup parent) {
-						ViewHolder viewHolder;
-						if (v == null) {
-							LayoutInflater factory = LayoutInflater.from(getContext());
-							v = factory.inflate(R.layout.app_row, null);
-							viewHolder = new ViewHolder();
-							viewHolder.image = (ImageView) v.findViewById(R.id.image);
-							viewHolder.labels = (TextView) v.findViewById(R.id.labels);
-							viewHolder.name = (TextView) v.findViewById(R.id.name);
-							v.setTag(viewHolder);
-						} else {
-							viewHolder = (ViewHolder) v.getTag();
-						}
-						Application a = getItem(position);
-						viewHolder.image.setImageDrawable(a.getIcon());
-						viewHolder.labels.setText(a.getLabelListString());
-						viewHolder.name.setText(a.getLabel());
-						return v;
+						return getAppView(SplashScreenActivity.this, dbHelper, applicationInfoManager, v, getItem(position),
+								chooseLabelDialog);
 					}
 
 				};
@@ -181,6 +175,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		ImageView image;
 		TextView labels;
 		TextView name;
+		CheckBox starred;
 	}
 
 	@Override
@@ -193,14 +188,14 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		Application app = (Application) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.singleton().createMenu(menu, app.getLabel());
+		ApplicationContextMenuManager.singleton().createMenu(menu, app);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		Application app = (Application) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog);
+		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog, applicationInfoManager);
 		return true;
 	}
 
@@ -289,5 +284,54 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 
 	public GenericDialogManager getGenericDialogManager() {
 		return genericDialogManager;
+	}
+
+	public static View getAppView(final Activity context, final DatabaseHelper dbHelper,
+			final ApplicationInfoManager applicationInfoManager, View v, final Application a,
+			final ChooseLabelDialogCreator chooseLabelDialog) {
+		ViewHolder viewHolder;
+		if (v == null) {
+			LayoutInflater factory = LayoutInflater.from(context);
+			v = factory.inflate(R.layout.app_row, null);
+			viewHolder = new ViewHolder();
+			viewHolder.image = (ImageView) v.findViewById(R.id.image);
+			viewHolder.labels = (TextView) v.findViewById(R.id.labels);
+			viewHolder.name = (TextView) v.findViewById(R.id.name);
+			viewHolder.starred = (CheckBox) v.findViewById(R.id.starCheck);
+			v.setTag(viewHolder);
+		} else {
+			viewHolder = (ViewHolder) v.getTag();
+		}
+		OnClickListener onClickListener = new OnClickListener() {
+			public void onClick(View v) {
+				chooseLabelDialog.setCurrentApp(a);
+				context.showDialog(chooseLabelDialog.getDialogId());
+			}
+		};
+		viewHolder.labels.setOnClickListener(onClickListener);
+		viewHolder.image.setOnClickListener(onClickListener);
+		viewHolder.name.setOnClickListener(onClickListener);
+
+		OnLongClickListener onLongClickListener = new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				return false;
+			}
+		};
+		viewHolder.labels.setOnLongClickListener(onLongClickListener);
+		viewHolder.image.setOnLongClickListener(onLongClickListener);
+		viewHolder.name.setOnLongClickListener(onLongClickListener);
+
+		viewHolder.image.setImageDrawable(a.getIcon());
+		viewHolder.labels.setText(a.getLabelListString());
+		viewHolder.name.setText(a.getLabel());
+		viewHolder.starred.setOnCheckedChangeListener(null);
+		viewHolder.starred.setChecked(a.isStarred());
+		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				a.setStarred(isChecked);
+				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, a, isChecked);
+			}
+		});
+		return v;
 	}
 }

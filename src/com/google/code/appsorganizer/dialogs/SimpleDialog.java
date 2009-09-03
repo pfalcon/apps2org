@@ -28,6 +28,7 @@ import com.google.code.appsorganizer.R;
 public class SimpleDialog extends GenericDialogCreator {
 
 	private String title;
+	private String message;
 	private boolean showNegativeButton = true;
 	private OnOkClickListener onOkListener;
 
@@ -36,6 +37,11 @@ public class SimpleDialog extends GenericDialogCreator {
 
 	public SimpleDialog(String title) {
 		this.title = title;
+	}
+
+	public SimpleDialog(String title, String message) {
+		this.title = title;
+		this.message = message;
 	}
 
 	public SimpleDialog(String title, OnOkClickListener onOkListener) {
@@ -76,6 +82,9 @@ public class SimpleDialog extends GenericDialogCreator {
 				}
 			});
 		}
+		if (message != null) {
+			d = d.setMessage(message);
+		}
 		return d.create();
 	}
 
@@ -101,5 +110,9 @@ public class SimpleDialog extends GenericDialogCreator {
 
 	public void setShowNegativeButton(boolean showNegativeButton) {
 		this.showNegativeButton = showNegativeButton;
+	}
+
+	public String getMessage() {
+		return message;
 	}
 }

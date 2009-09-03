@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -71,8 +70,9 @@ public class ApplicationInfoManager {
 				DoubleArray appsLabels = labelDao.getAppsLabels();
 				keys = appsLabels.keys;
 				values = appsLabels.values;
+				// TODO update al nome internazionazzato di ignored (se serve)
 			}
-			HashMap<String, String> nameCache = appCacheDao.queryForCacheMap();
+			HashMap<String, AppCache> nameCache = appCacheDao.queryForCacheMap();
 			HashMap<String, Application> oldApps = applicationMap;
 			applicationMap = new HashMap<String, Application>();
 			List<ResolveInfo> installedApplications = getAllResolveInfo();
@@ -82,13 +82,18 @@ public class ApplicationInfoManager {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
 					String name = resolveInfo.activityInfo.name;
+					AppCache appCache = nameCache.get(name);
 					Application app = oldApps.get(name);
 					if (app == null) {
 						app = new Application(resolveInfo.activityInfo, pos++);
-						app.setLabel(nameCache.get(name));
+						if (appCache != null) {
+							app.setLabel(appCache.getLabel());
+						}
+					}
+					if (appCache != null) {
+						app.setStarred(appCache.isStarred());
 					}
 					applicationMap.put(name, app);
-					apps.add(app);
 					// if label is not in cache table
 					if (app.getLabel() == null) {
 						// retrieve and store label
@@ -99,10 +104,15 @@ public class ApplicationInfoManager {
 						}
 					}
 					if (keys != null) {
-						app.setLabelListString(createLabelListString(keys, values, name));
+						loadLabels(keys, values, app);
 					}
-					if (handler != null) {
-						handler.sendEmptyMessage(apps.size());
+					boolean ignored = appCache != null && appCache.isIgnored();
+					app.setIgnored(ignored);
+					if (!ignored) {
+						apps.add(app);
+						if (handler != null) {
+							handler.sendEmptyMessage(apps.size());
+						}
 					}
 				}
 			}
@@ -115,17 +125,26 @@ public class ApplicationInfoManager {
 		String[] keys = appsLabels.keys;
 		String[] values = appsLabels.values;
 		for (Application app : apps) {
-			app.setLabelListString(createLabelListString(keys, values, app.getName()));
+			loadLabels(keys, values, app);
 		}
 	}
 
-	private String createLabelListString(String[] keys, String[] values, String name) {
+	public void ignoreApp(Application a) {
+		apps.remove(a);
+	}
+
+	public void dontIgnoreApp(Application a) {
+		apps.add(a);
+		Collections.sort(apps);
+	}
+
+	private void loadLabels(String[] keys, String[] values, Application app) {
 		StringBuilder b = new StringBuilder();
 		boolean found = false;
 		for (int i = 0; i < keys.length; i++) {
 			String k = keys[i];
-			if (k.equals(name)) {
-				if (found) {
+			if (k.equals(app.getName())) {
+				if (b.length() > 0) {
 					b.append(", ");
 				}
 				b.append(values[i]);
@@ -136,7 +155,8 @@ public class ApplicationInfoManager {
 				}
 			}
 		}
-		return b.toString();
+		String l = b.toString();
+		app.setLabelListString(l);
 	}
 
 	private List<ResolveInfo> getAllResolveInfo() {
@@ -169,11 +189,17 @@ public class ApplicationInfoManager {
 		return apps;
 	}
 
-	public Collection<Application> convertToApplicationListNot(List<String> l) {
-		HashSet<String> s = new HashSet<String>(l);
+	public Collection<Application> convertToApplicationListNot(String[] l) {
 		TreeSet<Application> ret = new TreeSet<Application>();
 		for (Application application : apps) {
-			if (!s.contains(application.getName())) {
+			boolean found = false;
+			for (int i = 0; i < l.length; i++) {
+				if (l[i].equals(application.getName())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
 				ret.add(application);
 			}
 		}
@@ -185,6 +211,17 @@ public class ApplicationInfoManager {
 		for (int i = 0; i < l.length; i++) {
 			AppLabel appLabel = l[i];
 			Application application = getApplication(appLabel.getApp());
+			if (application != null) {
+				ret.add(application);
+			}
+		}
+		return ret;
+	}
+
+	public Collection<Application> convertToApplicationList(String[] l) {
+		TreeSet<Application> ret = new TreeSet<Application>();
+		for (int i = 0; i < l.length; i++) {
+			Application application = getApplication(l[i]);
 			if (application != null) {
 				ret.add(application);
 			}

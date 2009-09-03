@@ -61,4 +61,15 @@ public class GenericDialogManager {
 		simpleDialog.setShowNegativeButton(showNegativeButton);
 		owner.showDialog(simpleDialog.getDialogId());
 	}
+
+	public void showSimpleDialog(String title, String message, boolean showNegativeButton, OnOkClickListener onOkListener) {
+		if (simpleDialog == null || !message.equals(simpleDialog.getMessage())) {
+			simpleDialog = new SimpleDialog(title, message);
+			addDialog(simpleDialog);
+		}
+		simpleDialog.setTitle(title);
+		simpleDialog.setOnOkListener(onOkListener);
+		simpleDialog.setShowNegativeButton(showNegativeButton);
+		owner.showDialog(simpleDialog.getDialogId());
+	}
 }

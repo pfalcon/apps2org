@@ -24,6 +24,8 @@ public class AppCache extends ObjectWithId {
 
 	private String name;
 	private String label;
+	private boolean starred;
+	private boolean ignored;
 
 	public AppCache() {
 	}
@@ -47,5 +49,21 @@ public class AppCache extends ObjectWithId {
 
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	public boolean isStarred() {
+		return starred;
+	}
+
+	public void setStarred(boolean starred) {
+		this.starred = starred;
+	}
+
+	public boolean isIgnored() {
+		return ignored;
+	}
+
+	public void setIgnored(boolean ignored) {
+		this.ignored = ignored;
 	}
 }

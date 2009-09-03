@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.db;
 
-import java.util.List;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 
@@ -76,21 +74,13 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return insert(obj);
 	}
 
-	public List<String> getAppsWithLabel() {
-		return queryForStringList(true, APP, null, null, null, null);
-	}
-
-	public AppLabel[] getApps(Long labelId) {
-		Cursor c = db.query(name, COLS_STRING, LABEL_ID_COL_NAME + "=?", new String[] { labelId.toString() }, null, null, null);
-		AppLabel[] l = new AppLabel[c.getCount()];
+	public String[] getAppsWithLabel() {
+		Cursor c = db.query(true, name, new String[] { APP_COL_NAME }, null, null, null, null, null, null);
+		String[] l = new String[c.getCount()];
 		try {
 			int i = 0;
 			while (c.moveToNext()) {
-				AppLabel t = new AppLabel();
-				t.setId(c.getLong(0));
-				t.setApp(c.getString(1));
-				t.setLabelId(c.getLong(2));
-				l[i++] = t;
+				l[i++] = c.getString(0);
 			}
 		} finally {
 			c.close();
@@ -98,12 +88,31 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return l;
 	}
 
-	public List<AppLabel> getApps(String app) {
-		return queryForList(columns, APP, app, null, null, null);
+	public AppLabel[] getApps(Long labelId) {
+		Cursor c = db.query(name, COLS_STRING, LABEL_ID_COL_NAME + "=?", new String[] { labelId.toString() }, null, null, null);
+		return convertCursorToArray(c, new AppLabel[c.getCount()]);
+	}
+
+	@Override
+	protected AppLabel createObject(Cursor c) {
+		AppLabel t = new AppLabel();
+		t.setId(c.getLong(0));
+		t.setApp(c.getString(1));
+		t.setLabelId(c.getLong(2));
+		return t;
+	}
+
+	public AppLabel[] getApps(String app) {
+		Cursor c = db.query(name, COLS_STRING, APP_COL_NAME + "=?", new String[] { app }, null, null, null);
+		return convertCursorToArray(c, new AppLabel[c.getCount()]);
 	}
 
 	public Cursor getAppsCursor(Long labelId) {
 		return query(columns, LABEL_ID, labelId.toString(), null, null, null);
+	}
+
+	public int delete(String appName, Long labelId) {
+		return db.delete(name, LABEL_ID_COL_NAME + " = ? and " + APP_COL_NAME + " = ?", new String[] { labelId.toString(), appName });
 	}
 
 	public int deleteAppsOfLabel(Long labelId) {

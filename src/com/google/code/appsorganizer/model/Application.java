@@ -44,6 +44,10 @@ public class Application implements Comparable<Application>, GridObject {
 
 	private String labelListString;
 
+	private boolean starred;
+
+	private boolean ignored;
+
 	public Application(ActivityInfo activityInfo, Long id) {
 		this.id = id;
 		this.activityInfo = activityInfo;
@@ -147,5 +151,21 @@ public class Application implements Comparable<Application>, GridObject {
 
 	public void setIcon(Drawable drawableIcon) {
 		this.drawableIcon = drawableIcon;
+	}
+
+	public boolean isStarred() {
+		return starred;
+	}
+
+	public void setStarred(boolean starred) {
+		this.starred = starred;
+	}
+
+	public boolean isIgnored() {
+		return ignored;
+	}
+
+	public void setIgnored(boolean ignored) {
+		this.ignored = ignored;
 	}
 }
