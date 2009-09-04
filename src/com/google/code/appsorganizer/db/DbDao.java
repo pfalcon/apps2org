@@ -73,41 +73,11 @@ public abstract class DbDao<T> {
 		return b.toString();
 	}
 
-	public String getSelectAllQuery() {
-		StringBuilder b = new StringBuilder();
-		b.append(name);
-		b.append(" (");
-		for (DbColumns<T> c : columns) {
-			if (b.length() > 0) {
-				b.append(',');
-			}
-			b.append(c.getName());
-		}
-		return "select " + b.toString() + " from " + name;
-	}
-
 	public String getDropTableScript() {
 		return "DROP TABLE IF EXISTS " + name;
 	}
 
 	public abstract T createNewObject();
-
-	public List<T> queryForList(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String orderBy, String groupBy,
-			String having) {
-		Cursor c = query(cols, filterCol, filterValue, orderBy, groupBy, having);
-		return convertCursorToList(c, cols);
-	}
-
-	public ArrayList<T> queryForList(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy,
-			String having) {
-		Cursor c = query(cols, filter, orderBy, groupBy, having);
-		return convertCursorToList(c, cols);
-	}
-
-	public T queryForObject(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String groupBy, String having) {
-		Cursor c = query(cols, filter, null, groupBy, having);
-		return convertCursorToObject(c, cols);
-	}
 
 	public T queryForObject(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String groupBy, String having) {
 		Cursor c = query(cols, filterCol, filterValue, null, groupBy, having);
@@ -271,6 +241,19 @@ public abstract class DbDao<T> {
 			col.populateObject(t, c);
 		}
 		return t;
+	}
+
+	protected String[] convertToStringArray(Cursor c) {
+		String[] l = new String[c.getCount()];
+		try {
+			int i = 0;
+			while (c.moveToNext()) {
+				l[i++] = c.getString(0);
+			}
+		} finally {
+			c.close();
+		}
+		return l;
 	}
 
 }

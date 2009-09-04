@@ -43,6 +43,7 @@ public class AppLabelSaver {
 
 	public static void saveIgnored(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
 			boolean ignored) {
+		application.setIgnored(ignored);
 		dbHelper.appCacheDao.updateIgnored(application.getName(), ignored);
 		if (ignored) {
 			applicationInfoManager.ignoreApp(application);

@@ -229,6 +229,17 @@ public class ApplicationInfoManager {
 		return ret;
 	}
 
+	public Collection<Application> convertToApplicationListNoIgnored(String[] l) {
+		TreeSet<Application> ret = new TreeSet<Application>();
+		for (int i = 0; i < l.length; i++) {
+			Application application = getApplication(l[i]);
+			if (application != null && !application.isIgnored()) {
+				ret.add(application);
+			}
+		}
+		return ret;
+	}
+
 	public Collection<Application> convertToApplicationList(List<AppLabel> l) {
 		TreeSet<Application> ret = new TreeSet<Application>();
 		for (AppLabel appLabel : l) {

@@ -76,21 +76,18 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 
 	public String[] getAppsWithLabel() {
 		Cursor c = db.query(true, name, new String[] { APP_COL_NAME }, null, null, null, null, null, null);
-		String[] l = new String[c.getCount()];
-		try {
-			int i = 0;
-			while (c.moveToNext()) {
-				l[i++] = c.getString(0);
-			}
-		} finally {
-			c.close();
-		}
-		return l;
+		return convertToStringArray(c);
 	}
 
 	public AppLabel[] getApps(Long labelId) {
 		Cursor c = db.query(name, COLS_STRING, LABEL_ID_COL_NAME + "=?", new String[] { labelId.toString() }, null, null, null);
 		return convertCursorToArray(c, new AppLabel[c.getCount()]);
+	}
+
+	public String[] getAppNames(long labelId) {
+		Cursor c = db.query(name, new String[] { APP_COL_NAME }, LABEL_ID_COL_NAME + "=?", new String[] { Long.toString(labelId) }, null,
+				null, null);
+		return convertToStringArray(c);
 	}
 
 	@Override

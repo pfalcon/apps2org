@@ -46,7 +46,6 @@ import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
-import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.GridObject;
 import com.google.code.appsorganizer.model.Label;
@@ -188,8 +187,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				gridAdapter.setObjectList(labels);
 				handler.sendEmptyMessage(-1);
 			} else {
-				AppLabel[] apps = dbHelper.appsLabelDao.getApps(label.getId());
-				Collection<Application> newList = applicationInfoManager.convertToApplicationList(apps);
+				String[] apps = dbHelper.appsLabelDao.getAppNames(label.getId());
+				Collection<Application> newList = applicationInfoManager.convertToApplicationListNoIgnored(apps);
 				gridAdapter.setObjectList(new ArrayList<Application>(newList));
 				handler.sendEmptyMessage(-1);
 				int pos = 0;

@@ -32,7 +32,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
@@ -85,8 +84,8 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 				String[] l = dbHelper.appCacheDao.getIgnoredApps();
 				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
 			} else {
-				AppLabel[] l = dbHelper.appsLabelDao.getApps(labelId);
-				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
+				String[] l = dbHelper.appsLabelDao.getAppNames(labelId);
+				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationListNoIgnored(l));
 			}
 			apps.put(labelId, ret);
 		}
