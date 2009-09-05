@@ -36,39 +36,13 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME };
 
-	public static final DbColumns<Label> LABEL = new DbColumns<Label>(LABEL_COL_NAME, "text not null unique") {
-		@Override
-		public void populateObject(Label obj, Cursor c) {
-			obj.setName(getString(c));
-		}
+	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null unique");
 
-		@Override
-		public void populateContent(Label obj, ContentValues c) {
-			c.put(name, obj.getName());
-		}
-	};
-
-	public static final DbColumns<Label> ICON = new DbColumns<Label>(ICON_COL_NAME, "integer") {
-		@Override
-		public void populateObject(Label obj, Cursor c) {
-			obj.setIconDb(getInt(c));
-		}
-
-		@Override
-		public void populateContent(Label obj, ContentValues c) {
-			c.put(name, obj.getIconDb());
-		}
-	};
+	public static final DbColumns ICON = new DbColumns(ICON_COL_NAME, "integer");
 
 	LabelDao() {
 		super(NAME);
-		addColumn(LABEL);
-		addColumn(ICON);
-	}
-
-	@Override
-	public Label createNewObject() {
-		return new Label();
+		columns = new DbColumns[] { ID, LABEL, ICON };
 	}
 
 	public DoubleArray getAppsLabels() {
@@ -91,53 +65,64 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return new DoubleArray(keys, values);
 	}
 
+	public DoubleArray getAppsLabelsConcat() {
+		Cursor c = db.rawQuery(
+				"select al.app, l.label from labels l inner join apps_labels al on l._id = al.id_label order by al.app, l.label",
+				new String[] {});
+		int tot = c.getCount();
+		String[] keys = new String[tot];
+		String[] values = new String[tot];
+		int pos = 0;
+		StringBuilder b = new StringBuilder();
+		String curApp = null;
+		try {
+			while (c.moveToNext()) {
+				String appName = c.getString(0);
+				String label = c.getString(1);
+				if (appName.equals(curApp)) {
+					b.append(", ");
+					b.append(label);
+				} else {
+					if (curApp != null) {
+						keys[pos] = curApp;
+						values[pos++] = b.toString();
+					}
+					curApp = appName;
+					b = new StringBuilder(label);
+				}
+			}
+			keys[pos] = curApp;
+			values[pos++] = b.toString();
+		} finally {
+			c.close();
+		}
+		return new DoubleArray(keys, values);
+	}
+
 	public TreeMap<Long, Label> getLabelsTreeMap() {
 		TreeMap<Long, Label> m = new TreeMap<Long, Label>();
-		ArrayList<Label> labels = getLabels();
-		for (Label label : labels) {
+		Label[] labels = getLabelsArray();
+		for (int i = 0; i < labels.length; i++) {
+			Label label = labels[i];
 			m.put(label.getId(), label);
 		}
 		return m;
 	}
 
 	public ArrayList<Label> getLabels() {
-		Cursor c = db.query(name, COLS_STRING, null, null, null, null, ("upper(" + LABEL.getName() + ")"));
-		ArrayList<Label> l = new ArrayList<Label>(c.getColumnCount());
-		try {
-			while (c.moveToNext()) {
-				l.add(createObject(c));
-			}
-		} finally {
-			c.close();
-		}
-		return l;
+		Cursor c = db.query(name, COLS_STRING, null, null, null, null, "upper(" + LABEL.getName() + ")");
+		return convertCursorToList(c);
 	}
 
-	public Cursor getLabelsCursor() {
-		return query(columns, null, "upper(" + LABEL + ")", null, null);
+	public Label[] getLabelsArray() {
+		Cursor c = db.query(name, COLS_STRING, null, null, null, null, ("upper(" + LABEL.getName() + ")"));
+		return convertCursorToArray(c, new Label[c.getCount()]);
 	}
 
 	public long insert(String label) {
-		Label obj = new Label();
-		obj.setName(label);
-		return insert(obj);
-	}
-
-	public Label getLabel(String name) {
-		return queryForObject(columns, LABEL, name, null, null);
-	}
-
-	@Override
-	public Label queryById(Long id) {
-		Cursor c = db.query(name, COLS_STRING, ID_COL_NAME + "=?", new String[] { id.toString() }, null, null, null);
-		try {
-			if (c.moveToNext()) {
-				return createObject(c);
-			}
-		} finally {
-			c.close();
-		}
-		return null;
+		ContentValues v = new ContentValues();
+		v.put(LABEL_COL_NAME, label);
+		return db.insert(name, null, v);
 	}
 
 	@Override
@@ -147,6 +132,15 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		t.setName(c.getString(1));
 		t.setIconDb(c.getInt(2));
 		return t;
+	}
+
+	@Override
+	protected ContentValues createContentValue(Label obj) {
+		ContentValues v = new ContentValues();
+		v.put(ID_COL_NAME, obj.getId());
+		v.put(LABEL_COL_NAME, obj.getLabel());
+		v.put(ICON_COL_NAME, obj.getIconDb());
+		return v;
 	}
 
 }

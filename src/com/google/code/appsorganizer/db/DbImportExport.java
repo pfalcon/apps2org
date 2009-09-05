@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import android.app.Activity;
 
@@ -81,8 +80,9 @@ public class DbImportExport {
 	}
 
 	private static void writeLabels(LabelDao labelDao, BufferedWriter bout) throws IOException {
-		ArrayList<Label> labels = labelDao.getLabels();
-		for (Label l : labels) {
+		Label[] labels = labelDao.getLabelsArray();
+		for (int i = 0; i < labels.length; i++) {
+			Label l = labels[i];
 			bout.write(l.getIconDb() + ICON_NAME_SEPARATOR + l.getName());
 			bout.newLine();
 		}
@@ -152,14 +152,14 @@ public class DbImportExport {
 
 	private static TObjectLongHashMap<String> importLabels(LabelDao labelDao, BufferedReader in) throws IOException {
 		TObjectLongHashMap<String> ret = new TObjectLongHashMap<String>();
-		ArrayList<Label> labels = labelDao.getLabels();
+		Label[] labels = labelDao.getLabelsArray();
 		String s = null;
 		while ((s = in.readLine()) != null) {
 			if (APP_LABEL_SEPARATOR_LINE.equals(s)) {
 				break;
 			}
 			String[] split = s.split(ICON_NAME_SEPARATOR);
-			Integer icon = null;
+			int icon = 0;
 			try {
 				icon = Integer.parseInt(split[0]);
 			} catch (NumberFormatException ignored) {
@@ -171,10 +171,10 @@ public class DbImportExport {
 		return ret;
 	}
 
-	private static long insertOrUpdateLabel(LabelDao labelDao, ArrayList<Label> labels, Integer icon, String name) {
+	private static long insertOrUpdateLabel(LabelDao labelDao, Label[] labels, int icon, String name) {
 		Label label = searchExistingLabel(labels, name);
 		if (label != null) {
-			if (icon != null && label.getIconDb() != icon) {
+			if (label.getIconDb() != icon) {
 				label.setIconDb(icon);
 				labelDao.update(label);
 			}
@@ -185,10 +185,10 @@ public class DbImportExport {
 		return label.getId();
 	}
 
-	private static Label searchExistingLabel(ArrayList<Label> labels, String name) {
-		for (Label label : labels) {
-			if (label.getName().equals(name)) {
-				return label;
+	private static Label searchExistingLabel(Label[] labels, String name) {
+		for (int i = 0; i < labels.length; i++) {
+			if (labels[i].getName().equals(name)) {
+				return labels[i];
 			}
 		}
 		return null;

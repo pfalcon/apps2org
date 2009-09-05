@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,10 +68,9 @@ public class ApplicationInfoManager {
 			String[] keys = null;
 			String[] values = null;
 			if (labelDao != null) {
-				DoubleArray appsLabels = labelDao.getAppsLabels();
+				DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
 				keys = appsLabels.keys;
 				values = appsLabels.values;
-				// TODO update al nome internazionazzato di ignored (se serve)
 			}
 			HashMap<String, AppCache> nameCache = appCacheDao.queryForCacheMap();
 			HashMap<String, Application> oldApps = applicationMap;
@@ -121,7 +121,7 @@ public class ApplicationInfoManager {
 	}
 
 	public void reloadAppsLabel(LabelDao labelDao) {
-		DoubleArray appsLabels = labelDao.getAppsLabels();
+		DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
 		String[] keys = appsLabels.keys;
 		String[] values = appsLabels.values;
 		for (Application app : apps) {
@@ -139,24 +139,15 @@ public class ApplicationInfoManager {
 	}
 
 	private void loadLabels(String[] keys, String[] values, Application app) {
-		StringBuilder b = new StringBuilder();
-		boolean found = false;
 		for (int i = 0; i < keys.length; i++) {
-			String k = keys[i];
-			if (k.equals(app.getName())) {
-				if (b.length() > 0) {
-					b.append(", ");
-				}
-				b.append(values[i]);
-				found = true;
-			} else {
-				if (found) {
-					break;
-				}
+			if (keys[i] == null) {
+				return;
+			}
+			if (keys[i].equals(app.name)) {
+				app.setLabelListString(values[i]);
+				return;
 			}
 		}
-		String l = b.toString();
-		app.setLabelListString(l);
 	}
 
 	private List<ResolveInfo> getAllResolveInfo() {
@@ -194,7 +185,7 @@ public class ApplicationInfoManager {
 		for (Application application : apps) {
 			boolean found = false;
 			for (int i = 0; i < l.length; i++) {
-				if (l[i].equals(application.getName())) {
+				if (l[i].equals(application.name)) {
 					found = true;
 					break;
 				}
@@ -229,15 +220,26 @@ public class ApplicationInfoManager {
 		return ret;
 	}
 
-	public Collection<Application> convertToApplicationListNoIgnored(String[] l) {
-		TreeSet<Application> ret = new TreeSet<Application>();
+	public Application[] convertToApplicationListNoIgnored(String[] l) {
+		Application[] ret = new Application[l.length];
+		int pos = 0;
 		for (int i = 0; i < l.length; i++) {
 			Application application = getApplication(l[i]);
 			if (application != null && !application.isIgnored()) {
-				ret.add(application);
+				ret[pos++] = application;
 			}
 		}
+		ret = copyArray(ret, pos);
+		Arrays.sort(ret);
 		return ret;
+	}
+
+	private Application[] copyArray(Application[] ret, int pos) {
+		Application[] a = new Application[pos];
+		for (int i = 0; i < pos; i++) {
+			a[i] = ret[i];
+		}
+		return a;
 	}
 
 	public Collection<Application> convertToApplicationList(List<AppLabel> l) {
@@ -301,7 +303,7 @@ public class ApplicationInfoManager {
 		return new MatrixCursor(cursorColumns, applications.size());
 	}
 
-	private final List<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
+	private final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
 
 	public boolean addListener(DbChangeListener object) {
 		return listeners.add(object);

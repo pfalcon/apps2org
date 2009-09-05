@@ -21,6 +21,7 @@ package com.google.code.appsorganizer;
 import gnu.trove.TLongObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.app.Activity;
@@ -85,7 +86,7 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
 			} else {
 				String[] l = dbHelper.appsLabelDao.getAppNames(labelId);
-				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationListNoIgnored(l));
+				ret = Arrays.asList(applicationInfoManager.convertToApplicationListNoIgnored(l));
 			}
 			apps.put(labelId, ret);
 		}

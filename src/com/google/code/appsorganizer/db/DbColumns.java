@@ -18,10 +18,9 @@
  */
 package com.google.code.appsorganizer.db;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 
-public abstract class DbColumns<T> {
+public class DbColumns {
 
 	protected final String name;
 	private final String description;
@@ -38,10 +37,6 @@ public abstract class DbColumns<T> {
 	public String getDescription() {
 		return description;
 	}
-
-	public abstract void populateObject(T obj, Cursor c);
-
-	public abstract void populateContent(T obj, ContentValues c);
 
 	public Integer getInt(Cursor c) {
 		int i = c.getColumnIndexOrThrow(name);

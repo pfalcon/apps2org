@@ -37,60 +37,14 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public static final String TABLE_NAME = "apps";
 
-	public static final DbColumns<AppCache> NAME = new DbColumns<AppCache>(NAME_COL_NAME, "text not null") {
-		@Override
-		public void populateObject(AppCache obj, android.database.Cursor c) {
-			obj.setName(getString(c));
-		}
-
-		@Override
-		public void populateContent(AppCache obj, ContentValues c) {
-			c.put(name, obj.getName());
-		}
-	};
-	public static final DbColumns<AppCache> LABEL = new DbColumns<AppCache>(LABEL_COL_NAME, "text not null") {
-		@Override
-		public void populateObject(AppCache obj, android.database.Cursor c) {
-			obj.setLabel(getString(c));
-		}
-
-		@Override
-		public void populateContent(AppCache obj, ContentValues c) {
-			c.put(name, obj.getLabel());
-		}
-	};
-	public static final DbColumns<AppCache> STARRED = new DbColumns<AppCache>(STARRED_COL_NAME, "integer not null default 0") {
-		@Override
-		public void populateObject(AppCache obj, android.database.Cursor c) {
-			obj.setStarred(getInt(c) != 0);
-		}
-
-		@Override
-		public void populateContent(AppCache obj, ContentValues c) {
-			c.put(name, obj.isStarred());
-		}
-	};
-	public static final DbColumns<AppCache> IGNORED = new DbColumns<AppCache>(IGNORED_COL_NAME, "integer not null default 0") {
-		@Override
-		public void populateObject(AppCache obj, android.database.Cursor c) {
-			obj.setIgnored(getInt(c) != 0);
-		}
-
-		@Override
-		public void populateContent(AppCache obj, ContentValues c) {
-			c.put(name, obj.isIgnored());
-		}
-	};
+	public static final DbColumns NAME = new DbColumns(NAME_COL_NAME, "text not null");
+	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null");
+	public static final DbColumns STARRED = new DbColumns(STARRED_COL_NAME, "integer not null default 0");
+	public static final DbColumns IGNORED = new DbColumns(IGNORED_COL_NAME, "integer not null default 0");
 
 	AppCacheDao() {
 		super(TABLE_NAME);
-		addColumn(NAME);
-		addColumn(LABEL);
-	}
-
-	@Override
-	public AppCache createNewObject() {
-		return new AppCache();
+		columns = new DbColumns[] { ID, NAME, LABEL, STARRED, IGNORED };
 	}
 
 	public HashMap<String, AppCache> queryForCacheMap() {
@@ -131,15 +85,28 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public String[] getIgnoredApps() {
 		Cursor c = db.query(true, name, new String[] { NAME_COL_NAME }, IGNORED_COL_NAME + "=1", null, null, null, null, null);
-		String[] l = new String[c.getCount()];
-		try {
-			int i = 0;
-			while (c.moveToNext()) {
-				l[i++] = c.getString(0);
-			}
-		} finally {
-			c.close();
-		}
-		return l;
+		return convertToStringArray(c);
+	}
+
+	@Override
+	protected AppCache createObject(Cursor c) {
+		AppCache t = new AppCache();
+		t.setId(c.getLong(0));
+		t.setName(c.getString(1));
+		t.setLabel(c.getString(2));
+		t.setStarred(c.getInt(3) == 1);
+		t.setIgnored(c.getInt(4) == 1);
+		return t;
+	}
+
+	@Override
+	protected ContentValues createContentValue(AppCache obj) {
+		ContentValues v = new ContentValues();
+		v.put(ID_COL_NAME, obj.getId());
+		v.put(NAME_COL_NAME, obj.getName());
+		v.put(LABEL_COL_NAME, obj.getLabel());
+		v.put(STARRED_COL_NAME, obj.isStarred() ? 1 : 0);
+		v.put(IGNORED_COL_NAME, obj.isIgnored() ? 1 : 0);
+		return v;
 	}
 }

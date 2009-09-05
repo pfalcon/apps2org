@@ -19,11 +19,8 @@
 package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import android.app.AlertDialog;
@@ -34,7 +31,6 @@ import android.widget.ListView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
-import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
@@ -57,18 +53,18 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private Set<String> checkedApps;
 
-	private AppLabel[] appsWithLabel;
-
 	@Override
 	public void prepareDialog(Dialog dialog) {
-		appsWithLabel = dbHelper.appsLabelDao.getApps(currentLabel.getId());
-		Collection<Application> l1 = applicationInfoManager.convertToApplicationList(appsWithLabel);
+		String[] appsWithLabel = dbHelper.appsLabelDao.getAppNames(currentLabel.getId());
+		Application[] l1 = applicationInfoManager.convertToApplicationListNoIgnored(appsWithLabel);
 		checkedApps = createSet(l1);
 		List<Application> allApps = new ArrayList<Application>();
-		allApps.addAll(l1);
+		for (int i = 0; i < l1.length; i++) {
+			allApps.add(l1[i]);
+		}
 		ArrayList<Application> tmp = applicationInfoManager.getAppsArray();
 		for (Application application : tmp) {
-			if (!checkedApps.contains(application.getName())) {
+			if (!checkedApps.contains(application.name)) {
 				allApps.add(application);
 			}
 		}
@@ -77,7 +73,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 		listView.setAdapter(adapter);
 
-		int size = l1.size();
+		int size = l1.length;
 		for (int i = 0; i < size; i++) {
 			listView.setItemChecked(i, true);
 		}
@@ -105,10 +101,10 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		return builder.create();
 	}
 
-	private Set<String> createSet(Collection<Application> checkedApps) {
+	private Set<String> createSet(Application[] checkedApps) {
 		Set<String> s = new HashSet<String>();
-		for (Application application : checkedApps) {
-			s.add(application.getName());
+		for (int i = 0; i < checkedApps.length; i++) {
+			s.add(checkedApps[i].name);
 		}
 		return s;
 	}
@@ -118,14 +114,11 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 	}
 
 	private void save(Set<String> checkedSet) {
-		Map<String, Long> appsId = new HashMap<String, Long>();
-		for (AppLabel appLabel : appsWithLabel) {
-			appsId.put(appLabel.getApp(), appLabel.getId());
-		}
 		boolean changed = false;
-		for (int i = 0; i < adapter.getCount(); i++) {
+		int count = adapter.getCount();
+		for (int i = 0; i < count; i++) {
 			Application app = (Application) listView.getItemAtPosition(i);
-			String appName = app.getName();
+			String appName = app.name;
 			if (listView.isItemChecked(i)) {
 				if (!checkedSet.contains(appName)) {
 					dbHelper.appsLabelDao.insert(appName, currentLabel.getId());
@@ -133,7 +126,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 				}
 			} else {
 				if (checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.delete(appsId.get(appName));
+					dbHelper.appsLabelDao.delete(appName, currentLabel.getId());
 					changed = true;
 				}
 			}

@@ -33,55 +33,24 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 
 	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, APP_COL_NAME, LABEL_ID_COL_NAME };
 
-	public static final DbColumns<AppLabel> APP = new DbColumns<AppLabel>(APP_COL_NAME, "text not null") {
-		@Override
-		public void populateObject(AppLabel obj, android.database.Cursor c) {
-			obj.setApp(getString(c));
-		}
-
-		@Override
-		public void populateContent(AppLabel obj, ContentValues c) {
-			c.put(name, obj.getApp());
-		}
-	};
-	public static final DbColumns<AppLabel> LABEL_ID = new DbColumns<AppLabel>(LABEL_ID_COL_NAME, "integer not null") {
-		@Override
-		public void populateObject(AppLabel obj, android.database.Cursor c) {
-			obj.setLabelId(getLong(c));
-		}
-
-		@Override
-		public void populateContent(AppLabel obj, ContentValues c) {
-			c.put(name, obj.getLabelId());
-		}
-	};
+	public static final DbColumns APP = new DbColumns(APP_COL_NAME, "text not null");
+	public static final DbColumns LABEL_ID = new DbColumns(LABEL_ID_COL_NAME, "integer not null");
 
 	AppLabelDao() {
 		super(NAME);
-		addColumn(APP);
-		addColumn(LABEL_ID);
-	}
-
-	@Override
-	public AppLabel createNewObject() {
-		return new AppLabel();
+		columns = new DbColumns[] { ID, APP, LABEL_ID };
 	}
 
 	public long insert(String app, long labelId) {
-		AppLabel obj = new AppLabel();
-		obj.setApp(app);
-		obj.setLabelId(labelId);
-		return insert(obj);
+		ContentValues v = new ContentValues();
+		v.put(APP_COL_NAME, app);
+		v.put(LABEL_ID_COL_NAME, labelId);
+		return db.insert(name, null, v);
 	}
 
 	public String[] getAppsWithLabel() {
 		Cursor c = db.query(true, name, new String[] { APP_COL_NAME }, null, null, null, null, null, null);
 		return convertToStringArray(c);
-	}
-
-	public AppLabel[] getApps(Long labelId) {
-		Cursor c = db.query(name, COLS_STRING, LABEL_ID_COL_NAME + "=?", new String[] { labelId.toString() }, null, null, null);
-		return convertCursorToArray(c, new AppLabel[c.getCount()]);
 	}
 
 	public String[] getAppNames(long labelId) {
@@ -104,16 +73,21 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return convertCursorToArray(c, new AppLabel[c.getCount()]);
 	}
 
-	public Cursor getAppsCursor(Long labelId) {
-		return query(columns, LABEL_ID, labelId.toString(), null, null, null);
-	}
-
 	public int delete(String appName, Long labelId) {
 		return db.delete(name, LABEL_ID_COL_NAME + " = ? and " + APP_COL_NAME + " = ?", new String[] { labelId.toString(), appName });
 	}
 
 	public int deleteAppsOfLabel(Long labelId) {
 		return db.delete(name, LABEL_ID_COL_NAME + " = ?", new String[] { labelId.toString() });
+	}
+
+	@Override
+	protected ContentValues createContentValue(AppLabel obj) {
+		ContentValues v = new ContentValues();
+		v.put(ID_COL_NAME, obj.getId());
+		v.put(APP_COL_NAME, obj.getApp());
+		v.put(LABEL_ID_COL_NAME, obj.getLabelId());
+		return v;
 	}
 
 }

@@ -18,28 +18,16 @@
  */
 package com.google.code.appsorganizer.db;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 
 public abstract class ObjectWithIdDao<T extends ObjectWithId> extends DbDao<T> {
 
 	protected static final String ID_COL_NAME = "_id";
 
-	public final DbColumns<T> ID = new DbColumns<T>(ID_COL_NAME, "integer primary key autoincrement") {
-		@Override
-		public void populateObject(T obj, Cursor c) {
-			obj.setId(getLong(c));
-		}
-
-		@Override
-		public void populateContent(T obj, ContentValues c) {
-			c.put(name, obj.getId());
-		}
-	};
+	public static final DbColumns ID = new DbColumns(ID_COL_NAME, "integer primary key autoincrement");
 
 	public ObjectWithIdDao(String name) {
 		super(name);
-		addColumn(ID);
 	}
 
 	@Override
@@ -50,11 +38,7 @@ public abstract class ObjectWithIdDao<T extends ObjectWithId> extends DbDao<T> {
 	}
 
 	public long update(T obj) {
-		ContentValues v = new ContentValues();
-		for (DbColumns<T> col : columns) {
-			col.populateContent(obj, v);
-		}
-		return db.update(name, v, "_id = ?", new String[] { obj.getId().toString() });
+		return db.update(name, createContentValue(obj), "_id = ?", new String[] { obj.getId().toString() });
 	}
 
 	public int delete(Long id) {
@@ -62,8 +46,8 @@ public abstract class ObjectWithIdDao<T extends ObjectWithId> extends DbDao<T> {
 	}
 
 	public T queryById(Long id) {
-		Cursor c = query(columns, ID, id.toString(), null, null, null);
-		return convertCursorToObject(c, columns);
+		Cursor c = db.query(name, columnsToStringArray(columns), ID.getName() + "=?", new String[] { id.toString() }, null, null, null);
+		return convertCursorToObject(c);
 	}
 
 }

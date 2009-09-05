@@ -31,7 +31,7 @@ import com.google.code.appsorganizer.db.ObjectWithId;
 public class Label extends ObjectWithId implements Comparable<Label>, GridObject {
 
 	private String name;
-	private Integer iconDb;
+	private int iconDb;
 
 	/**
 	 * Map that associate a database id to drawable id (if a drawable is added
@@ -200,7 +200,7 @@ public class Label extends ObjectWithId implements Comparable<Label>, GridObject
 	}
 
 	public int getIcon() {
-		if (iconDb == null) {
+		if (iconDb == 0) {
 			return R.drawable.icon_default;
 		}
 		initMaps();
@@ -211,11 +211,11 @@ public class Label extends ObjectWithId implements Comparable<Label>, GridObject
 		this.iconDb = convertToIconDb(icon);
 	}
 
-	public Integer getIconDb() {
+	public int getIconDb() {
 		return iconDb;
 	}
 
-	public void setIconDb(Integer icon) {
+	public void setIconDb(int icon) {
 		this.iconDb = icon;
 	}
 

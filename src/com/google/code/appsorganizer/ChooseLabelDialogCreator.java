@@ -61,7 +61,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		List<AppLabelBinding> allLabels = getAllLabels(application.getName());
+		List<AppLabelBinding> allLabels = getAllLabels(application.name);
 		adapter = new ChooseLabelListAdapter(owner, allLabels);
 		listView.setAdapter(adapter);
 
@@ -103,8 +103,9 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 			b.setChecked(true);
 			b.setOriginalChecked(true);
 			b.setAppLabelId(l.getId());
-			b.setLabelId(l.getLabelId());
-			Label label = all.remove(l.getLabelId());
+			Long labelId = l.getLabelId();
+			b.setLabelId(labelId);
+			Label label = all.remove(labelId);
 			if (label != null) {
 				b.setLabel(label.getName());
 			}

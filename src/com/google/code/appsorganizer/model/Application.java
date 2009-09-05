@@ -21,9 +21,11 @@ package com.google.code.appsorganizer.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -33,8 +35,6 @@ import android.widget.ImageView;
 public class Application implements Comparable<Application>, GridObject {
 
 	private final Long id;
-
-	private final ActivityInfo activityInfo;
 
 	private Drawable drawableIcon;
 
@@ -48,9 +48,21 @@ public class Application implements Comparable<Application>, GridObject {
 
 	private boolean ignored;
 
+	public final String name;
+
+	private final String packageName;
+
+	private final int icon;
+
 	public Application(ActivityInfo activityInfo, Long id) {
 		this.id = id;
-		this.activityInfo = activityInfo;
+		this.name = activityInfo.name;
+		this.packageName = activityInfo.packageName;
+		if (activityInfo.icon > 0) {
+			this.icon = activityInfo.icon;
+		} else {
+			this.icon = activityInfo.applicationInfo.icon;
+		}
 	}
 
 	public String getLabel() {
@@ -60,7 +72,7 @@ public class Application implements Comparable<Application>, GridObject {
 	public int compareTo(Application another) {
 		int r = label.compareToIgnoreCase(another.label);
 		if (r == 0) {
-			r = activityInfo.name.compareToIgnoreCase(another.activityInfo.name);
+			r = name.compareToIgnoreCase(another.name);
 		}
 		return r;
 	}
@@ -69,26 +81,19 @@ public class Application implements Comparable<Application>, GridObject {
 		return id;
 	}
 
-	public String getName() {
-		return activityInfo.name;
-	}
-
 	public String getPackage() {
-		return activityInfo.packageName;
+		return packageName;
 	}
 
 	public int getIconResource() {
-		if (activityInfo.icon > 0) {
-			return activityInfo.icon;
-		}
-		return activityInfo.applicationInfo.icon;
+		return icon;
 	}
 
 	public Intent getIntent() {
 		if (intent == null) {
 			intent = new Intent(Intent.ACTION_MAIN);
 			intent.addCategory(Intent.CATEGORY_LAUNCHER);
-			intent.setClassName(getPackage(), getName());
+			intent.setClassName(packageName, name);
 		}
 		return intent;
 	}
@@ -110,7 +115,7 @@ public class Application implements Comparable<Application>, GridObject {
 			} else if (col.equals(LiveFolders.NAME)) {
 				values.add(getLabel());
 			} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
-				values.add(getPackage());
+				values.add(packageName);
 			} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
 				values.add(getIconResource());
 			} else if (col.equals(LiveFolders.INTENT)) {
@@ -125,7 +130,11 @@ public class Application implements Comparable<Application>, GridObject {
 	}
 
 	public void loadIcon(PackageManager pm) {
-		drawableIcon = activityInfo.loadIcon(pm);
+		try {
+			drawableIcon = pm.getActivityIcon(new ComponentName(packageName, name));
+		} catch (NameNotFoundException e) {
+		}
+		// drawableIcon = activityInfo.loadIcon(pm);
 	}
 
 	public void showIcon(ImageView imageView) {

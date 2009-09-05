@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.shortcut;
 
-import java.util.List;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,11 +32,11 @@ import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.GridObject;
 
 public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
-	private List<? extends T> objectList;
+	private T[] objectList;
 
 	private final Context context;
 
-	public AppGridAdapter(List<? extends T> objectList, Context context) {
+	public AppGridAdapter(T[] objectList, Context context) {
 		this.objectList = objectList;
 		this.context = context;
 	}
@@ -60,7 +58,7 @@ public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
-		T a = objectList.get(position);
+		T a = objectList[position];
 		if (!(a instanceof Application) || ((Application) a).getIcon() != null) {
 			a.showIcon(holder.icon);
 		} else {
@@ -76,18 +74,18 @@ public final class AppGridAdapter<T extends GridObject> extends BaseAdapter {
 	}
 
 	public final int getCount() {
-		return objectList.size();
+		return objectList.length;
 	}
 
 	public final T getItem(int position) {
-		return objectList.get(position);
+		return objectList[position];
 	}
 
 	public final long getItemId(int position) {
 		return position;
 	}
 
-	public void setObjectList(List<? extends T> objectList) {
+	public void setObjectList(T[] objectList) {
 		this.objectList = objectList;
 	}
 }

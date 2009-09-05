@@ -37,14 +37,14 @@ public class AppLabelSaver {
 
 	public static void saveStarred(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
 			boolean starred) {
-		dbHelper.appCacheDao.updateStarred(application.getName(), starred);
+		dbHelper.appCacheDao.updateStarred(application.name, starred);
 		applicationInfoManager.notifyDataSetChanged();
 	}
 
 	public static void saveIgnored(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
 			boolean ignored) {
 		application.setIgnored(ignored);
-		dbHelper.appCacheDao.updateIgnored(application.getName(), ignored);
+		dbHelper.appCacheDao.updateIgnored(application.name, ignored);
 		if (ignored) {
 			applicationInfoManager.ignoreApp(application);
 		} else {
@@ -61,7 +61,7 @@ public class AppLabelSaver {
 					if (b.isChecked() && labelId == null) {
 						labelId = dbHelper.labelDao.insert(b.getLabel());
 					}
-					dbHelper.appsLabelDao.insert(application.getName(), labelId);
+					dbHelper.appsLabelDao.insert(application.name, labelId);
 				} else {
 					dbHelper.appsLabelDao.delete(b.getAppLabelId());
 				}

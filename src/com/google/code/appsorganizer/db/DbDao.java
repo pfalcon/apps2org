@@ -19,12 +19,8 @@
 package com.google.code.appsorganizer.db;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -36,7 +32,7 @@ public abstract class DbDao<T> {
 
 	protected SQLiteDatabase db;
 
-	protected final List<DbColumns<T>> columns = new ArrayList<DbColumns<T>>();
+	protected DbColumns[] columns;
 
 	public DbDao(String name) {
 		this.name = name;
@@ -46,12 +42,8 @@ public abstract class DbDao<T> {
 		return name;
 	}
 
-	public List<DbColumns<T>> getColumns() {
+	public DbColumns[] getColumns() {
 		return columns;
-	}
-
-	protected void addColumn(DbColumns<T> c) {
-		columns.add(c);
 	}
 
 	public String getCreateTableScript() {
@@ -59,7 +51,7 @@ public abstract class DbDao<T> {
 		b.append(name);
 		b.append(" (");
 		boolean first = true;
-		for (DbColumns<T> c : columns) {
+		for (DbColumns c : columns) {
 			if (first) {
 				first = false;
 			} else {
@@ -77,24 +69,17 @@ public abstract class DbDao<T> {
 		return "DROP TABLE IF EXISTS " + name;
 	}
 
-	public abstract T createNewObject();
-
-	public T queryForObject(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String groupBy, String having) {
-		Cursor c = query(cols, filterCol, filterValue, null, groupBy, having);
-		return convertCursorToObject(c, cols);
+	public T queryForObject(DbColumns[] cols, DbColumns filterCol, String filterValue, String groupBy, String having) {
+		Cursor c = db.query(name, columnsToStringArray(cols), filterCol.getName() + "=?", new String[] { filterValue }, groupBy, having,
+				null);
+		return convertCursorToObject(c);
 	}
 
-	public List<String> queryForStringList(boolean distinct, DbColumns<T> col, HashMap<DbColumns<T>, String> filter, String orderBy,
-			String groupBy, String having) {
-		Cursor c = query(distinct, Collections.singletonList(col), filter, orderBy, groupBy, having);
-		return convertCursorToStringList(c, col);
-	}
-
-	protected List<String> convertCursorToStringList(Cursor c, DbColumns<T> col) {
+	protected List<String> convertCursorToStringList(Cursor c, DbColumns col) {
 		List<String> l = new ArrayList<String>();
 		try {
 			while (c.moveToNext()) {
-				l.add(col.getString(c));
+				l.add(c.getString(0));
 			}
 		} finally {
 			c.close();
@@ -102,19 +87,11 @@ public abstract class DbDao<T> {
 		return l;
 	}
 
-	public HashMap<String, String> queryForStringMap(boolean distinct, DbColumns<T> colKey, DbColumns<T> colValue,
-			HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
-		@SuppressWarnings("unchecked")
-		List<DbColumns<T>> l = Arrays.asList(colKey, colValue);
-		Cursor c = query(distinct, l, filter, orderBy, groupBy, having);
-		return convertCursorToStringMap(c, colKey, colValue);
-	}
-
-	protected HashMap<String, String> convertCursorToStringMap(Cursor c, DbColumns<T> colKey, DbColumns<T> colValue) {
-		HashMap<String, String> m = new HashMap<String, String>();
+	protected HashMap<String, String> convertCursorToStringMap(Cursor c) {
+		HashMap<String, String> m = new HashMap<String, String>(c.getCount());
 		try {
 			while (c.moveToNext()) {
-				m.put(colKey.getString(c), colValue.getString(c));
+				m.put(c.getString(0), c.getString(1));
 			}
 		} finally {
 			c.close();
@@ -122,15 +99,11 @@ public abstract class DbDao<T> {
 		return m;
 	}
 
-	protected ArrayList<T> convertCursorToList(Cursor c, List<DbColumns<T>> cols) {
-		ArrayList<T> l = new ArrayList<T>();
+	protected ArrayList<T> convertCursorToList(Cursor c) {
+		ArrayList<T> l = new ArrayList<T>(c.getCount());
 		try {
 			while (c.moveToNext()) {
-				T t = createNewObject();
-				for (DbColumns<T> col : cols) {
-					col.populateObject(t, c);
-				}
-				l.add(t);
+				l.add(createObject(c));
 			}
 		} finally {
 			c.close();
@@ -138,13 +111,10 @@ public abstract class DbDao<T> {
 		return l;
 	}
 
-	protected T convertCursorToObject(Cursor c, List<DbColumns<T>> cols) {
+	protected T convertCursorToObject(Cursor c) {
 		try {
 			while (c.moveToNext()) {
-				T t = createNewObject();
-				for (DbColumns<T> col : cols) {
-					col.populateObject(t, c);
-				}
+				T t = createObject(c);
 				if (c.moveToNext()) {
 					throw new RuntimeException("Query returned more than one object");
 				} else {
@@ -157,67 +127,20 @@ public abstract class DbDao<T> {
 		return null;
 	}
 
-	public Cursor query(boolean distinct, List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy,
-			String having) {
-		return db.query(distinct, name, columnsToStringArray(cols), filterToSelection(filter), filterToSelectionArgs(filter), groupBy,
-				having, orderBy, null);
-	}
-
-	public Cursor query(List<DbColumns<T>> cols, HashMap<DbColumns<T>, String> filter, String orderBy, String groupBy, String having) {
-		return db.query(name, columnsToStringArray(cols), filterToSelection(filter), filterToSelectionArgs(filter), groupBy, having,
-				orderBy);
-	}
-
-	public Cursor query(List<DbColumns<T>> cols, DbColumns<T> filterCol, String filterValue, String orderBy, String groupBy, String having) {
-		return db.query(name, columnsToStringArray(cols), filterCol.getName() + "=?", new String[] { filterValue }, groupBy, having,
-				orderBy);
-	}
-
-	private String filterToSelection(Map<DbColumns<T>, String> filter) {
-		if (filter != null) {
-			StringBuilder b = new StringBuilder();
-			for (Entry<DbColumns<T>, String> e : filter.entrySet()) {
-				if (b.length() > 0) {
-					b.append(" and ");
-				}
-				b.append(e.getKey().getName());
-				b.append("=?");
-			}
-			return b.toString();
-		} else {
-			return null;
-		}
-	}
-
-	private String[] filterToSelectionArgs(Map<DbColumns<T>, String> filter) {
-		if (filter != null) {
-			String[] ret = new String[filter.size()];
-			int pos = 0;
-			for (Entry<DbColumns<T>, String> e : filter.entrySet()) {
-				ret[pos++] = e.getValue();
-			}
-			return ret;
-		} else {
-			return null;
-		}
-	}
-
-	protected String[] columnsToStringArray(List<DbColumns<T>> cols) {
-		String[] ret = new String[cols.size()];
+	protected String[] columnsToStringArray(DbColumns[] cols) {
+		String[] ret = new String[cols.length];
 		int pos = 0;
-		for (DbColumns<T> dbColumns : cols) {
-			ret[pos++] = dbColumns.getName();
+		for (int i = 0; i < cols.length; i++) {
+			ret[pos++] = cols[i].getName();
 		}
 		return ret;
 	}
 
 	public long insert(T obj) {
-		ContentValues v = new ContentValues();
-		for (DbColumns<T> col : columns) {
-			col.populateContent(obj, v);
-		}
-		return db.insert(name, null, v);
+		return db.insert(name, null, createContentValue(obj));
 	}
+
+	protected abstract ContentValues createContentValue(T obj);
 
 	public void setDb(SQLiteDatabase db) {
 		this.db = db;
@@ -235,13 +158,7 @@ public abstract class DbDao<T> {
 		return l;
 	}
 
-	protected T createObject(Cursor c) {
-		T t = createNewObject();
-		for (DbColumns<T> col : columns) {
-			col.populateObject(t, c);
-		}
-		return t;
-	}
+	protected abstract T createObject(Cursor c);
 
 	protected String[] convertToStringArray(Cursor c) {
 		String[] l = new String[c.getCount()];

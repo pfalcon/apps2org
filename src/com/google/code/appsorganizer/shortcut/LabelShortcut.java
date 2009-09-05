@@ -18,9 +18,6 @@
  */
 package com.google.code.appsorganizer.shortcut;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -183,13 +180,13 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			@SuppressWarnings("unchecked")
 			final AppGridAdapter<GridObject> gridAdapter = (AppGridAdapter<GridObject>) grid.getAdapter();
 			if (label.getId() == ALL_LABELS_ID) {
-				ArrayList<Label> labels = dbHelper.labelDao.getLabels();
+				Label[] labels = dbHelper.labelDao.getLabelsArray();
 				gridAdapter.setObjectList(labels);
 				handler.sendEmptyMessage(-1);
 			} else {
 				String[] apps = dbHelper.appsLabelDao.getAppNames(label.getId());
-				Collection<Application> newList = applicationInfoManager.convertToApplicationListNoIgnored(apps);
-				gridAdapter.setObjectList(new ArrayList<Application>(newList));
+				Application[] newList = applicationInfoManager.convertToApplicationListNoIgnored(apps);
+				gridAdapter.setObjectList(newList);
 				handler.sendEmptyMessage(-1);
 				int pos = 0;
 				for (Application a : newList) {
@@ -223,7 +220,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 			grid = (GridView) findViewById(R.id.shortcutGrid);
 			grid.setColumnWidth(65);
-			final AppGridAdapter<GridObject> adapter = new AppGridAdapter<GridObject>(new ArrayList<GridObject>(), this);
+			final AppGridAdapter<GridObject> adapter = new AppGridAdapter<GridObject>(new GridObject[0], this);
 			grid.setAdapter(adapter);
 
 			grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {

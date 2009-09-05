@@ -26,6 +26,7 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.ContextMenu;
@@ -82,7 +83,6 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 		genericDialogManager.addDialog(chooseLabelDialog);
 
-		// Debug.startMethodTracing("splash");
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
@@ -160,6 +160,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 					}
 
 				};
+				appsAdapter.setNotifyOnChange(false);
 				handler.sendEmptyMessage(-2);
 
 				registerForContextMenu(getListView());
@@ -231,8 +232,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	};
 
 	public void dataSetChanged() {
-		@SuppressWarnings("unchecked")
-		ArrayAdapter<Application> appsAdapter = (ArrayAdapter<Application>) getListAdapter();
+		appsAdapter.setNotifyOnChange(false);
 		appsAdapter.clear();
 		final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
 		for (Application applicationBinding : appsArray) {
@@ -328,8 +328,10 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		viewHolder.starred.setChecked(a.isStarred());
 		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				Debug.startMethodTracing("splash");
 				a.setStarred(isChecked);
 				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, a, isChecked);
+				Debug.stopMethodTracing();
 			}
 		});
 		return v;
