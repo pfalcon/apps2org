@@ -22,23 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.AbsListView;
-import android.widget.ArrayAdapter;
 
-public class ChooseLabelListAdapter extends ArrayAdapter<AppLabelBinding> {
+import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
+
+public class ChooseLabelListAdapter extends ArrayAdapterSmallRow<AppLabelBinding> {
 
 	public ChooseLabelListAdapter(Context context, List<AppLabelBinding> list) {
 		super(context, android.R.layout.simple_list_item_multiple_choice, list);
 	}
 
 	public void addLabel(String l) {
-		AppLabelBinding label = new AppLabelBinding();
-		label.setLabel(l);
-		label.setChecked(true);
-		label.setOriginalChecked(false);
+		AppLabelBinding label = new AppLabelBinding(l, null, false);
+		label.checked = true;
 		insert(label, 0);
 	}
 
@@ -52,14 +47,5 @@ public class ChooseLabelListAdapter extends ArrayAdapter<AppLabelBinding> {
 			}
 		}
 		return ret;
-	}
-
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		View view = super.getView(position, convertView, parent);
-		if (convertView == null) {
-			view.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.FILL_PARENT, 44));
-		}
-		return view;
 	}
 }

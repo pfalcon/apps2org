@@ -19,5 +19,9 @@
 package com.google.code.appsorganizer.db;
 
 public interface DbChangeListener {
-	void dataSetChanged();
+
+	short CHANGED_ALL = 1;
+	short CHANGED_STARRED = 2;
+
+	void dataSetChanged(Object source, short type);
 }

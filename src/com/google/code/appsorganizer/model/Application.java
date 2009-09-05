@@ -34,6 +34,8 @@ import android.widget.ImageView;
 
 public class Application implements Comparable<Application>, GridObject {
 
+	public static final char LABEL_ID_SEPARATOR = '#';
+
 	private final Long id;
 
 	private Drawable drawableIcon;
@@ -43,6 +45,8 @@ public class Application implements Comparable<Application>, GridObject {
 	private Intent intent;
 
 	private String labelListString;
+
+	private String labelIds;
 
 	private boolean starred;
 
@@ -176,5 +180,20 @@ public class Application implements Comparable<Application>, GridObject {
 
 	public void setIgnored(boolean ignored) {
 		this.ignored = ignored;
+	}
+
+	public String getLabelIds() {
+		return labelIds;
+	}
+
+	public void setLabelIds(String labelIds) {
+		this.labelIds = labelIds;
+	}
+
+	public boolean hasLabel(long labelId) {
+		if (labelIds == null) {
+			return false;
+		}
+		return labelIds.indexOf(Application.LABEL_ID_SEPARATOR + Long.toString(labelId) + Application.LABEL_ID_SEPARATOR) != -1;
 	}
 }

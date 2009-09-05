@@ -20,55 +20,20 @@ package com.google.code.appsorganizer;
 
 public class AppLabelBinding implements Comparable<AppLabelBinding> {
 
-	private Long appLabelId;
-	private Long labelId;
-	private String label;
-	private boolean checked;
+	public final Long labelId;
+	public final String label;
+	public boolean checked;
 
-	private boolean originalChecked;
+	public final boolean originalChecked;
 
-	public AppLabelBinding() {
-	}
-
-	public AppLabelBinding(String label, boolean checked) {
+	public AppLabelBinding(String label, Long labelId, boolean originalChecked) {
 		this.label = label;
-		this.checked = checked;
+		this.labelId = labelId;
+		this.originalChecked = originalChecked;
 	}
 
 	public boolean isModified() {
 		return checked != originalChecked;
-	}
-
-	public boolean isChecked() {
-		return checked;
-	}
-
-	public void setChecked(boolean checked) {
-		this.checked = checked;
-	}
-
-	public boolean isOriginalChecked() {
-		return originalChecked;
-	}
-
-	public void setOriginalChecked(boolean originalChecked) {
-		this.originalChecked = originalChecked;
-	}
-
-	public Long getAppLabelId() {
-		return appLabelId;
-	}
-
-	public void setAppLabelId(Long appLabelId) {
-		this.appLabelId = appLabelId;
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
 	}
 
 	@Override
@@ -99,14 +64,6 @@ public class AppLabelBinding implements Comparable<AppLabelBinding> {
 			return false;
 		}
 		return true;
-	}
-
-	public Long getLabelId() {
-		return labelId;
-	}
-
-	public void setLabelId(Long labelId) {
-		this.labelId = labelId;
 	}
 
 	@Override

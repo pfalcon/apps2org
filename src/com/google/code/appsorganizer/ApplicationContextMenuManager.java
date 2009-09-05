@@ -63,8 +63,8 @@ public class ApplicationContextMenuManager {
 		}
 	}
 
-	public void onContextItemSelected(MenuItem item, final Application app, Activity activity, ChooseLabelDialogCreator chooseLabelDialog,
-			final ApplicationInfoManager applicationInfoManager) {
+	public void onContextItemSelected(MenuItem item, final Application app, final Activity activity,
+			ChooseLabelDialogCreator chooseLabelDialog, final ApplicationInfoManager applicationInfoManager) {
 		switch (item.getItemId()) {
 		case CHOOSE_LABELS:
 			chooseLabelDialog.setCurrentApp(app);
@@ -86,12 +86,12 @@ public class ApplicationContextMenuManager {
 					activity.getString(R.string.ignore_warning_title), activity.getString(R.string.ignore_warning), true,
 					new OnOkClickListener() {
 						public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-							AppLabelSaver.saveIgnored(DatabaseHelper.singleton(), applicationInfoManager, app, true);
+							AppLabelSaver.saveIgnored(DatabaseHelper.singleton(), applicationInfoManager, app, true, activity);
 						}
 					});
 			break;
 		case NO_IGNORE:
-			AppLabelSaver.saveIgnored(DatabaseHelper.singleton(), applicationInfoManager, app, false);
+			AppLabelSaver.saveIgnored(DatabaseHelper.singleton(), applicationInfoManager, app, false, activity);
 			break;
 		}
 	}

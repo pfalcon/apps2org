@@ -48,17 +48,6 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return db.insert(name, null, v);
 	}
 
-	public String[] getAppsWithLabel() {
-		Cursor c = db.query(true, name, new String[] { APP_COL_NAME }, null, null, null, null, null, null);
-		return convertToStringArray(c);
-	}
-
-	public String[] getAppNames(long labelId) {
-		Cursor c = db.query(name, new String[] { APP_COL_NAME }, LABEL_ID_COL_NAME + "=?", new String[] { Long.toString(labelId) }, null,
-				null, null);
-		return convertToStringArray(c);
-	}
-
 	@Override
 	protected AppLabel createObject(Cursor c) {
 		AppLabel t = new AppLabel();

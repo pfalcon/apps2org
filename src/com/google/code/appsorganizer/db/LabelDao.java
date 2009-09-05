@@ -19,11 +19,11 @@
 package com.google.code.appsorganizer.db;
 
 import java.util.ArrayList;
-import java.util.TreeMap;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
@@ -54,7 +54,6 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		String[] values = new String[tot];
 		int pos = 0;
 		try {
-			// c.moveToFirst();
 			while (c.moveToNext()) {
 				keys[pos] = c.getString(0);
 				values[pos++] = c.getString(1);
@@ -62,51 +61,47 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		} finally {
 			c.close();
 		}
-		return new DoubleArray(keys, values);
+		return new DoubleArray(keys, values, null);
 	}
 
 	public DoubleArray getAppsLabelsConcat() {
 		Cursor c = db.rawQuery(
-				"select al.app, l.label from labels l inner join apps_labels al on l._id = al.id_label order by al.app, l.label",
+				"select al.app, l.label, l._id from labels l inner join apps_labels al on l._id = al.id_label order by al.app, l.label",
 				new String[] {});
 		int tot = c.getCount();
 		String[] keys = new String[tot];
 		String[] values = new String[tot];
+		String[] labelIds = new String[tot];
 		int pos = 0;
-		StringBuilder b = new StringBuilder();
+		StringBuilder b = null;
+		StringBuilder bl = null;
 		String curApp = null;
 		try {
 			while (c.moveToNext()) {
 				String appName = c.getString(0);
 				String label = c.getString(1);
+				long labelId = c.getLong(2);
 				if (appName.equals(curApp)) {
-					b.append(", ");
-					b.append(label);
+					b.append(", ").append(label);
+					bl.append(labelId).append(Application.LABEL_ID_SEPARATOR);
 				} else {
 					if (curApp != null) {
 						keys[pos] = curApp;
-						values[pos++] = b.toString();
+						values[pos] = b.toString();
+						labelIds[pos++] = bl.toString();
 					}
 					curApp = appName;
 					b = new StringBuilder(label);
+					bl = new StringBuilder().append(Application.LABEL_ID_SEPARATOR).append(labelId).append(Application.LABEL_ID_SEPARATOR);
 				}
 			}
 			keys[pos] = curApp;
-			values[pos++] = b.toString();
+			values[pos] = b.toString();
+			labelIds[pos++] = bl.toString();
 		} finally {
 			c.close();
 		}
-		return new DoubleArray(keys, values);
-	}
-
-	public TreeMap<Long, Label> getLabelsTreeMap() {
-		TreeMap<Long, Label> m = new TreeMap<Long, Label>();
-		Label[] labels = getLabelsArray();
-		for (int i = 0; i < labels.length; i++) {
-			Label label = labels[i];
-			m.put(label.getId(), label);
-		}
-		return m;
+		return new DoubleArray(keys, values, labelIds);
 	}
 
 	public ArrayList<Label> getLabels() {

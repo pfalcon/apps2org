@@ -126,8 +126,10 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		}
 	}
 
-	public void dataSetChanged() {
-		mAdapter.reloadAndNotify();
+	public void dataSetChanged(Object source, short type) {
+		if (type != CHANGED_STARRED) {
+			mAdapter.reloadAndNotify();
+		}
 	}
 
 	@Override
@@ -182,7 +184,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 						label.setName(charSequence.toString());
 						dbHelper.labelDao.update(label);
 						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-						applicationInfoManager.notifyDataSetChanged();
+						applicationInfoManager.notifyDataSetChanged(this);
 					}
 				});
 				showDialog(textEntryDialog.getDialogId());
@@ -193,7 +195,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 						dbHelper.appsLabelDao.deleteAppsOfLabel(label.getId());
 						dbHelper.labelDao.delete(label.getId());
 						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-						applicationInfoManager.notifyDataSetChanged();
+						applicationInfoManager.notifyDataSetChanged(this);
 					}
 				});
 				break;

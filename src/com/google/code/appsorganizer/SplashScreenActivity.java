@@ -18,15 +18,12 @@
  */
 package com.google.code.appsorganizer;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.ContextMenu;
@@ -75,6 +72,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// Debug.startMethodTracing("splash");
 		genericDialogManager = new GenericDialogManager(SplashScreenActivity.this);
 
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
@@ -150,9 +148,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				applicationInfoManager.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler);
 				handler.sendEmptyMessage(-1);
 
-				final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
-				appsAdapter = new ArrayAdapter<Application>(SplashScreenActivity.this, R.layout.app_row, new ArrayList<Application>(
-						appsArray)) {
+				final Application[] appsArray = applicationInfoManager.getAppsArray();
+				appsAdapter = new ArrayAdapter<Application>(SplashScreenActivity.this, R.layout.app_row, appsArray) {
 					@Override
 					public View getView(int position, View v, ViewGroup parent) {
 						return getAppView(SplashScreenActivity.this, dbHelper, applicationInfoManager, v, getItem(position),
@@ -231,30 +228,36 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		}
 	};
 
-	public void dataSetChanged() {
-		appsAdapter.setNotifyOnChange(false);
-		appsAdapter.clear();
-		final ArrayList<Application> appsArray = applicationInfoManager.getAppsArray();
-		for (Application applicationBinding : appsArray) {
-			appsAdapter.add(applicationBinding);
+	public void dataSetChanged(Object source, short type) {
+		if (type == CHANGED_STARRED) {
+			if (source != this) {
+				appsAdapter.notifyDataSetChanged();
+			}
+		} else {
+			appsAdapter.setNotifyOnChange(false);
+			appsAdapter.clear();
+			Application[] appsArray = applicationInfoManager.getAppsArray();
+			for (int i = 0; i < appsArray.length; i++) {
+				appsAdapter.add(appsArray[i]);
+			}
+			appsAdapter.notifyDataSetChanged();
+			loadInconsInThread(appsArray);
 		}
-		appsAdapter.notifyDataSetChanged();
-		loadInconsInThread(appsArray);
 	}
 
-	private void loadInconsInThread(final ArrayList<Application> appBindingVector) {
+	private void loadInconsInThread(final Application[] appsArray) {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				loadIcons(appBindingVector);
+				loadIcons(appsArray);
 			}
 		};
 		t.start();
 	}
 
-	private void loadIcons(final ArrayList<Application> appBindingVector) {
+	private void loadIcons(final Application[] appsArray) {
 		int pos = 0;
-		for (Application ab : appBindingVector) {
+		for (Application ab : appsArray) {
 			if (ab.getIcon() == null) {
 				ab.loadIcon(getPackageManager());
 				ab.setIcon(ab.getIcon());
@@ -328,10 +331,10 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		viewHolder.starred.setChecked(a.isStarred());
 		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				Debug.startMethodTracing("splash");
+				// Debug.startMethodTracing("splash");
 				a.setStarred(isChecked);
-				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, a, isChecked);
-				Debug.stopMethodTracing();
+				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, a, isChecked, context);
+				// Debug.stopMethodTracing();
 			}
 		});
 		return v;

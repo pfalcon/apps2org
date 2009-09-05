@@ -33,6 +33,7 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
+import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
 
 public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
@@ -55,21 +56,21 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	@Override
 	public void prepareDialog(Dialog dialog) {
-		String[] appsWithLabel = dbHelper.appsLabelDao.getAppNames(currentLabel.getId());
-		Application[] l1 = applicationInfoManager.convertToApplicationListNoIgnored(appsWithLabel);
+		Application[] l1 = applicationInfoManager.getApps(currentLabel.getId(), false);
 		checkedApps = createSet(l1);
 		List<Application> allApps = new ArrayList<Application>();
 		for (int i = 0; i < l1.length; i++) {
 			allApps.add(l1[i]);
 		}
-		ArrayList<Application> tmp = applicationInfoManager.getAppsArray();
-		for (Application application : tmp) {
+		Application[] tmp = applicationInfoManager.getAppsArray();
+		for (int i = 0; i < tmp.length; i++) {
+			Application application = tmp[i];
 			if (!checkedApps.contains(application.name)) {
 				allApps.add(application);
 			}
 		}
 
-		adapter = new ArrayAdapter<Application>(owner, android.R.layout.simple_list_item_multiple_choice, allApps);
+		adapter = new ArrayAdapterSmallRow<Application>(owner, android.R.layout.simple_list_item_multiple_choice, allApps);
 
 		listView.setAdapter(adapter);
 
@@ -132,7 +133,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			}
 		}
 		if (changed) {
-			applicationInfoManager.notifyDataSetChanged();
+			applicationInfoManager.notifyDataSetChanged(this);
 		}
 	}
 }

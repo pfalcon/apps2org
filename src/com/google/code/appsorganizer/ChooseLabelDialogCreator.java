@@ -21,12 +21,11 @@ package com.google.code.appsorganizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.os.Debug;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -35,12 +34,12 @@ import android.widget.TextView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
-import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
+	private static boolean debug = true;
 
 	private final DatabaseHelper labelAdapter;
 
@@ -61,13 +60,20 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		List<AppLabelBinding> allLabels = getAllLabels(application.name);
+		if (debug) {
+			Debug.startMethodTracing("splash");
+		}
+		List<AppLabelBinding> allLabels = getAllLabels(application);
+		if (debug) {
+			Debug.stopMethodTracing();
+			debug = false;
+		}
 		adapter = new ChooseLabelListAdapter(owner, allLabels);
 		listView.setAdapter(adapter);
 
 		int pos = 0;
 		for (AppLabelBinding appLabelBinding : allLabels) {
-			if (appLabelBinding.isChecked()) {
+			if (appLabelBinding.checked) {
 				listView.setItemChecked(pos, true);
 			}
 			pos++;
@@ -93,29 +99,15 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		});
 	}
 
-	public List<AppLabelBinding> getAllLabels(String appId) {
+	private List<AppLabelBinding> getAllLabels(Application a) {
 		List<AppLabelBinding> ret = new ArrayList<AppLabelBinding>();
-		AppLabel[] labels = labelAdapter.appsLabelDao.getApps(appId);
-		TreeMap<Long, Label> all = labelAdapter.labelDao.getLabelsTreeMap();
-		for (int i = 0; i < labels.length; i++) {
-			AppLabel l = labels[i];
-			AppLabelBinding b = new AppLabelBinding();
-			b.setChecked(true);
-			b.setOriginalChecked(true);
-			b.setAppLabelId(l.getId());
-			Long labelId = l.getLabelId();
-			b.setLabelId(labelId);
-			Label label = all.remove(labelId);
-			if (label != null) {
-				b.setLabel(label.getName());
-			}
-			ret.add(b);
-		}
-		TreeSet<Label> values = new TreeSet<Label>(all.values());
-		for (Label l : values) {
-			AppLabelBinding b = new AppLabelBinding();
-			b.setLabel(l.getName());
-			b.setLabelId(l.getId());
+		Label[] all = labelAdapter.labelDao.getLabelsArray();
+		for (int i = 0; i < all.length; i++) {
+			Label label = all[i];
+			long id = label.getId();
+			boolean checked = a.hasLabel(id);
+			AppLabelBinding b = new AppLabelBinding(label.getName(), id, checked);
+			b.checked = checked;
 			ret.add(b);
 		}
 		Collections.sort(ret);
@@ -137,10 +129,10 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				int count = adapter.getCount();
 				for (int i = 0; i < count; i++) {
-					adapter.getItem(i).setChecked(listView.isItemChecked(i));
+					adapter.getItem(i).checked = listView.isItemChecked(i);
 				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				new AppLabelSaver(labelAdapter, applicationInfoManager).save(application, modifiedLabels);
+				new AppLabelSaver(labelAdapter, applicationInfoManager).save(application, modifiedLabels, this);
 			}
 		});
 		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {

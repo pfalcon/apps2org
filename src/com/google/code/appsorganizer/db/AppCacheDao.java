@@ -83,11 +83,6 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		db.update(name, v, NAME_COL_NAME + " = ?", new String[] { app });
 	}
 
-	public String[] getIgnoredApps() {
-		Cursor c = db.query(true, name, new String[] { NAME_COL_NAME }, IGNORED_COL_NAME + "=1", null, null, null, null, null);
-		return convertToStringArray(c);
-	}
-
 	@Override
 	protected AppCache createObject(Cursor c) {
 		AppCache t = new AppCache();

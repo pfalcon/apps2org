@@ -46,4 +46,6 @@
 	<string name="ignore_warning_title">Ignore app</string>
 	<string name="ignore_warning">If you continue you\'ll see this app only in labels tab. Are you sure?</string>
 	<string name="ignored_label">Ignored</string>
+	<string name="Starred_apps">Starred apps</string>
+	<string name="show_only_starred_apps">Show only starred apps</string>
 </resources>

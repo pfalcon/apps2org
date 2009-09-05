@@ -23,6 +23,7 @@ import java.util.List;
 import com.google.code.appsorganizer.AppLabelBinding;
 import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.db.DatabaseHelper;
+import com.google.code.appsorganizer.db.DbChangeListener;
 
 public class AppLabelSaver {
 
@@ -36,13 +37,13 @@ public class AppLabelSaver {
 	}
 
 	public static void saveStarred(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
-			boolean starred) {
+			boolean starred, Object source) {
 		dbHelper.appCacheDao.updateStarred(application.name, starred);
-		applicationInfoManager.notifyDataSetChanged();
+		applicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
 	}
 
 	public static void saveIgnored(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
-			boolean ignored) {
+			boolean ignored, Object source) {
 		application.setIgnored(ignored);
 		dbHelper.appCacheDao.updateIgnored(application.name, ignored);
 		if (ignored) {
@@ -50,24 +51,24 @@ public class AppLabelSaver {
 		} else {
 			applicationInfoManager.dontIgnoreApp(application);
 		}
-		applicationInfoManager.notifyDataSetChanged();
+		applicationInfoManager.notifyDataSetChanged(source);
 	}
 
-	public void save(Application application, List<AppLabelBinding> modifiedLabels) {
+	public void save(Application application, List<AppLabelBinding> modifiedLabels, Object source) {
 		if (!modifiedLabels.isEmpty()) {
 			for (AppLabelBinding b : modifiedLabels) {
-				Long labelId = b.getLabelId();
-				if (b.isChecked()) {
-					if (b.isChecked() && labelId == null) {
-						labelId = dbHelper.labelDao.insert(b.getLabel());
+				Long labelId = b.labelId;
+				if (b.checked) {
+					if (b.checked && labelId == null) {
+						labelId = dbHelper.labelDao.insert(b.label);
 					}
 					dbHelper.appsLabelDao.insert(application.name, labelId);
 				} else {
-					dbHelper.appsLabelDao.delete(b.getAppLabelId());
+					dbHelper.appsLabelDao.delete(application.name, labelId);
 				}
 			}
 			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-			applicationInfoManager.notifyDataSetChanged();
+			applicationInfoManager.notifyDataSetChanged(source);
 		}
 	}
 }

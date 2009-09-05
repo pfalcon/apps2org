@@ -34,8 +34,11 @@ import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
@@ -50,6 +53,7 @@ import com.google.code.appsorganizer.model.Label;
 public class LabelShortcut extends Activity implements DbChangeListener {
 
 	public static final long ALL_LABELS_ID = -2l;
+	public static final long ALL_STARRED_ID = -3l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
 
 	private ApplicationInfoManager applicationInfoManager;
@@ -61,6 +65,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private boolean allLabelsSelected;
 
 	private static Label ALL_LABELS;
+
+	private static Label ALL_STARRED;
 
 	private TextView titleView;
 
@@ -74,6 +80,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private ProgressDialog pd;
 
+	private boolean onlyStarred;
+
 	private final Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -85,6 +93,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				}
 			} else if (msg.what == -2) {
 				titleView.setText(label.getName());
+				starCheck.setVisibility(label.getId() > 0 ? View.VISIBLE : View.INVISIBLE);
 			} else if (msg.what == -3) {
 				((AppGridAdapter<?>) grid.getAdapter()).notifyDataSetChanged();
 			}
@@ -102,6 +111,13 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		View titleLayout = findViewById(R.id.titleLayout);
 		titleLayout.setBackgroundColor(Color.GRAY);
 		titleView = (TextView) findViewById(R.id.title);
+		starCheck = (CheckBox) findViewById(R.id.starCheck);
+		starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				onlyStarred = isChecked;
+				reloadGrid();
+			}
+		});
 
 		findViewById(R.id.closeButton).setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -134,12 +150,17 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				if (ALL_LABELS == null) {
 					ALL_LABELS = new Label(LabelShortcut.ALL_LABELS_ID, getString(R.string.all_labels), R.drawable.icon);
 				}
+				if (ALL_STARRED == null) {
+					ALL_STARRED = new Label(LabelShortcut.ALL_STARRED_ID, getString(R.string.Starred_apps), R.drawable.icon);
+				}
 				final Intent intent = getIntent();
 
-				long labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_LABELS_ID);
+				long labelId = intent.getLongExtra(LABEL_ID, ALL_STARRED_ID);
 				if (labelId == ALL_LABELS_ID) {
 					allLabelsSelected = true;
 					label = ALL_LABELS;
+				} else if (labelId == ALL_STARRED_ID) {
+					label = ALL_STARRED;
 				} else {
 					allLabelsSelected = false;
 					label = dbHelper.labelDao.queryById(labelId);
@@ -184,12 +205,17 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				gridAdapter.setObjectList(labels);
 				handler.sendEmptyMessage(-1);
 			} else {
-				String[] apps = dbHelper.appsLabelDao.getAppNames(label.getId());
-				Application[] newList = applicationInfoManager.convertToApplicationListNoIgnored(apps);
+				Application[] newList;
+				if (label.getId() == ALL_STARRED_ID) {
+					newList = applicationInfoManager.getStarredApps();
+				} else {
+					newList = applicationInfoManager.getApps(label.getId(), onlyStarred);
+				}
 				gridAdapter.setObjectList(newList);
 				handler.sendEmptyMessage(-1);
 				int pos = 0;
-				for (Application a : newList) {
+				for (int i = 0; i < newList.length; i++) {
+					Application a = newList[i];
 					if (a.getIcon() == null) {
 						a.loadIcon(getPackageManager());
 						pos++;
@@ -211,6 +237,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private GridView grid;
 
 	private View mainView;
+	private CheckBox starCheck;
 
 	private GridView getOrCreateGrid() {
 		if (grid == null) {
@@ -253,7 +280,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private boolean onBack() {
 		boolean ret = false;
 		if (allLabelsSelected) {
-			if (label != null && label.getId() != ALL_LABELS_ID) {
+			if (label != null && label.getId() != ALL_LABELS_ID && label.getId() != ALL_STARRED_ID) {
 				label = ALL_LABELS;
 				reloadGridInThread();
 				ret = true;
@@ -262,7 +289,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		return ret;
 	}
 
-	public void dataSetChanged() {
+	public void dataSetChanged(Object source, short type) {
 		reloadGrid();
 	}
 
@@ -273,7 +300,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		if (label != null && label.getId() != ALL_LABELS_ID) {
+		if (label != null && label.getId() != ALL_LABELS_ID && label.getId() != ALL_STARRED_ID) {
 			showChooseAppsDialog();
 		}
 		return false;

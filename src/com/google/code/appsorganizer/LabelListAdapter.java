@@ -20,8 +20,6 @@ package com.google.code.appsorganizer;
 
 import gnu.trove.TLongObjectHashMap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import android.app.Activity;
@@ -47,7 +45,7 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 
 	private List<Label> groups;
 
-	private TLongObjectHashMap<List<Application>> apps = new TLongObjectHashMap<List<Application>>();
+	private TLongObjectHashMap<Application[]> apps = new TLongObjectHashMap<Application[]>();
 
 	public LabelListAdapter(Activity context, DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager,
 			ChooseLabelDialogCreator chooseLabelDialog) {
@@ -67,26 +65,23 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 		groups = dbHelper.labelDao.getLabels();
 		groups.add(new Label(OTHER_LABEL_ID, context.getText(R.string.other_label).toString()));
 		groups.add(new Label(IGNORED_LABEL_ID, context.getText(R.string.ignored_label).toString()));
-		apps = new TLongObjectHashMap<List<Application>>();
+		apps = new TLongObjectHashMap<Application[]>();
 	}
 
-	private List<Application> getAppsInPos(Integer pos) {
+	private Application[] getAppsInPos(Integer pos) {
 		Label label = groups.get(pos);
 		return getApps(label.getId());
 	}
 
-	private List<Application> getApps(long labelId) {
-		List<Application> ret = apps.get(labelId);
+	private Application[] getApps(long labelId) {
+		Application[] ret = apps.get(labelId);
 		if (ret == null) {
 			if (labelId == OTHER_LABEL_ID) {
-				String[] l = dbHelper.appsLabelDao.getAppsWithLabel();
-				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationListNot(l));
+				ret = applicationInfoManager.getAppsNoLabel();
 			} else if (labelId == IGNORED_LABEL_ID) {
-				String[] l = dbHelper.appCacheDao.getIgnoredApps();
-				ret = new ArrayList<Application>(applicationInfoManager.convertToApplicationList(l));
+				ret = applicationInfoManager.getIgnoredApps();
 			} else {
-				String[] l = dbHelper.appsLabelDao.getAppNames(labelId);
-				ret = Arrays.asList(applicationInfoManager.convertToApplicationListNoIgnored(l));
+				ret = applicationInfoManager.getApps(labelId, false);
 			}
 			apps.put(labelId, ret);
 		}
@@ -94,7 +89,7 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 	}
 
 	public Application getChild(int groupPosition, int childPosition) {
-		return getAppsInPos(groupPosition).get(childPosition);
+		return getAppsInPos(groupPosition)[childPosition];
 	}
 
 	public long getChildId(int groupPosition, int childPosition) {
@@ -102,7 +97,7 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 	}
 
 	public int getChildrenCount(int groupPosition) {
-		return getAppsInPos(groupPosition).size();
+		return getAppsInPos(groupPosition).length;
 	}
 
 	public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View cv, ViewGroup parent) {

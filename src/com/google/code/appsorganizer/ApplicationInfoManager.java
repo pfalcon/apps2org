@@ -21,7 +21,6 @@ package com.google.code.appsorganizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -60,24 +59,30 @@ public class ApplicationInfoManager {
 	}
 
 	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
+		// Debug.startMethodTracing("splash");
+		reload2(appCacheDao, labelDao, handler);
+		// Debug.stopMethodTracing();
+	}
+
+	private void reload2(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
+		// getOrReloadAppsMap(appCacheDao);
+		// applicationMap = new HashMap<String, Application>();
 		loadAppsMap(appCacheDao, labelDao, handler);
 	}
 
 	private void loadAppsMap(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
 		synchronized (this) {
-			String[] keys = null;
-			String[] values = null;
+			DoubleArray appsLabels = null;
 			if (labelDao != null) {
-				DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
-				keys = appsLabels.keys;
-				values = appsLabels.values;
+				appsLabels = labelDao.getAppsLabelsConcat();
 			}
 			HashMap<String, AppCache> nameCache = appCacheDao.queryForCacheMap();
 			HashMap<String, Application> oldApps = applicationMap;
 			applicationMap = new HashMap<String, Application>();
 			List<ResolveInfo> installedApplications = getAllResolveInfo();
 			long pos = 0;
-			apps = new ArrayList<Application>(installedApplications.size());
+			int arrayPos = 0;
+			apps = new Application[installedApplications.size()];
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
@@ -103,48 +108,60 @@ public class ApplicationInfoManager {
 							appCacheDao.insert(new AppCache(name, app.getLabel()));
 						}
 					}
-					if (keys != null) {
-						loadLabels(keys, values, app);
+					if (appsLabels != null) {
+						loadLabels(appsLabels, app);
 					}
 					boolean ignored = appCache != null && appCache.isIgnored();
 					app.setIgnored(ignored);
 					if (!ignored) {
-						apps.add(app);
+						apps[arrayPos++] = app;
 						if (handler != null) {
-							handler.sendEmptyMessage(apps.size());
+							handler.sendEmptyMessage(arrayPos);
 						}
 					}
 				}
 			}
-			Collections.sort(apps);
+			apps = copyArray(apps, arrayPos);
+			Arrays.sort(apps);
 		}
 	}
 
 	public void reloadAppsLabel(LabelDao labelDao) {
 		DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
-		String[] keys = appsLabels.keys;
-		String[] values = appsLabels.values;
 		for (Application app : apps) {
-			loadLabels(keys, values, app);
+			loadLabels(appsLabels, app);
 		}
 	}
 
 	public void ignoreApp(Application a) {
-		apps.remove(a);
+		// TODO
+		// apps.remove(a);
 	}
 
 	public void dontIgnoreApp(Application a) {
-		apps.add(a);
-		Collections.sort(apps);
+		// TODO
+		Application[] oldApps = apps;
+		apps = new Application[oldApps.length + 1];
+		for (int i = 0; i < oldApps.length; i++) {
+			Application cur = oldApps[i];
+			if (a.compareTo(cur) > 0) {
+				apps[i] = a;
+			} else {
+				apps[i] = cur;
+			}
+		}
 	}
 
-	private void loadLabels(String[] keys, String[] values, Application app) {
-		for (int i = 0; i < keys.length; i++) {
+	private void loadLabels(DoubleArray appsLabels, Application app) {
+		String[] keys = appsLabels.keys;
+		int length = keys.length;
+		for (int i = 0; i < length; i++) {
 			if (keys[i] == null) {
 				return;
 			}
 			if (keys[i].equals(app.name)) {
-				app.setLabelListString(values[i]);
+				app.setLabelListString(appsLabels.values[i]);
+				app.setLabelIds(appsLabels.labelIds[i]);
 				return;
 			}
 		}
@@ -174,27 +191,10 @@ public class ApplicationInfoManager {
 
 	private HashMap<String, Application> applicationMap = new HashMap<String, Application>();
 
-	private ArrayList<Application> apps;
+	private Application[] apps;
 
-	public ArrayList<Application> getAppsArray() {
+	public Application[] getAppsArray() {
 		return apps;
-	}
-
-	public Collection<Application> convertToApplicationListNot(String[] l) {
-		TreeSet<Application> ret = new TreeSet<Application>();
-		for (Application application : apps) {
-			boolean found = false;
-			for (int i = 0; i < l.length; i++) {
-				if (l[i].equals(application.name)) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				ret.add(application);
-			}
-		}
-		return ret;
 	}
 
 	public Collection<Application> convertToApplicationList(AppLabel[] l) {
@@ -220,13 +220,64 @@ public class ApplicationInfoManager {
 		return ret;
 	}
 
-	public Application[] convertToApplicationListNoIgnored(String[] l) {
+	public Application[] getAppsNoLabel() {
+		Application[] ret = new Application[apps.length];
+		int pos = 0;
+		for (int i = 0; i < apps.length; i++) {
+			Application application = apps[i];
+			String l = application.getLabelListString();
+			if (l == null || l.equals("")) {
+				ret[pos++] = application;
+			}
+		}
+		return copyArray(ret, pos);
+	}
+
+	public Application[] getStarredApps() {
+		Application[] ret = new Application[apps.length];
+		int i = 0;
+		for (Application application : apps) {
+			if (application.isStarred() && !application.isIgnored()) {
+				ret[i++] = application;
+			}
+		}
+		return copyArray(ret, i);
+	}
+
+	public Application[] getApps(long labelId, boolean onlyStarred) {
+		Application[] ret = new Application[apps.length];
+		int i = 0;
+		String l = Application.LABEL_ID_SEPARATOR + Long.toString(labelId) + Application.LABEL_ID_SEPARATOR;
+		for (Application application : apps) {
+			String labelIds = application.getLabelIds();
+			if (labelIds != null && labelIds.indexOf(l) != -1) {
+				if (!onlyStarred || application.isStarred()) {
+					ret[i++] = application;
+				}
+			}
+		}
+		return copyArray(ret, i);
+	}
+
+	public Application[] getIgnoredApps() {
+		Application[] ret = new Application[apps.length];
+		int pos = 0;
+		Collection<Application> values = applicationMap.values();
+		for (Application application : values) {
+			if (application.isIgnored()) {
+				ret[pos++] = application;
+			}
+		}
+		return copyArray(ret, pos);
+	}
+
+	public Application[] convertToApplicationArray(String[] l, boolean ignored, boolean onlyStarred) {
 		Application[] ret = new Application[l.length];
 		int pos = 0;
 		for (int i = 0; i < l.length; i++) {
-			Application application = getApplication(l[i]);
-			if (application != null && !application.isIgnored()) {
-				ret[pos++] = application;
+			Application a = getApplication(l[i]);
+			if (a != null && (ignored || !a.isIgnored()) && (!onlyStarred || a.isStarred())) {
+				ret[pos++] = a;
 			}
 		}
 		ret = copyArray(ret, pos);
@@ -313,10 +364,14 @@ public class ApplicationInfoManager {
 		return listeners.remove(object);
 	}
 
-	public void notifyDataSetChanged() {
+	public void notifyDataSetChanged(Object source, short type) {
 		for (DbChangeListener a : listeners) {
-			a.dataSetChanged();
+			a.dataSetChanged(source, type);
 		}
+	}
+
+	public void notifyDataSetChanged(Object source) {
+		notifyDataSetChanged(source, DbChangeListener.CHANGED_ALL);
 	}
 
 }

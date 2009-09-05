@@ -26,11 +26,11 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.model.Label;
+import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
 
 /**
  * @author fabio
@@ -47,8 +47,9 @@ public class ShortcutCreator extends ListActivity {
 	public void showCreateShortcutView() {
 		final List<Label> labels = DatabaseHelper.initOrSingleton(this).labelDao.getLabels();
 		labels.add(0, new Label(LabelShortcut.ALL_LABELS_ID, getString(R.string.all_labels), R.drawable.icon));
+		labels.add(1, new Label(LabelShortcut.ALL_STARRED_ID, getString(R.string.Starred_apps), R.drawable.icon));
 		setTitle(R.string.choose_labels_for_shortcut);
-		setListAdapter(new ArrayAdapter<Label>(this, android.R.layout.simple_list_item_1, labels));
+		setListAdapter(new ArrayAdapterSmallRow<Label>(this, android.R.layout.simple_list_item_1, labels));
 
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View v, int pos, long arg3) {

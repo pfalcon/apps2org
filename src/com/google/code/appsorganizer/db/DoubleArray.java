@@ -26,10 +26,12 @@ public class DoubleArray {
 
 	public final String[] keys;
 	public final String[] values;
+	public final String[] labelIds;
 
-	public DoubleArray(String[] keys, String[] values) {
+	public DoubleArray(String[] keys, String[] values, String[] labelIds) {
 		this.keys = keys;
 		this.values = values;
+		this.labelIds = labelIds;
 	}
 
 }
