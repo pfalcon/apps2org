@@ -39,7 +39,7 @@
         <!--     intents from the shortcut itself. -->
 
         <activity android:name=".shortcut.LabelShortcut"
-                  android:label="@string/Apps_organizer_label" android:launchMode="singleInstance"
+                  android:label="@string/Apps_organizer_label"
                   android:theme="@android:style/Theme.Dialog" android:taskAffinity="com.google.code.appsorganizer.shortcuts">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

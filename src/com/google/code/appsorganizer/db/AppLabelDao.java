@@ -66,7 +66,7 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		// return
 		// db.rawQuery("select a._id, null image, a.label, a.package, a.name from apps a inner join apps_labels al "
 		// + "on a.name = al.app order by name", null);
-		return db.rawQuery("select a._id, null image, a.label, a.package, a.name from apps a inner join apps_labels al "
+		return db.rawQuery("select a.label, a.package, a.name from apps a inner join apps_labels al "
 				+ "on a.name = al.app where id_label = ? " + (starred ? "and a.starred = 1" : "") + " order by a.label",
 				new String[] { Long.toString(labelId) });
 	}

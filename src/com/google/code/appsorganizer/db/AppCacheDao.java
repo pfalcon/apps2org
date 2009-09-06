@@ -29,7 +29,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	private static final String LABEL_COL_NAME = "label";
 
-	private static final String NAME_COL_NAME = "name";
+	public static final String NAME_COL_NAME = "name";
 
 	public static final String PACKAGE_NAME_COL_NAME = "package";
 
@@ -75,7 +75,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	}
 
 	public Cursor getStarredApps() {
-		return db.rawQuery("select _id, null image, label, package, name from " + name + " where starred = 1 order by label", null);
+		return db.rawQuery("select label, package, name from " + name + " where starred = 1 order by label", null);
 	}
 
 	public void updateStarred(String app, boolean starred) {

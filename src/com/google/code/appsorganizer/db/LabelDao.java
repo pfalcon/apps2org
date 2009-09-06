@@ -28,9 +28,9 @@ import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
 
-	private static final String ICON_COL_NAME = "icon";
+	public static final String ICON_COL_NAME = "icon";
 
-	private static final String LABEL_COL_NAME = "label";
+	public static final String LABEL_COL_NAME = "label";
 
 	public static final String NAME = "labels";
 
@@ -110,8 +110,12 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public Label[] getLabelsArray() {
-		Cursor c = db.query(name, COLS_STRING, null, null, null, null, ("upper(" + LABEL.getName() + ")"));
+		Cursor c = getLabelCursor();
 		return convertCursorToArray(c, new Label[c.getCount()]);
+	}
+
+	public Cursor getLabelCursor() {
+		return db.query(name, COLS_STRING, null, null, null, null, ("upper(" + LABEL.getName() + ")"));
 	}
 
 	public long insert(String label) {

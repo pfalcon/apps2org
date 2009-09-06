@@ -20,7 +20,6 @@ package com.google.code.appsorganizer.shortcut;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -48,8 +47,11 @@ import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
 import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
+import com.google.code.appsorganizer.db.LabelDao;
+import com.google.code.appsorganizer.db.ObjectWithIdDao;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
@@ -59,10 +61,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private static final String TITLE_BUNDLE_KEY = "title";
 	private static final int SET_TITLE = -2;
 	private static final int CHANGE_CURSOR = -1;
-	private static final String ID_COL = "_id";
-	private static final String NAME_COL = "name";
-	private static final String LABEL_COL = "label";
-	private static final String IMAGE_COL = "image";
 	public static final long ALL_LABELS_ID = -2l;
 	public static final long ALL_STARRED_ID = -3l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
@@ -148,9 +146,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			if (msg.what == CHANGE_CURSOR) {
 				if (cursorAdapter == null) {
 					createAdapter(cursor);
+
 				} else {
 					cursorAdapter.changeCursor(cursor);
-					// cursorAdapter.notifyDataSetChanged();
+				}
+				if (labelId != ALL_LABELS_ID) {
+					new LoadIconTask().execute(iconsToLoad);
 				}
 			} else if (msg.what == SET_TITLE) {
 				titleView.setText(msg.getData().getString(TITLE_BUNDLE_KEY));
@@ -159,18 +160,36 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		}
 	};
 
+	private String[] iconsToLoad;
+
 	private void reloadGrid() {
 		handler.sendMessage(getTitleMessage());
+		// Debug.startMethodTracing("grid");
 
 		if (labelId == ALL_LABELS_ID) {
-			Label[] labels = dbHelper.labelDao.getLabelsArray();
-			cursor = createCursor(labels);
+			cursor = dbHelper.labelDao.getLabelCursor();
 		} else {
 			if (labelId == ALL_STARRED_ID) {
 				cursor = dbHelper.appCacheDao.getStarredApps();
 			} else {
 				cursor = dbHelper.appsLabelDao.getAppsCursor(labelId, onlyStarred);
 			}
+			int count = cursor.getCount();
+			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,
+					AppCacheDao.PACKAGE_NAME_COL_NAME, AppCacheDao.NAME_COL_NAME }, count);
+			iconsToLoad = new String[count];
+			int i = 0;
+			try {
+				while (cursor.moveToNext()) {
+					String packageName = cursor.getString(1);
+					String name = cursor.getString(2);
+					m.addRow(new Object[] { i, cursor.getString(0), null, packageName, name });
+					iconsToLoad[i++] = packageName + Application.SEPARATOR + name;
+				}
+			} finally {
+				cursor.close();
+			}
+			cursor = m;
 		}
 		handler.sendEmptyMessage(CHANGE_CURSOR);
 	}
@@ -193,57 +212,50 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		return msg;
 	}
 
-	private static class IconComp {
-		ComponentName componentName;
-		ImageView imageView;
-		Drawable drawable;
-
-		public IconComp(ComponentName componentName, ImageView imageView) {
-			this.componentName = componentName;
-			this.imageView = imageView;
-		}
-	}
-
-	private class LoadIconTask extends AsyncTask<IconComp, IconComp, Long> {
+	private class LoadIconTask extends AsyncTask<String, Object, Object> {
 		@Override
-		protected Long doInBackground(IconComp... icons) {
-			for (int i = 0; i < icons.length; i++) {
-				IconComp iconComp = icons[i];
-				ComponentName componentName = iconComp.componentName;
-				iconComp.drawable = Application.loadIcon(getPackageManager(), componentName);
-				publishProgress(iconComp);
+		protected Object doInBackground(String... comps) {
+			int tot = 0;
+			for (int i = 0; i < comps.length; i++) {
+				String componentName = comps[i];
+				if (Application.getIconFromCache(componentName) == null) {
+					Application.loadIcon(getPackageManager(), componentName);
+					tot++;
+					if (tot % 4 == 0) {
+						publishProgress((Object) null);
+					}
+				}
+			}
+			if (tot % 4 != 0) {
+				publishProgress((Object) null);
 			}
 			return null;
 		}
 
 		@Override
-		protected void onProgressUpdate(IconComp... progress) {
-			for (int i = 0; i < progress.length; i++) {
-				IconComp ic = progress[i];
-				ic.imageView.setImageDrawable(ic.drawable);
-			}
+		protected void onProgressUpdate(Object... progress) {
+			cursorAdapter.notifyDataSetChanged();
 		}
 	}
 
 	private void createAdapter(Cursor cursor) {
-		cursorAdapter = new SimpleCursorAdapter(this, R.layout.app_cell_with_icon, cursor, new String[] { IMAGE_COL, LABEL_COL },
-				new int[] { R.id.image, R.id.name });
+		cursorAdapter = new SimpleCursorAdapter(this, R.layout.app_cell_with_icon, cursor, new String[] { LabelDao.ICON_COL_NAME,
+				LabelDao.LABEL_COL_NAME }, new int[] { R.id.image, R.id.name });
 		cursorAdapter.setViewBinder(new ViewBinder() {
 			public boolean setViewValue(final View view, Cursor cursor, int columnIndex) {
-				if (columnIndex == 1) {
-					if (!cursor.isNull(columnIndex)) {
+				if (columnIndex == 2) {
+					if (cursor.getColumnCount() == 3) {
 						ImageView icon = (ImageView) view;
-						icon.setImageResource(cursor.getInt(columnIndex));
+						if (cursor.isNull(columnIndex)) {
+							icon.setImageResource(R.drawable.icon_default);
+						} else {
+							icon.setImageResource(Label.convertToIcon(cursor.getInt(columnIndex)));
+						}
 					} else {
 						String appName = cursor.getString(4);
 						String packageName = cursor.getString(3);
-						final ComponentName componentName = new ComponentName(packageName, appName);
-						Drawable drawable = Application.getIconFromCache(componentName);
-						if (drawable == null) {
-							new LoadIconTask().execute(new IconComp(componentName, (ImageView) view));
-						} else {
-							((ImageView) view).setImageDrawable(drawable);
-						}
+						Drawable drawable = Application.getIconFromCache(packageName, appName);
+						((ImageView) view).setImageDrawable(drawable);
 					}
 				} else {
 					((TextView) view).setText(cursor.getString(columnIndex));
@@ -255,15 +267,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			}
 		});
 		grid.setAdapter(cursorAdapter);
-	}
-
-	private Cursor createCursor(Label[] labels) {
-		MatrixCursor c = new MatrixCursor(new String[] { ID_COL, IMAGE_COL, LABEL_COL, NAME_COL }, labels.length);
-		for (int i = 0; i < labels.length; i++) {
-			Label l = labels[i];
-			c.addRow(new Object[] { l.getId(), l.getIcon(), l.getLabel(), null });
-		}
-		return c;
 	}
 
 	private GridView grid;

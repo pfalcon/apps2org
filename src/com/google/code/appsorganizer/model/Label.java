@@ -19,7 +19,6 @@
 package com.google.code.appsorganizer.model;
 
 import gnu.trove.TIntIntHashMap;
-import android.widget.ImageView;
 
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.ObjectWithId;
@@ -28,7 +27,7 @@ import com.google.code.appsorganizer.db.ObjectWithId;
  * @author fabio
  * 
  */
-public class Label extends ObjectWithId implements Comparable<Label>, GridObject {
+public class Label extends ObjectWithId implements Comparable<Label> {
 
 	private String name;
 	private int iconDb;
@@ -44,6 +43,11 @@ public class Label extends ObjectWithId implements Comparable<Label>, GridObject
 	public static int convertToIconDb(int icon) {
 		initMaps();
 		return iconsMapInv.get(icon);
+	}
+
+	public static int convertToIcon(int icon) {
+		initMaps();
+		return iconsMap.get(icon);
 	}
 
 	private static void initMaps() {
@@ -220,9 +224,5 @@ public class Label extends ObjectWithId implements Comparable<Label>, GridObject
 
 	public String getLabel() {
 		return name;
-	}
-
-	public void showIcon(ImageView imageView) {
-		imageView.setImageResource(getIcon());
 	}
 }

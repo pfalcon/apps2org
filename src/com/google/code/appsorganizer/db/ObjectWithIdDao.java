@@ -22,7 +22,7 @@ import android.database.Cursor;
 
 public abstract class ObjectWithIdDao<T extends ObjectWithId> extends DbDao<T> {
 
-	protected static final String ID_COL_NAME = "_id";
+	public static final String ID_COL_NAME = "_id";
 
 	public static final DbColumns ID = new DbColumns(ID_COL_NAME, "integer primary key autoincrement");
 

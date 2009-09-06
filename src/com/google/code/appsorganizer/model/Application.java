@@ -31,9 +31,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.LiveFolders;
-import android.widget.ImageView;
 
-public class Application implements Comparable<Application>, GridObject {
+public class Application implements Comparable<Application> {
 
 	public static final char LABEL_ID_SEPARATOR = '#';
 
@@ -135,35 +134,47 @@ public class Application implements Comparable<Application>, GridObject {
 	}
 
 	public void loadIcon(PackageManager pm) {
-		drawableIcon = loadIconOrCache(pm, new ComponentName(packageName, name));
+		drawableIcon = loadIconOrCache(pm, packageName, name);
 	}
 
-	private static final HashMap<ComponentName, Drawable> iconsCache = new HashMap<ComponentName, Drawable>();
+	private static final HashMap<String, Drawable> iconsCache = new HashMap<String, Drawable>();
+	public static final char SEPARATOR = '#';
 
-	public static Drawable loadIconOrCache(PackageManager pm, ComponentName componentName) {
-		Drawable d = getIconFromCache(componentName);
+	public static Drawable loadIconOrCache(PackageManager pm, String packageName, String name) {
+		Drawable d = getIconFromCache(packageName, name);
 		if (d == null) {
-			d = loadIcon(pm, componentName);
+			d = loadIcon(pm, packageName, name);
 		}
 		return d;
 	}
 
-	public static Drawable getIconFromCache(ComponentName componentName) {
-		return iconsCache.get(componentName);
+	public static Drawable getIconFromCache(String packageName, String name) {
+		return getIconFromCache(packageName + SEPARATOR + name);
 	}
 
-	public static Drawable loadIcon(PackageManager pm, ComponentName componentName) {
+	public static Drawable getIconFromCache(String comp) {
+		return iconsCache.get(comp);
+	}
+
+	public static Drawable loadIcon(PackageManager pm, String packageName, String name) {
 		try {
-			Drawable d = pm.getActivityIcon(componentName);
-			iconsCache.put(componentName, d);
+			Drawable d = pm.getActivityIcon(new ComponentName(packageName, name));
+			iconsCache.put(packageName + SEPARATOR + name, d);
 			return d;
 		} catch (NameNotFoundException e) {
 			return null;
 		}
 	}
 
-	public void showIcon(ImageView imageView) {
-		imageView.setImageDrawable(getIcon());
+	public static Drawable loadIcon(PackageManager pm, String comp) {
+		try {
+			int i = comp.indexOf(SEPARATOR);
+			Drawable d = pm.getActivityIcon(new ComponentName(comp.substring(0, i), comp.substring(i + 1)));
+			iconsCache.put(comp, d);
+			return d;
+		} catch (NameNotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
