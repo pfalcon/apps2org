@@ -53,6 +53,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 	public ChooseAppsDialogCreator(DatabaseHelper dbHelper, PackageManager pm) {
 		this.dbHelper = dbHelper;
 		this.applicationInfoManager = ApplicationInfoManager.singleton(pm);
+		applicationInfoManager.getOrReloadAppsMap(dbHelper);
 	}
 
 	private ListView listView;
@@ -134,7 +135,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			}
 		}
 		if (changed) {
-			applicationInfoManager.notifyDataSetChanged(this);
+			ApplicationInfoManager.notifyDataSetChanged(this);
 		}
 	}
 

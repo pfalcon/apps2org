@@ -51,7 +51,7 @@ public class AppLabelSaver {
 		} else {
 			applicationInfoManager.dontIgnoreApp(application);
 		}
-		applicationInfoManager.notifyDataSetChanged(source);
+		ApplicationInfoManager.notifyDataSetChanged(source);
 	}
 
 	public void save(Application application, List<AppLabelBinding> modifiedLabels, Object source) {
@@ -68,7 +68,7 @@ public class AppLabelSaver {
 				}
 			}
 			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-			applicationInfoManager.notifyDataSetChanged(source);
+			ApplicationInfoManager.notifyDataSetChanged(source);
 		}
 	}
 }

@@ -45,7 +45,7 @@ public class AppsReloader {
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
 				pd.setMessage(context.getText(R.string.preparing_apps_list));
-				singleton.notifyDataSetChanged(this);
+				ApplicationInfoManager.notifyDataSetChanged(this);
 				pd.hide();
 				if (startHomeOnComplete) {
 					Intent intent = new Intent(context, context.getClass());

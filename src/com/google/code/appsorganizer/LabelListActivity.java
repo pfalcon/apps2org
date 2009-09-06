@@ -82,7 +82,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 		mAdapter = new LabelListAdapter(this, dbHelper, applicationInfoManager, chooseLabelDialog);
 
-		applicationInfoManager.addListener(this);
+		ApplicationInfoManager.addListener(this);
 
 		setListAdapter(mAdapter);
 
@@ -135,7 +135,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		applicationInfoManager.removeListener(this);
+		ApplicationInfoManager.removeListener(this);
 	}
 
 	@Override
@@ -184,7 +184,6 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 						label.setName(charSequence.toString());
 						dbHelper.labelDao.update(label);
 						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-						applicationInfoManager.notifyDataSetChanged(this);
 					}
 				});
 				showDialog(textEntryDialog.getDialogId());
@@ -195,7 +194,6 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 						dbHelper.appsLabelDao.deleteAppsOfLabel(label.getId());
 						dbHelper.labelDao.delete(label.getId());
 						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-						applicationInfoManager.notifyDataSetChanged(this);
 					}
 				});
 				break;

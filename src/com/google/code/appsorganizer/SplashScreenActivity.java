@@ -169,7 +169,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				registerForContextMenu(getListView());
 				handler.sendEmptyMessage(-3);
 				loadIcons(apps);
-				applicationInfoManager.addListener(SplashScreenActivity.this);
+				ApplicationInfoManager.addListener(SplashScreenActivity.this);
 			}
 		};
 		t.start();
@@ -185,7 +185,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		applicationInfoManager.removeListener(this);
+		ApplicationInfoManager.removeListener(this);
 	}
 
 	@Override

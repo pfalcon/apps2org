@@ -45,6 +45,7 @@ import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
+import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
@@ -121,12 +122,19 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 		labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_STARRED_ID);
 		allLabelsSelected = labelId == ALL_LABELS_ID;
+		ApplicationInfoManager.addListener(this);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		reloadGridInThread();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		ApplicationInfoManager.removeListener(this);
 	}
 
 	private void reloadGridInThread() {

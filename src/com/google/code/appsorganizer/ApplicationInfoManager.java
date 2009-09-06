@@ -35,6 +35,7 @@ import android.database.MatrixCursor;
 import android.os.Handler;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
+import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.DoubleArray;
 import com.google.code.appsorganizer.db.LabelDao;
@@ -52,9 +53,9 @@ public class ApplicationInfoManager {
 		this.pm = pm;
 	}
 
-	public void getOrReloadAppsMap(AppCacheDao appCacheDao) {
+	public void getOrReloadAppsMap(DatabaseHelper dbHelper) {
 		if (applicationMap.isEmpty()) {
-			loadAppsMap(appCacheDao, null, null);
+			loadAppsMap(dbHelper.appCacheDao, dbHelper.labelDao, null);
 		}
 	}
 
@@ -131,6 +132,7 @@ public class ApplicationInfoManager {
 		for (Application app : apps) {
 			loadLabels(appsLabels, app);
 		}
+		notifyDataSetChanged(this);
 	}
 
 	public void ignoreApp(Application a) {
@@ -354,23 +356,23 @@ public class ApplicationInfoManager {
 		return new MatrixCursor(cursorColumns, applications.size());
 	}
 
-	private final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
+	private static final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
 
-	public boolean addListener(DbChangeListener object) {
+	public static boolean addListener(DbChangeListener object) {
 		return listeners.add(object);
 	}
 
-	public boolean removeListener(DbChangeListener object) {
+	public static boolean removeListener(DbChangeListener object) {
 		return listeners.remove(object);
 	}
 
-	public void notifyDataSetChanged(Object source, short type) {
+	public static void notifyDataSetChanged(Object source, short type) {
 		for (DbChangeListener a : listeners) {
 			a.dataSetChanged(source, type);
 		}
 	}
 
-	public void notifyDataSetChanged(Object source) {
+	public static void notifyDataSetChanged(Object source) {
 		notifyDataSetChanged(source, DbChangeListener.CHANGED_ALL);
 	}
 
