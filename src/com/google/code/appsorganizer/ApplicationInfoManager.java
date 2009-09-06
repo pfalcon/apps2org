@@ -105,7 +105,7 @@ public class ApplicationInfoManager {
 						CharSequence l = a.loadLabel(pm);
 						if (l != null) {
 							app.setLabel(l.toString());
-							appCacheDao.insert(new AppCache(name, app.getLabel()));
+							appCacheDao.insert(new AppCache(app.getPackage(), name, app.getLabel()));
 						}
 					}
 					if (appsLabels != null) {

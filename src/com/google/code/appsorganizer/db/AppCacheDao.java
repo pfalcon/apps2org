@@ -31,6 +31,8 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	private static final String NAME_COL_NAME = "name";
 
+	public static final String PACKAGE_NAME_COL_NAME = "package";
+
 	public static final String IGNORED_COL_NAME = "ignored";
 
 	public static final String STARRED_COL_NAME = "starred";
@@ -41,10 +43,11 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null");
 	public static final DbColumns STARRED = new DbColumns(STARRED_COL_NAME, "integer not null default 0");
 	public static final DbColumns IGNORED = new DbColumns(IGNORED_COL_NAME, "integer not null default 0");
+	public static final DbColumns PACKAGE_NAME = new DbColumns(PACKAGE_NAME_COL_NAME, "text");
 
 	AppCacheDao() {
 		super(TABLE_NAME);
-		columns = new DbColumns[] { ID, NAME, LABEL, STARRED, IGNORED };
+		columns = new DbColumns[] { ID, NAME, LABEL, STARRED, IGNORED, PACKAGE_NAME };
 	}
 
 	public HashMap<String, AppCache> queryForCacheMap() {
@@ -71,6 +74,10 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		return m;
 	}
 
+	public Cursor getStarredApps() {
+		return db.rawQuery("select _id, null image, label, package, name from " + name + " where starred = 1 order by label", null);
+	}
+
 	public void updateStarred(String app, boolean starred) {
 		ContentValues v = new ContentValues();
 		v.put(STARRED_COL_NAME, starred);
@@ -91,6 +98,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		t.setLabel(c.getString(2));
 		t.setStarred(c.getInt(3) == 1);
 		t.setIgnored(c.getInt(4) == 1);
+		t.setPackageName(c.getString(5));
 		return t;
 	}
 
@@ -102,6 +110,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		v.put(LABEL_COL_NAME, obj.getLabel());
 		v.put(STARRED_COL_NAME, obj.isStarred() ? 1 : 0);
 		v.put(IGNORED_COL_NAME, obj.isIgnored() ? 1 : 0);
+		v.put(PACKAGE_NAME_COL_NAME, obj.getPackageName());
 		return v;
 	}
 }

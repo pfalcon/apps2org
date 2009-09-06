@@ -137,10 +137,9 @@ public class Label extends ObjectWithId implements Comparable<Label>, GridObject
 		this.name = name;
 	}
 
-	public Label(Long id, String name, int icon) {
+	public Label(Long id, String name) {
 		setId(id);
 		this.name = name;
-		setIcon(icon);
 	}
 
 	public Label(String name) {

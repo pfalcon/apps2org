@@ -18,6 +18,8 @@
  */
 package com.google.code.appsorganizer;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -148,8 +150,12 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				applicationInfoManager.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler);
 				handler.sendEmptyMessage(-1);
 
-				final Application[] appsArray = applicationInfoManager.getAppsArray();
-				appsAdapter = new ArrayAdapter<Application>(SplashScreenActivity.this, R.layout.app_row, appsArray) {
+				final Application[] apps = applicationInfoManager.getAppsArray();
+				ArrayList<Application> l = new ArrayList<Application>(apps.length);
+				for (int i = 0; i < apps.length; i++) {
+					l.add(apps[i]);
+				}
+				appsAdapter = new ArrayAdapter<Application>(SplashScreenActivity.this, R.layout.app_row, l) {
 					@Override
 					public View getView(int position, View v, ViewGroup parent) {
 						return getAppView(SplashScreenActivity.this, dbHelper, applicationInfoManager, v, getItem(position),
@@ -162,7 +168,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 
 				registerForContextMenu(getListView());
 				handler.sendEmptyMessage(-3);
-				loadIcons(appsArray);
+				loadIcons(apps);
 				applicationInfoManager.addListener(SplashScreenActivity.this);
 			}
 		};

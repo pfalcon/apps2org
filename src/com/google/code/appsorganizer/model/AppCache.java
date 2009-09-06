@@ -22,6 +22,7 @@ import com.google.code.appsorganizer.db.ObjectWithId;
 
 public class AppCache extends ObjectWithId {
 
+	private String packageName;
 	private String name;
 	private String label;
 	private boolean starred;
@@ -30,7 +31,8 @@ public class AppCache extends ObjectWithId {
 	public AppCache() {
 	}
 
-	public AppCache(String name, String label) {
+	public AppCache(String packageName, String name, String label) {
+		this.packageName = packageName;
 		this.name = name;
 		this.label = label;
 	}
@@ -65,5 +67,13 @@ public class AppCache extends ObjectWithId {
 
 	public void setIgnored(boolean ignored) {
 		this.ignored = ignored;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
 	}
 }

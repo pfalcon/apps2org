@@ -205,7 +205,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 				startActivityForResult(intent, 2);
 				return true;
 			case MENU_ITEM_SELECT_APPS:
-				chooseAppsDialogCreator.setCurrentLabel(label);
+				chooseAppsDialogCreator.setCurrentLabelId(label.getId());
 				showDialog(chooseAppsDialogCreator.getDialogId());
 				break;
 			}

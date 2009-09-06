@@ -36,7 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public final LabelDao labelDao;
 	public final AppCacheDao appCacheDao;
 
-	private static final int DATABASE_VERSION = 14;
+	private static final int DATABASE_VERSION = 16;
 
 	private static DatabaseHelper singleton;
 
@@ -129,6 +129,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					+ AppCacheDao.STARRED.getDescription());
 			db.execSQL("alter table " + appCacheDao.getName() + " add " + AppCacheDao.IGNORED_COL_NAME + ' '
 					+ AppCacheDao.IGNORED.getDescription());
+		}
+		if (oldVersion <= 14) {
+			db.delete(appCacheDao.getName(), null, null);
+			db.execSQL("alter table " + appCacheDao.getName() + " add " + AppCacheDao.PACKAGE_NAME_COL_NAME + ' '
+					+ AppCacheDao.PACKAGE_NAME.getDescription());
+		}
+		if (oldVersion <= 15) {
+			db.delete(appCacheDao.getName(), null, null);
 		}
 		// db.execSQL(appsLabelDao.getDropTableScript());
 		// db.execSQL(labelDao.getDropTableScript());

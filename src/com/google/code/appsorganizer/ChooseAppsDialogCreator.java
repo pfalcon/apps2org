@@ -26,13 +26,13 @@ import java.util.Set;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.model.Application;
-import com.google.code.appsorganizer.model.Label;
 import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
 
 public class ChooseAppsDialogCreator extends GenericDialogCreator {
@@ -41,7 +41,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private final ApplicationInfoManager applicationInfoManager;
 
-	private Label currentLabel;
+	private long currentLabelId;
 
 	private ArrayAdapter<Application> adapter;
 
@@ -50,13 +50,18 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		this.applicationInfoManager = applicationInfoManager;
 	}
 
+	public ChooseAppsDialogCreator(DatabaseHelper dbHelper, PackageManager pm) {
+		this.dbHelper = dbHelper;
+		this.applicationInfoManager = ApplicationInfoManager.singleton(pm);
+	}
+
 	private ListView listView;
 
 	private Set<String> checkedApps;
 
 	@Override
 	public void prepareDialog(Dialog dialog) {
-		Application[] l1 = applicationInfoManager.getApps(currentLabel.getId(), false);
+		Application[] l1 = applicationInfoManager.getApps(currentLabelId, false);
 		checkedApps = createSet(l1);
 		List<Application> allApps = new ArrayList<Application>();
 		for (int i = 0; i < l1.length; i++) {
@@ -110,10 +115,6 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		return s;
 	}
 
-	public void setCurrentLabel(Label currentLabel) {
-		this.currentLabel = currentLabel;
-	}
-
 	private void save(Set<String> checkedSet) {
 		boolean changed = false;
 		int count = adapter.getCount();
@@ -122,12 +123,12 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			String appName = app.name;
 			if (listView.isItemChecked(i)) {
 				if (!checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.insert(appName, currentLabel.getId());
+					dbHelper.appsLabelDao.insert(appName, currentLabelId);
 					changed = true;
 				}
 			} else {
 				if (checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.delete(appName, currentLabel.getId());
+					dbHelper.appsLabelDao.delete(appName, currentLabelId);
 					changed = true;
 				}
 			}
@@ -135,5 +136,9 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		if (changed) {
 			applicationInfoManager.notifyDataSetChanged(this);
 		}
+	}
+
+	public void setCurrentLabelId(long currentLabelId) {
+		this.currentLabelId = currentLabelId;
 	}
 }

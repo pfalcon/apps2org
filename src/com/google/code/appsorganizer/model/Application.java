@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import android.content.ComponentName;
@@ -134,11 +135,31 @@ public class Application implements Comparable<Application>, GridObject {
 	}
 
 	public void loadIcon(PackageManager pm) {
-		try {
-			drawableIcon = pm.getActivityIcon(new ComponentName(packageName, name));
-		} catch (NameNotFoundException e) {
+		drawableIcon = loadIconOrCache(pm, new ComponentName(packageName, name));
+	}
+
+	private static final HashMap<ComponentName, Drawable> iconsCache = new HashMap<ComponentName, Drawable>();
+
+	public static Drawable loadIconOrCache(PackageManager pm, ComponentName componentName) {
+		Drawable d = getIconFromCache(componentName);
+		if (d == null) {
+			d = loadIcon(pm, componentName);
 		}
-		// drawableIcon = activityInfo.loadIcon(pm);
+		return d;
+	}
+
+	public static Drawable getIconFromCache(ComponentName componentName) {
+		return iconsCache.get(componentName);
+	}
+
+	public static Drawable loadIcon(PackageManager pm, ComponentName componentName) {
+		try {
+			Drawable d = pm.getActivityIcon(componentName);
+			iconsCache.put(componentName, d);
+			return d;
+		} catch (NameNotFoundException e) {
+			return null;
+		}
 	}
 
 	public void showIcon(ImageView imageView) {
