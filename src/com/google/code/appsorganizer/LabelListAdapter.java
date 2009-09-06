@@ -37,7 +37,6 @@ import com.google.code.appsorganizer.model.Label;
 public class LabelListAdapter extends BaseExpandableListAdapter {
 
 	private static final long OTHER_LABEL_ID = -1l;
-	private static final long IGNORED_LABEL_ID = -2l;
 	private final DatabaseHelper dbHelper;
 	private final Activity context;
 	private final ApplicationInfoManager applicationInfoManager;
@@ -64,7 +63,6 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 	private void reload() {
 		groups = dbHelper.labelDao.getLabels();
 		groups.add(new Label(OTHER_LABEL_ID, context.getText(R.string.other_label).toString()));
-		groups.add(new Label(IGNORED_LABEL_ID, context.getText(R.string.ignored_label).toString()));
 		apps = new TLongObjectHashMap<Application[]>();
 	}
 
@@ -78,8 +76,6 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 		if (ret == null) {
 			if (labelId == OTHER_LABEL_ID) {
 				ret = applicationInfoManager.getAppsNoLabel();
-			} else if (labelId == IGNORED_LABEL_ID) {
-				ret = applicationInfoManager.getIgnoredApps();
 			} else {
 				ret = applicationInfoManager.getApps(labelId, false);
 			}

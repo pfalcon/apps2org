@@ -18,11 +18,10 @@
  */
 package com.google.code.appsorganizer.db;
 
-import java.util.HashMap;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
 
 public class AppCacheDao extends ObjectWithIdDao<AppCache> {
@@ -33,45 +32,40 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public static final String PACKAGE_NAME_COL_NAME = "package";
 
-	public static final String IGNORED_COL_NAME = "ignored";
-
 	public static final String STARRED_COL_NAME = "starred";
+
+	private static final String[] ALL_COLUMNS = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME };
 
 	public static final String TABLE_NAME = "apps";
 
 	public static final DbColumns NAME = new DbColumns(NAME_COL_NAME, "text not null");
 	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null");
 	public static final DbColumns STARRED = new DbColumns(STARRED_COL_NAME, "integer not null default 0");
-	public static final DbColumns IGNORED = new DbColumns(IGNORED_COL_NAME, "integer not null default 0");
 	public static final DbColumns PACKAGE_NAME = new DbColumns(PACKAGE_NAME_COL_NAME, "text");
 
 	AppCacheDao() {
 		super(TABLE_NAME);
-		columns = new DbColumns[] { ID, NAME, LABEL, STARRED, IGNORED, PACKAGE_NAME };
+		columns = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME };
 	}
 
-	public HashMap<String, AppCache> queryForCacheMap() {
-		Cursor c = db.query(false, name, new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, IGNORED_COL_NAME }, null, null,
-				null, null, null, null);
+	public AppCacheMap queryForCacheMap() {
+		Cursor c = db.query(name, ALL_COLUMNS, null, null, null, null, NAME_COL_NAME);
 		return convertCursorToCacheMap(c);
 	}
 
-	protected HashMap<String, AppCache> convertCursorToCacheMap(Cursor c) {
-		HashMap<String, AppCache> m = new HashMap<String, AppCache>(c.getCount());
+	protected AppCacheMap convertCursorToCacheMap(Cursor c) {
+		AppCache[] v = new AppCache[c.getCount()];
 		try {
+			int i = 0;
 			while (c.moveToNext()) {
-				AppCache a = new AppCache();
-				String name = c.getString(0);
-				a.setName(name);
-				a.setLabel(c.getString(1));
-				a.setStarred(c.getInt(2) == 1);
-				a.setIgnored(c.getInt(3) == 1);
-				m.put(name, a);
+				AppCache a = new AppCache(c.getString(3), c.getString(0), c.getString(1));
+				a.starred = c.getInt(2) == 1;
+				v[i++] = a;
 			}
 		} finally {
 			c.close();
 		}
-		return m;
+		return new AppCacheMap(v);
 	}
 
 	public Cursor getStarredApps() {
@@ -84,21 +78,11 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		db.update(name, v, NAME_COL_NAME + " = ?", new String[] { app });
 	}
 
-	public void updateIgnored(String app, boolean ignored) {
-		ContentValues v = new ContentValues();
-		v.put(IGNORED_COL_NAME, ignored);
-		db.update(name, v, NAME_COL_NAME + " = ?", new String[] { app });
-	}
-
 	@Override
 	protected AppCache createObject(Cursor c) {
-		AppCache t = new AppCache();
+		AppCache t = new AppCache(c.getString(5), c.getString(1), c.getString(2));
 		t.setId(c.getLong(0));
-		t.setName(c.getString(1));
-		t.setLabel(c.getString(2));
-		t.setStarred(c.getInt(3) == 1);
-		t.setIgnored(c.getInt(4) == 1);
-		t.setPackageName(c.getString(5));
+		t.starred = c.getInt(3) == 1;
 		return t;
 	}
 
@@ -106,11 +90,10 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	protected ContentValues createContentValue(AppCache obj) {
 		ContentValues v = new ContentValues();
 		v.put(ID_COL_NAME, obj.getId());
-		v.put(NAME_COL_NAME, obj.getName());
-		v.put(LABEL_COL_NAME, obj.getLabel());
-		v.put(STARRED_COL_NAME, obj.isStarred() ? 1 : 0);
-		v.put(IGNORED_COL_NAME, obj.isIgnored() ? 1 : 0);
-		v.put(PACKAGE_NAME_COL_NAME, obj.getPackageName());
+		v.put(NAME_COL_NAME, obj.name);
+		v.put(LABEL_COL_NAME, obj.label);
+		v.put(STARRED_COL_NAME, obj.starred ? 1 : 0);
+		v.put(PACKAGE_NAME_COL_NAME, obj.packageName);
 		return v;
 	}
 }

@@ -50,8 +50,6 @@ public class Application implements Comparable<Application> {
 
 	private boolean starred;
 
-	private boolean ignored;
-
 	public final String name;
 
 	private final String packageName;
@@ -204,14 +202,6 @@ public class Application implements Comparable<Application> {
 
 	public void setStarred(boolean starred) {
 		this.starred = starred;
-	}
-
-	public boolean isIgnored() {
-		return ignored;
-	}
-
-	public void setIgnored(boolean ignored) {
-		this.ignored = ignored;
 	}
 
 	public String getLabelIds() {

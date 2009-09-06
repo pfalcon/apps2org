@@ -27,10 +27,10 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -62,6 +62,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private static final String TITLE_BUNDLE_KEY = "title";
 	private static final int SET_TITLE = -2;
 	private static final int CHANGE_CURSOR = -1;
+	private static final int SET_VISIBLE = -3;
 	public static final long ALL_LABELS_ID = -2l;
 	public static final long ALL_STARRED_ID = -3l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
@@ -83,11 +84,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		// Debug.startMethodTracing("grid");
+		Debug.startMethodTracing("grid");
 		genericDialogManager = new GenericDialogManager(this);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getOrCreateGrid();
+		setVisible(false);
 		View titleLayout = findViewById(R.id.titleLayout);
 		titleLayout.setBackgroundColor(Color.GRAY);
 		titleView = (TextView) findViewById(R.id.title);
@@ -123,6 +125,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_STARRED_ID);
 		allLabelsSelected = labelId == ALL_LABELS_ID;
 		ApplicationInfoManager.addListener(this);
+		Debug.stopMethodTracing();
 	}
 
 	@Override
@@ -151,7 +154,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private final Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			if (msg.what == CHANGE_CURSOR) {
+			if (msg.what == SET_VISIBLE) {
+				int size = msg.getData().getInt("size");
+				int righe = size / 4 + (size % 4 > 0 ? 1 : 0);
+				findViewById(R.id.shortcutLayout).setMinimumHeight(34 + 90 * righe);
+				setVisible(true);
+			} else if (msg.what == CHANGE_CURSOR) {
 				if (cursorAdapter == null) {
 					createAdapter(cursor);
 
@@ -172,7 +180,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private void reloadGrid() {
 		handler.sendMessage(getTitleMessage());
-		// Debug.startMethodTracing("grid");
 
 		if (labelId == ALL_LABELS_ID) {
 			cursor = dbHelper.labelDao.getLabelCursor();
@@ -183,6 +190,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				cursor = dbHelper.appsLabelDao.getAppsCursor(labelId, onlyStarred);
 			}
 			int count = cursor.getCount();
+			Message msg = new Message();
+			Bundle bundle = new Bundle();
+			bundle.putInt("size", count);
+			msg.setData(bundle);
+			msg.what = SET_VISIBLE;
+			handler.sendMessage(msg);
 			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,
 					AppCacheDao.PACKAGE_NAME_COL_NAME, AppCacheDao.NAME_COL_NAME }, count);
 			iconsToLoad = new String[count];
@@ -268,9 +281,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				} else {
 					((TextView) view).setText(cursor.getString(columnIndex));
 				}
-				// if (cursor.getString(2).equals("TestFileManager")) {
-				// Debug.stopMethodTracing();
-				// }
 				return true;
 			}
 		});
@@ -279,18 +289,14 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private GridView grid;
 
-	private View mainView;
 	private CheckBox starCheck;
 	private SimpleCursorAdapter cursorAdapter;
 
 	private GridView getOrCreateGrid() {
 		if (grid == null) {
-			LayoutInflater layoutInflater = LayoutInflater.from(this);
-			mainView = layoutInflater.inflate(R.layout.shortcut_grid, null);
-			setContentView(mainView);
+			setContentView(R.layout.shortcut_grid);
 
 			grid = (GridView) findViewById(R.id.shortcutGrid);
-			grid.setColumnWidth(65);
 
 			grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {

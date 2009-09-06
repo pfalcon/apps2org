@@ -101,7 +101,9 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		} finally {
 			c.close();
 		}
-		return new DoubleArray(keys, values, labelIds);
+		String[] k2 = new String[pos];
+		System.arraycopy(keys, 0, k2, 0, pos);
+		return new DoubleArray(k2, values, labelIds);
 	}
 
 	public ArrayList<Label> getLabels() {

@@ -21,7 +21,7 @@ package com.google.code.appsorganizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -32,6 +32,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.os.Debug;
 import android.os.Handler;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
@@ -39,6 +40,8 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.DoubleArray;
 import com.google.code.appsorganizer.db.LabelDao;
+import com.google.code.appsorganizer.maps.AppCacheMap;
+import com.google.code.appsorganizer.maps.ApplicationMap;
 import com.google.code.appsorganizer.model.AppCache;
 import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
@@ -49,37 +52,37 @@ public class ApplicationInfoManager {
 
 	private static ApplicationInfoManager singleton;
 
+	private ApplicationMap applicationMap = new ApplicationMap(new Application[0]);
+
+	private Application[] apps;
+
 	private ApplicationInfoManager(PackageManager pm) {
 		this.pm = pm;
 	}
 
 	public void getOrReloadAppsMap(DatabaseHelper dbHelper) {
-		if (applicationMap.isEmpty()) {
+		if (apps == null) {
 			loadAppsMap(dbHelper.appCacheDao, dbHelper.labelDao, null);
 		}
 	}
 
 	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
-		// Debug.startMethodTracing("splash");
-		reload2(appCacheDao, labelDao, handler);
-		// Debug.stopMethodTracing();
+		Debug.startMethodTracing("splash");
+		loadAppsMap(appCacheDao, labelDao, handler);
+		Debug.stopMethodTracing();
 	}
 
-	private void reload2(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
-		// getOrReloadAppsMap(appCacheDao);
-		// applicationMap = new HashMap<String, Application>();
-		loadAppsMap(appCacheDao, labelDao, handler);
-	}
+	private static final Comparator<Application> appNameComparator = new Comparator<Application>() {
+		public int compare(Application a1, Application a2) {
+			return a1.name.compareTo(a2.name);
+		}
+	};
 
 	private void loadAppsMap(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
 		synchronized (this) {
-			DoubleArray appsLabels = null;
-			if (labelDao != null) {
-				appsLabels = labelDao.getAppsLabelsConcat();
-			}
-			HashMap<String, AppCache> nameCache = appCacheDao.queryForCacheMap();
-			HashMap<String, Application> oldApps = applicationMap;
-			applicationMap = new HashMap<String, Application>();
+			DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
+			AppCacheMap nameCache = appCacheDao.queryForCacheMap();
+			ApplicationMap oldApps = applicationMap;
 			List<ResolveInfo> installedApplications = getAllResolveInfo();
 			long pos = 0;
 			int arrayPos = 0;
@@ -93,13 +96,12 @@ public class ApplicationInfoManager {
 					if (app == null) {
 						app = new Application(resolveInfo.activityInfo, pos++);
 						if (appCache != null) {
-							app.setLabel(appCache.getLabel());
+							app.setLabel(appCache.label);
 						}
 					}
 					if (appCache != null) {
-						app.setStarred(appCache.isStarred());
+						app.setStarred(appCache.starred);
 					}
-					applicationMap.put(name, app);
 					// if label is not in cache table
 					if (app.getLabel() == null) {
 						// retrieve and store label
@@ -109,63 +111,35 @@ public class ApplicationInfoManager {
 							appCacheDao.insert(new AppCache(app.getPackage(), name, app.getLabel()));
 						}
 					}
-					if (appsLabels != null) {
-						loadLabels(appsLabels, app);
-					}
-					boolean ignored = appCache != null && appCache.isIgnored();
-					app.setIgnored(ignored);
-					if (!ignored) {
-						apps[arrayPos++] = app;
-						if (handler != null) {
-							handler.sendEmptyMessage(arrayPos);
-						}
+					loadLabels(appsLabels, app);
+					apps[arrayPos++] = app;
+					if (handler != null && arrayPos % 10 == 0) {
+						handler.sendEmptyMessage(arrayPos);
 					}
 				}
 			}
 			apps = copyArray(apps, arrayPos);
+			Application[] allApps = copyArray(apps, arrayPos);
 			Arrays.sort(apps);
+
+			Arrays.sort(allApps, appNameComparator);
+			applicationMap = new ApplicationMap(allApps);
 		}
 	}
 
 	public void reloadAppsLabel(LabelDao labelDao) {
 		DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
-		for (Application app : apps) {
-			loadLabels(appsLabels, app);
+		for (int i = 0; i < apps.length; i++) {
+			loadLabels(appsLabels, apps[i]);
 		}
 		notifyDataSetChanged(this);
 	}
 
-	public void ignoreApp(Application a) {
-		// TODO
-		// apps.remove(a);
-	}
-
-	public void dontIgnoreApp(Application a) {
-		// TODO
-		Application[] oldApps = apps;
-		apps = new Application[oldApps.length + 1];
-		for (int i = 0; i < oldApps.length; i++) {
-			Application cur = oldApps[i];
-			if (a.compareTo(cur) > 0) {
-				apps[i] = a;
-			} else {
-				apps[i] = cur;
-			}
-		}
-	}
-
 	private void loadLabels(DoubleArray appsLabels, Application app) {
-		String[] keys = appsLabels.keys;
-		int length = keys.length;
-		for (int i = 0; i < length; i++) {
-			if (keys[i] == null) {
-				return;
-			}
-			if (keys[i].equals(app.name)) {
-				app.setLabelListString(appsLabels.values[i]);
-				app.setLabelIds(appsLabels.labelIds[i]);
-				return;
-			}
+		int pos = Arrays.binarySearch(appsLabels.keys, app.name);
+		if (pos >= 0) {
+			app.setLabelListString(appsLabels.values[pos]);
+			app.setLabelIds(appsLabels.labelIds[pos]);
 		}
 	}
 
@@ -190,10 +164,6 @@ public class ApplicationInfoManager {
 	public static boolean isSingletonNull() {
 		return singleton == null;
 	}
-
-	private HashMap<String, Application> applicationMap = new HashMap<String, Application>();
-
-	private Application[] apps;
 
 	public Application[] getAppsArray() {
 		return apps;
@@ -239,7 +209,7 @@ public class ApplicationInfoManager {
 		Application[] ret = new Application[apps.length];
 		int i = 0;
 		for (Application application : apps) {
-			if (application.isStarred() && !application.isIgnored()) {
+			if (application.isStarred()) {
 				ret[i++] = application;
 			}
 		}
@@ -261,24 +231,12 @@ public class ApplicationInfoManager {
 		return copyArray(ret, i);
 	}
 
-	public Application[] getIgnoredApps() {
-		Application[] ret = new Application[apps.length];
-		int pos = 0;
-		Collection<Application> values = applicationMap.values();
-		for (Application application : values) {
-			if (application.isIgnored()) {
-				ret[pos++] = application;
-			}
-		}
-		return copyArray(ret, pos);
-	}
-
-	public Application[] convertToApplicationArray(String[] l, boolean ignored, boolean onlyStarred) {
+	public Application[] convertToApplicationArray(String[] l, boolean onlyStarred) {
 		Application[] ret = new Application[l.length];
 		int pos = 0;
 		for (int i = 0; i < l.length; i++) {
 			Application a = getApplication(l[i]);
-			if (a != null && (ignored || !a.isIgnored()) && (!onlyStarred || a.isStarred())) {
+			if (a != null && (!onlyStarred || a.isStarred())) {
 				ret[pos++] = a;
 			}
 		}
@@ -289,9 +247,7 @@ public class ApplicationInfoManager {
 
 	private Application[] copyArray(Application[] ret, int pos) {
 		Application[] a = new Application[pos];
-		for (int i = 0; i < pos; i++) {
-			a[i] = ret[i];
-		}
+		System.arraycopy(ret, 0, a, 0, pos);
 		return a;
 	}
 
@@ -329,14 +285,7 @@ public class ApplicationInfoManager {
 	}
 
 	private Application getApplication(String app) {
-		Application ret = applicationMap.get(app);
-		// if (ret == null) {
-		// ret = retrieveActivityInfo(app, app);
-		// if (ret != null) {
-		// applicationMap.put(app, ret);
-		// }
-		// }
-		return ret;
+		return applicationMap.get(app);
 	}
 
 	public Cursor convertToCursor(List<AppLabel> l, String[] cursorColumns) throws NameNotFoundException {

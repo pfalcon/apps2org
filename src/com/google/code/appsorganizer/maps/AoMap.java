@@ -16,20 +16,41 @@
  * You should have received a copy of the GNU General Public License
  * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.google.code.appsorganizer.model;
+package com.google.code.appsorganizer.maps;
 
-import com.google.code.appsorganizer.db.ObjectWithId;
+import java.util.Arrays;
 
-public class AppCache extends ObjectWithId {
+/**
+ * @author fabio
+ * 
+ */
+public abstract class AoMap<K extends Comparable<K>, V> {
 
-	public final String packageName;
-	public final String name;
-	public final String label;
-	public boolean starred;
+	private final K[] keys;
+	private final V[] values;
 
-	public AppCache(String packageName, String name, String label) {
-		this.packageName = packageName;
-		this.name = name;
-		this.label = label;
+	public AoMap(V[] data) {
+		keys = createKeyArray(data.length);
+		values = data;
+		for (int i = 0; i < data.length; i++) {
+			keys[i] = createKey(data[i]);
+		}
+	}
+
+	protected abstract K createKey(V v);
+
+	protected abstract K[] createKeyArray(int length);
+
+	public V get(K key) {
+		int i = Arrays.binarySearch(keys, key);
+		if (i == -1) {
+			return null;
+		} else {
+			return values[i];
+		}
+	}
+
+	public V[] values() {
+		return values;
 	}
 }

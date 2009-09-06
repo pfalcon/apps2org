@@ -16,20 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.google.code.appsorganizer.model;
+package com.google.code.appsorganizer.maps;
 
-import com.google.code.appsorganizer.db.ObjectWithId;
+import com.google.code.appsorganizer.model.Application;
 
-public class AppCache extends ObjectWithId {
+/**
+ * @author fabio
+ * 
+ */
+public class ApplicationMap extends AoMap<String, Application> {
 
-	public final String packageName;
-	public final String name;
-	public final String label;
-	public boolean starred;
+	public ApplicationMap(Application[] data) {
+		super(data);
+	}
 
-	public AppCache(String packageName, String name, String label) {
-		this.packageName = packageName;
-		this.name = name;
-		this.label = label;
+	@Override
+	protected String[] createKeyArray(int length) {
+		return new String[length];
+	}
+
+	@Override
+	protected String createKey(Application v) {
+		return v.name;
 	}
 }

@@ -19,16 +19,11 @@
 package com.google.code.appsorganizer;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 
-import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
-import com.google.code.appsorganizer.dialogs.OnOkClickListener;
-import com.google.code.appsorganizer.model.AppLabelSaver;
 import com.google.code.appsorganizer.model.Application;
 
 /**
@@ -37,8 +32,6 @@ import com.google.code.appsorganizer.model.Application;
  */
 public class ApplicationContextMenuManager {
 
-	private static final int NO_IGNORE = 4;
-	private static final int IGNORE = 3;
 	private static final int UNINSTALL = 2;
 	private static final int LAUNCH = 1;
 	private static final int CHOOSE_LABELS = 0;
@@ -56,11 +49,6 @@ public class ApplicationContextMenuManager {
 		menu.add(0, CHOOSE_LABELS, 0, R.string.choose_labels_header);
 		menu.add(0, LAUNCH, 1, R.string.launch);
 		menu.add(0, UNINSTALL, 2, R.string.uninstall);
-		if (app.isIgnored()) {
-			menu.add(0, NO_IGNORE, 4, R.string.dont_ignore);
-		} else {
-			menu.add(0, IGNORE, 3, R.string.ignore);
-		}
 	}
 
 	public void onContextItemSelected(MenuItem item, final Application app, final Activity activity,
@@ -80,18 +68,6 @@ public class ApplicationContextMenuManager {
 			Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
 			uninstallIntent.putExtra("package", app.getPackage());
 			activity.startActivityForResult(uninstallIntent, 1);
-			break;
-		case IGNORE:
-			((GenericDialogManagerActivity) activity).getGenericDialogManager().showSimpleDialog(
-					activity.getString(R.string.ignore_warning_title), activity.getString(R.string.ignore_warning), true,
-					new OnOkClickListener() {
-						public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-							AppLabelSaver.saveIgnored(DatabaseHelper.singleton(), applicationInfoManager, app, true, activity);
-						}
-					});
-			break;
-		case NO_IGNORE:
-			AppLabelSaver.saveIgnored(DatabaseHelper.singleton(), applicationInfoManager, app, false, activity);
 			break;
 		}
 	}

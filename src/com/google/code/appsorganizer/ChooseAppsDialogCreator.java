@@ -53,7 +53,6 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 	public ChooseAppsDialogCreator(DatabaseHelper dbHelper, PackageManager pm) {
 		this.dbHelper = dbHelper;
 		this.applicationInfoManager = ApplicationInfoManager.singleton(pm);
-		applicationInfoManager.getOrReloadAppsMap(dbHelper);
 	}
 
 	private ListView listView;
@@ -62,6 +61,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	@Override
 	public void prepareDialog(Dialog dialog) {
+		applicationInfoManager.getOrReloadAppsMap(dbHelper);
 		Application[] l1 = applicationInfoManager.getApps(currentLabelId, false);
 		checkedApps = createSet(l1);
 		List<Application> allApps = new ArrayList<Application>();

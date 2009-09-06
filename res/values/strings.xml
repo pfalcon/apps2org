@@ -41,11 +41,6 @@
 	<string name="Follow_me_on">Follow me on</string>
 	<string name="Help">Help</string>
 	<string name="How_to">How to use Apps Organizer</string>
-	<string name="ignore">Ignore</string>
-	<string name="dont_ignore">Don\'t ignore</string>
-	<string name="ignore_warning_title">Ignore app</string>
-	<string name="ignore_warning">If you continue you\'ll see this app only in labels tab. Are you sure?</string>
-	<string name="ignored_label">Ignored</string>
 	<string name="Starred_apps">Starred apps</string>
 	<string name="show_only_starred_apps">Show only starred apps</string>
 </resources>

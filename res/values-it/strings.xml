@@ -40,9 +40,4 @@
 	<string name="Any_suggestion_or_bug_to">Per suggerimenti o bug</string>
 	<string name="Follow_me_on">Follow me on</string>
 	<string name="How_to">Guida di Apps Organizer</string>
-	<string name="ignore">Nascondi</string>
-	<string name="dont_ignore">Non nascondere</string>
-	<string name="ignore_warning_title">Nascondi applicazione</string>
-	<string name="ignore_warning">Se continui vedrai questa applicazione solo nel tab label. Sei sicuro?</string>
-	<string name="ignored_label">Nascoste</string>
 </resources>

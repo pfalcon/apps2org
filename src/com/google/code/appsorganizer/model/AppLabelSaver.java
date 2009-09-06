@@ -39,19 +39,7 @@ public class AppLabelSaver {
 	public static void saveStarred(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
 			boolean starred, Object source) {
 		dbHelper.appCacheDao.updateStarred(application.name, starred);
-		applicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
-	}
-
-	public static void saveIgnored(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
-			boolean ignored, Object source) {
-		application.setIgnored(ignored);
-		dbHelper.appCacheDao.updateIgnored(application.name, ignored);
-		if (ignored) {
-			applicationInfoManager.ignoreApp(application);
-		} else {
-			applicationInfoManager.dontIgnoreApp(application);
-		}
-		ApplicationInfoManager.notifyDataSetChanged(source);
+		ApplicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
 	}
 
 	public void save(Application application, List<AppLabelBinding> modifiedLabels, Object source) {
