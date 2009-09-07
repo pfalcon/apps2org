@@ -18,9 +18,7 @@
  */
 package com.google.code.appsorganizer.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -29,8 +27,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.provider.BaseColumns;
-import android.provider.LiveFolders;
 
 public class Application implements Comparable<Application> {
 
@@ -107,24 +103,6 @@ public class Application implements Comparable<Application> {
 			intentUri = Uri.parse(intent.toURI());
 		}
 		return intentUri;
-	}
-
-	public Iterable<Object> getIterable(String[] cursorColumns) {
-		List<Object> values = new ArrayList<Object>();
-		for (String col : cursorColumns) {
-			if (col.equals(BaseColumns._ID)) {
-				values.add(getId());
-			} else if (col.equals(LiveFolders.NAME)) {
-				values.add(getLabel());
-			} else if (col.equals(LiveFolders.ICON_PACKAGE)) {
-				values.add(packageName);
-			} else if (col.equals(LiveFolders.ICON_RESOURCE)) {
-				values.add(getIconResource());
-			} else if (col.equals(LiveFolders.INTENT)) {
-				values.add(getIntentUri());
-			}
-		}
-		return values;
 	}
 
 	public Drawable getIcon() {

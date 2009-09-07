@@ -29,9 +29,6 @@ import android.content.Intent;
 import android.content.pm.ComponentInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.os.Handler;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
@@ -285,23 +282,6 @@ public class ApplicationInfoManager {
 
 	private Application getApplication(String app) {
 		return applicationMap.get(app);
-	}
-
-	public Cursor convertToCursor(List<AppLabel> l, String[] cursorColumns) throws NameNotFoundException {
-		final ArrayList<Application> applications = new ArrayList<Application>(convertToApplicationList(l));
-		return convertToCursorFromApplications(applications, cursorColumns);
-	}
-
-	public Cursor convertToCursorFromApplications(final List<Application> applications, String[] cursorColumns) {
-		MatrixCursor m = createCursor(cursorColumns, applications);
-		for (Application application : applications) {
-			m.addRow(application.getIterable(cursorColumns));
-		}
-		return m;
-	}
-
-	private MatrixCursor createCursor(String[] cursorColumns, final List<Application> applications) {
-		return new MatrixCursor(cursorColumns, applications.size());
 	}
 
 	private static final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();

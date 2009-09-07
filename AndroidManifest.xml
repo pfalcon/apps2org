@@ -12,8 +12,6 @@
 			</intent-filter>
 		</activity>
 
-		<provider android:authorities="com.google.code.appsorganizer"
-			android:multiprocess="true" android:name=".livefolder.AppLabelProvider" />
 		<activity android:name=".LabelListActivity" android:launchMode="singleTask"></activity>
 		<activity android:name=".FileImporter"></activity>
 		<activity android:name=".chooseicon.ChooseIconActivity"></activity>
