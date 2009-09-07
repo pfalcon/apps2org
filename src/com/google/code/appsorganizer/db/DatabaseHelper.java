@@ -18,25 +18,13 @@
  */
 package com.google.code.appsorganizer.db;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
-import com.google.code.appsorganizer.R;
-import com.google.code.appsorganizer.SplashScreenActivity;
-import com.google.code.appsorganizer.model.Label;
-
-public class DatabaseHelper extends SQLiteOpenHelper {
-
-	private static final String TAG = "DatabaseHelper";
+public class DatabaseHelper extends DatabaseHelperBasic {
 
 	public final AppLabelDao appsLabelDao;
 	public final LabelDao labelDao;
 	public final AppCacheDao appCacheDao;
-
-	private static final int DATABASE_VERSION = 18;
 
 	private static DatabaseHelper singleton;
 
@@ -55,104 +43,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return singleton;
 	}
 
-	private final SQLiteDatabase db;
-
-	public DatabaseHelper(Context context) {
-		super(context, "data", null, DATABASE_VERSION);
+	private DatabaseHelper(Context context) {
+		super(context);
 		labelDao = new LabelDao();
 		appsLabelDao = new AppLabelDao();
 		appCacheDao = new AppCacheDao();
-		db = getWritableDatabase();
 		labelDao.setDb(db);
 		appsLabelDao.setDb(db);
 		appCacheDao.setDb(db);
-	}
-
-	@Override
-	public void onCreate(SQLiteDatabase db) {
-		db.execSQL(labelDao.getCreateTableScript());
-		db.execSQL(appsLabelDao.getCreateTableScript());
-		db.execSQL(appCacheDao.getCreateTableScript());
-
-		long internetId = insertLabel(db, null, "Internet", Label.convertToIconDb(R.drawable.globe));
-		long androidId = insertLabel(db, null, "Android", Label.convertToIconDb(R.drawable.pda_black));
-		long multimediaId = insertLabel(db, null, "Multimedia", Label.convertToIconDb(R.drawable.multimedia));
-		long utilityId = insertLabel(db, null, "Utility", Label.convertToIconDb(R.drawable.service_manager));
-		insertLabel(db, null, "Games", Label.convertToIconDb(R.drawable.joystick));
-
-		insertInterneApps(db, internetId);
-		insertAndroidApps(db, androidId);
-		insertMultimediaApps(db, multimediaId);
-		insertUtilityApps(db, utilityId);
-	}
-
-	private void insertUtilityApps(SQLiteDatabase db, long id) {
-		insertApp(db, SplashScreenActivity.class.getName(), id);
-	}
-
-	private void insertMultimediaApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.music.MusicBrowserActivity", id);
-		insertApp(db, "com.android.music.VideoBrowserActivity", id);
-		insertApp(db, "com.android.camera.Camera", id);
-		insertApp(db, "com.android.camera.VideoCamera", id);
-		insertApp(db, "com.android.camera.GalleryPicker", id);
-	}
-
-	private void insertAndroidApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.alarmclock.AlarmClock", id);
-		insertApp(db, "com.android.calendar.LaunchActivity", id);
-		insertApp(db, "com.android.vending.AssetBrowserActivity", id);
-		insertApp(db, "com.android.settings.Settings", id);
-		insertApp(db, "com.android.contacts.DialtactsActivity", id);
-		insertApp(db, "com.android.contacts.DialtactsContactsEntryActivity", id);
-		insertApp(db, "com.android.mms.ui.ConversationList", id);
-		insertApp(db, "com.android.calculator2.Calculator", id);
-	}
-
-	private void insertInterneApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.browser.BrowserActivity", id);
-		insertApp(db, "com.google.android.talk.SigningInActivity", id);
-		insertApp(db, "com.google.android.maps.MapsActivity", id);
-		insertApp(db, "com.google.android.youtube.HomePage", id);
-		insertApp(db, "com.google.android.gm.ConversationListActivityGmail", id);
-		insertApp(db, "com.android.email.activity.Welcome", id);
-	}
-
-	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
-		if (oldVersion <= 11) {
-			db.execSQL(appCacheDao.getCreateTableScript());
-		}
-		if (oldVersion <= 13) {
-			db.execSQL("alter table " + appCacheDao.getName() + " add " + AppCacheDao.STARRED_COL_NAME + ' '
-					+ AppCacheDao.STARRED.getDescription());
-		}
-		if (oldVersion <= 14) {
-			db.delete(appCacheDao.getName(), null, null);
-			db.execSQL("alter table " + appCacheDao.getName() + " add " + AppCacheDao.PACKAGE_NAME_COL_NAME + ' '
-					+ AppCacheDao.PACKAGE_NAME.getDescription());
-		}
-		// db.execSQL(appsLabelDao.getDropTableScript());
-		// db.execSQL(labelDao.getDropTableScript());
-		// onCreate(db);
-	}
-
-	private long insertLabel(SQLiteDatabase db, Long id, String value, Integer icon) {
-		ContentValues v = new ContentValues();
-		v.put(LabelDao.LABEL.getName(), value);
-		v.put(LabelDao.ICON.getName(), icon);
-		if (id != null) {
-			v.put(LabelDao.ID_COL_NAME, id);
-		}
-		return db.insert(LabelDao.NAME, null, v);
-	}
-
-	private void insertApp(SQLiteDatabase db, String value, long labelId) {
-		ContentValues v = new ContentValues();
-		v.put(AppLabelDao.APP.getName(), value);
-		v.put(AppLabelDao.LABEL_ID.getName(), labelId);
-		db.insert(AppLabelDao.NAME, null, v);
 	}
 
 	public void beginTransaction() {

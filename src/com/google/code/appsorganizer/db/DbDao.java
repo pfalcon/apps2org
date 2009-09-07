@@ -46,7 +46,7 @@ public abstract class DbDao<T> {
 		return columns;
 	}
 
-	public String getCreateTableScript() {
+	public static String getCreateTableScript(String name, DbColumns[] columns) {
 		StringBuilder b = new StringBuilder("create table ");
 		b.append(name);
 		b.append(" (");

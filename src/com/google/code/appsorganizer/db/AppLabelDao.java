@@ -29,16 +29,18 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 
 	private static final String LABEL_ID_COL_NAME = "id_label";
 
-	public static final String NAME = "apps_labels";
+	public static final String TABLE_NAME = "apps_labels";
 
 	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, APP_COL_NAME, LABEL_ID_COL_NAME };
 
 	public static final DbColumns APP = new DbColumns(APP_COL_NAME, "text not null");
 	public static final DbColumns LABEL_ID = new DbColumns(LABEL_ID_COL_NAME, "integer not null");
 
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, APP, LABEL_ID };
+
 	AppLabelDao() {
-		super(NAME);
-		columns = new DbColumns[] { ID, APP, LABEL_ID };
+		super(TABLE_NAME);
+		columns = DB_COLUMNS;
 	}
 
 	public long insert(String app, long labelId) {
@@ -62,15 +64,6 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return convertCursorToArray(c, new AppLabel[c.getCount()]);
 	}
 
-	public Cursor getAppsCursor(long labelId, boolean starred) {
-		// return
-		// db.rawQuery("select a._id, null image, a.label, a.package, a.name from apps a inner join apps_labels al "
-		// + "on a.name = al.app order by name", null);
-		return db.rawQuery("select a.label, a.package, a.name from apps a inner join apps_labels al "
-				+ "on a.name = al.app where id_label = ? " + (starred ? "and a.starred = 1" : "") + " order by a.label",
-				new String[] { Long.toString(labelId) });
-	}
-
 	public int delete(String appName, Long labelId) {
 		return db.delete(name, LABEL_ID_COL_NAME + " = ? and " + APP_COL_NAME + " = ?", new String[] { labelId.toString(), appName });
 	}
@@ -88,4 +81,7 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		return v;
 	}
 
+	public static String getCreateTableScript() {
+		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
+	}
 }

@@ -32,7 +32,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.os.Debug;
 import android.os.Handler;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
@@ -67,9 +66,9 @@ public class ApplicationInfoManager {
 	}
 
 	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
-		Debug.startMethodTracing("splash");
+		// Debug.startMethodTracing("splash");
 		loadAppsMap(appCacheDao, labelDao, handler);
-		Debug.stopMethodTracing();
+		// Debug.stopMethodTracing();
 	}
 
 	private static final Comparator<Application> appNameComparator = new Comparator<Application>() {

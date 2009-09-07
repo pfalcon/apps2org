@@ -43,9 +43,11 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	public static final DbColumns STARRED = new DbColumns(STARRED_COL_NAME, "integer not null default 0");
 	public static final DbColumns PACKAGE_NAME = new DbColumns(PACKAGE_NAME_COL_NAME, "text");
 
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME };
+
 	AppCacheDao() {
 		super(TABLE_NAME);
-		columns = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME };
+		columns = DB_COLUMNS;
 	}
 
 	public AppCacheMap queryForCacheMap() {
@@ -66,10 +68,6 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 			c.close();
 		}
 		return new AppCacheMap(v);
-	}
-
-	public Cursor getStarredApps() {
-		return db.rawQuery("select label, package, name from " + name + " where starred = 1 order by label", null);
 	}
 
 	public void updateStarred(String app, boolean starred) {
@@ -95,5 +93,9 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		v.put(STARRED_COL_NAME, obj.starred ? 1 : 0);
 		v.put(PACKAGE_NAME_COL_NAME, obj.packageName);
 		return v;
+	}
+
+	public static String getCreateTableScript() {
+		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
 	}
 }

@@ -27,19 +27,21 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -50,6 +52,7 @@ import com.google.code.appsorganizer.ChooseAppsDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
+import com.google.code.appsorganizer.db.DatabaseHelperBasic;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.db.ObjectWithIdDao;
@@ -59,19 +62,19 @@ import com.google.code.appsorganizer.model.Label;
 
 public class LabelShortcut extends Activity implements DbChangeListener {
 
-	private static final String TITLE_BUNDLE_KEY = "title";
-	private static final int SET_TITLE = -2;
-	private static final int CHANGE_CURSOR = -1;
-	private static final int SET_VISIBLE = -3;
 	public static final long ALL_LABELS_ID = -2l;
 	public static final long ALL_STARRED_ID = -3l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
 
-	private DatabaseHelper dbHelper;
+	private DatabaseHelperBasic dbHelper;
 
 	private long labelId;
 
 	private boolean allLabelsSelected;
+
+	private GridView grid;
+
+	private CheckBox starCheck;
 
 	private TextView titleView;
 
@@ -84,118 +87,100 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		Debug.startMethodTracing("grid");
-		genericDialogManager = new GenericDialogManager(this);
+		// Debug.startMethodTracing("grid");
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getOrCreateGrid();
-		setVisible(false);
-		View titleLayout = findViewById(R.id.titleLayout);
-		titleLayout.setBackgroundColor(Color.GRAY);
-		titleView = (TextView) findViewById(R.id.title);
-		starCheck = (CheckBox) findViewById(R.id.starCheck);
-		starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				onlyStarred = isChecked;
-				reloadGrid();
-			}
-		});
-
-		findViewById(R.id.closeButton).setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				finish();
-			}
-		});
-
 		// setVisible(false);
-		// if (ApplicationInfoManager.isSingletonNull()) {
-		// pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list),
-		// getText(R.string.loading_shortcut_grid), true, false);
-		// showProgress = true;
-		// } else {
-		// }
-
-		dbHelper = DatabaseHelper.initOrSingleton(LabelShortcut.this);
-
-		chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, getPackageManager());
-		genericDialogManager.addDialog(chooseAppsDialogCreator);
 
 		final Intent intent = getIntent();
 
 		labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_STARRED_ID);
 		allLabelsSelected = labelId == ALL_LABELS_ID;
 		ApplicationInfoManager.addListener(this);
-		Debug.stopMethodTracing();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		reloadGridInThread();
+		new Thread() {
+			@Override
+			public void run() {
+				reloadGrid();
+				handler.sendEmptyMessage(CHANGE_CURSOR);
+				title = retrieveTitle();
+				handler.sendEmptyMessage(CHANGE_TITLE);
+				if (labelId != ALL_LABELS_ID) {
+					int tot = 0;
+					for (int i = 0; i < iconsToLoad.length; i++) {
+						String componentName = iconsToLoad[i];
+						if (Application.getIconFromCache(componentName) == null) {
+							Application.loadIcon(getPackageManager(), componentName);
+							tot++;
+							if (tot % 4 == 0) {
+								handler.sendEmptyMessage(DATASET_CHANGED);
+							}
+						}
+					}
+					if (tot % 4 != 0) {
+						handler.sendEmptyMessage(DATASET_CHANGED);
+					}
+				}
+
+			}
+		}.start();
+		// reloadGridInThread();
 	}
+
+	private final Handler handler = new Handler() {
+		@Override
+		public void dispatchMessage(Message msg) {
+			updateView(msg.what);
+		}
+	};
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		ApplicationInfoManager.removeListener(this);
+		dbHelper.close();
 	}
 
 	private void reloadGridInThread() {
-		new Thread() {
-			@Override
-			public void run() {
-				reloadGrid();
-			}
-		}.start();
+		new LoadIconTask().execute();
+		// new Thread() {
+		// @Override
+		// public void run() {
+		// reloadGrid();
+		// }
+		// }.start();
 	}
 
 	private Cursor cursor;
 
-	private final Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			if (msg.what == SET_VISIBLE) {
-				int size = msg.getData().getInt("size");
-				int righe = size / 4 + (size % 4 > 0 ? 1 : 0);
-				findViewById(R.id.shortcutLayout).setMinimumHeight(34 + 90 * righe);
-				setVisible(true);
-			} else if (msg.what == CHANGE_CURSOR) {
-				if (cursorAdapter == null) {
-					createAdapter(cursor);
-
-				} else {
-					cursorAdapter.changeCursor(cursor);
-				}
-				if (labelId != ALL_LABELS_ID) {
-					new LoadIconTask().execute(iconsToLoad);
-				}
-			} else if (msg.what == SET_TITLE) {
-				titleView.setText(msg.getData().getString(TITLE_BUNDLE_KEY));
-				starCheck.setVisibility(labelId > 0 ? View.VISIBLE : View.INVISIBLE);
-			}
-		}
-	};
-
 	private String[] iconsToLoad;
 
 	private void reloadGrid() {
-		handler.sendMessage(getTitleMessage());
+		if (dbHelper == null) {
+			dbHelper = new DatabaseHelperBasic(LabelShortcut.this);
+		}
 
 		if (labelId == ALL_LABELS_ID) {
-			cursor = dbHelper.labelDao.getLabelCursor();
+			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
+					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
+					("upper(" + LabelDao.LABEL_COL_NAME + ")"));
+
 		} else {
 			if (labelId == ALL_STARRED_ID) {
-				cursor = dbHelper.appCacheDao.getStarredApps();
+				cursor = dbHelper.getDb().rawQuery("select label, package, name from apps where starred = 1 order by label", null);
 			} else {
-				cursor = dbHelper.appsLabelDao.getAppsCursor(labelId, onlyStarred);
+				cursor = dbHelper.getDb()
+						.rawQuery(
+								"select a.label, a.package, a.name from apps a inner join apps_labels al "
+										+ "on a.name = al.app where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "")
+										+ " order by a.label", new String[] { Long.toString(labelId) });
 			}
 			int count = cursor.getCount();
-			Message msg = new Message();
-			Bundle bundle = new Bundle();
-			bundle.putInt("size", count);
-			msg.setData(bundle);
-			msg.what = SET_VISIBLE;
-			handler.sendMessage(msg);
 			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,
 					AppCacheDao.PACKAGE_NAME_COL_NAME, AppCacheDao.NAME_COL_NAME }, count);
 			iconsToLoad = new String[count];
@@ -212,50 +197,64 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			}
 			cursor = m;
 		}
-		handler.sendEmptyMessage(CHANGE_CURSOR);
 	}
 
-	private Message getTitleMessage() {
-		String title;
+	private String retrieveTitle() {
+		String title = "";
 		if (labelId == ALL_LABELS_ID) {
 			title = getString(R.string.all_labels);
 		} else if (labelId == ALL_STARRED_ID) {
 			title = getString(R.string.Starred_apps);
 		} else {
-			Label label = dbHelper.labelDao.queryById(labelId);
-			title = label.getLabel();
+			Cursor c = dbHelper.getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME }, LabelDao.ID_COL_NAME + "=?",
+					new String[] { Long.toString(labelId) }, null, null, null);
+			try {
+				if (c.moveToNext()) {
+					title = c.getString(0);
+				}
+			} finally {
+				c.close();
+			}
 		}
-		Message msg = new Message();
-		Bundle bundle = new Bundle(1);
-		bundle.putString(TITLE_BUNDLE_KEY, title);
-		msg.setData(bundle);
-		msg.what = SET_TITLE;
-		return msg;
+		return title;
 	}
 
-	private class LoadIconTask extends AsyncTask<String, Object, Object> {
+	private String title;
+
+	private static final int CHANGE_CURSOR = -1;
+	private static final int DATASET_CHANGED = -2;
+	private static final int CHANGE_TITLE = -3;
+
+	private class LoadIconTask extends AsyncTask<String, Integer, Object> {
+
 		@Override
-		protected Object doInBackground(String... comps) {
-			int tot = 0;
-			for (int i = 0; i < comps.length; i++) {
-				String componentName = comps[i];
-				if (Application.getIconFromCache(componentName) == null) {
-					Application.loadIcon(getPackageManager(), componentName);
-					tot++;
-					if (tot % 4 == 0) {
-						publishProgress((Object) null);
+		protected Object doInBackground(String... ss) {
+			reloadGrid();
+			publishProgress(CHANGE_CURSOR);
+			title = retrieveTitle();
+			publishProgress(CHANGE_TITLE);
+			if (labelId != ALL_LABELS_ID) {
+				int tot = 0;
+				for (int i = 0; i < iconsToLoad.length; i++) {
+					String componentName = iconsToLoad[i];
+					if (Application.getIconFromCache(componentName) == null) {
+						Application.loadIcon(getPackageManager(), componentName);
+						tot++;
+						if (tot % 4 == 0) {
+							publishProgress(DATASET_CHANGED);
+						}
 					}
 				}
-			}
-			if (tot % 4 != 0) {
-				publishProgress((Object) null);
+				if (tot % 4 != 0) {
+					publishProgress(DATASET_CHANGED);
+				}
 			}
 			return null;
 		}
 
 		@Override
-		protected void onProgressUpdate(Object... progress) {
-			cursorAdapter.notifyDataSetChanged();
+		protected void onProgressUpdate(Integer... progress) {
+			updateView(progress[0]);
 		}
 	}
 
@@ -287,9 +286,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		grid.setAdapter(cursorAdapter);
 	}
 
-	private GridView grid;
-
-	private CheckBox starCheck;
 	private SimpleCursorAdapter cursorAdapter;
 
 	private GridView getOrCreateGrid() {
@@ -377,17 +373,73 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	// }
 
 	private void showChooseAppsDialog() {
+		initDialogs();
 		chooseAppsDialogCreator.setCurrentLabelId(labelId);
 		showDialog(chooseAppsDialogCreator.getDialogId());
 	}
 
+	private void initDialogs() {
+		if (chooseAppsDialogCreator == null) {
+			chooseAppsDialogCreator = new ChooseAppsDialogCreator(DatabaseHelper.initOrSingleton(this), getPackageManager());
+			genericDialogManager = new GenericDialogManager(this);
+			genericDialogManager.addDialog(chooseAppsDialogCreator);
+		}
+	}
+
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
+		initDialogs();
 		genericDialogManager.onPrepareDialog(id, dialog);
 	}
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
+		initDialogs();
 		return genericDialogManager.onCreateDialog(id);
+	}
+
+	private void updateTitleView() {
+		if (titleView == null) {
+			LayoutInflater factory = LayoutInflater.from(LabelShortcut.this);
+			View titleLayout = factory.inflate(R.layout.shortcut_grid_title, null);
+			titleLayout.setBackgroundColor(Color.GRAY);
+			titleView = (TextView) titleLayout.findViewById(R.id.title);
+			starCheck = (CheckBox) titleLayout.findViewById(R.id.starCheck);
+			starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+					onlyStarred = isChecked;
+					reloadGrid();
+				}
+			});
+			LinearLayout layout = (LinearLayout) findViewById(R.id.shortcutLayout);
+			layout.addView(titleLayout, 0, new LayoutParams(LayoutParams.FILL_PARENT, 34));
+
+			findViewById(R.id.closeButton).setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					finish();
+				}
+			});
+		}
+		titleView.setText(title);
+		int v = labelId > 0 ? View.VISIBLE : View.INVISIBLE;
+		if (starCheck.getVisibility() != v) {
+			starCheck.setVisibility(v);
+		}
+	}
+
+	private void updateView(int p) {
+		if (p == DATASET_CHANGED) {
+			cursorAdapter.notifyDataSetChanged();
+		} else if (p == CHANGE_CURSOR) {
+			if (cursorAdapter == null) {
+				createAdapter(cursor);
+
+			} else {
+				cursorAdapter.changeCursor(cursor);
+			}
+		} else {
+			updateTitleView();
+			// Debug.stopMethodTracing();
+		}
 	}
 }

@@ -32,7 +32,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public static final String LABEL_COL_NAME = "label";
 
-	public static final String NAME = "labels";
+	public static final String TABLE_NAME = "labels";
 
 	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME };
 
@@ -40,9 +40,11 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public static final DbColumns ICON = new DbColumns(ICON_COL_NAME, "integer");
 
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, LABEL, ICON };
+
 	LabelDao() {
-		super(NAME);
-		columns = new DbColumns[] { ID, LABEL, ICON };
+		super(TABLE_NAME);
+		columns = DB_COLUMNS;
 	}
 
 	public DoubleArray getAppsLabels() {
@@ -107,7 +109,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public ArrayList<Label> getLabels() {
-		Cursor c = db.query(name, COLS_STRING, null, null, null, null, "upper(" + LABEL.getName() + ")");
+		Cursor c = db.query(name, COLS_STRING, null, null, null, null, "upper(" + LABEL_COL_NAME + ")");
 		return convertCursorToList(c);
 	}
 
@@ -117,7 +119,8 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public Cursor getLabelCursor() {
-		return db.query(name, COLS_STRING, null, null, null, null, ("upper(" + LABEL.getName() + ")"));
+		return db.query(TABLE_NAME, new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME }, null, null, null, null, ("upper("
+				+ LABEL_COL_NAME + ")"));
 	}
 
 	public long insert(String label) {
@@ -144,4 +147,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return v;
 	}
 
+	public static String getCreateTableScript() {
+		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
+	}
 }
