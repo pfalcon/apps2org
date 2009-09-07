@@ -70,10 +70,16 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		return new AppCacheMap(v);
 	}
 
-	public void updateStarred(String app, boolean starred) {
+	public void updateStarred(String packageName, String app, boolean starred) {
 		ContentValues v = new ContentValues();
 		v.put(STARRED_COL_NAME, starred);
-		db.update(name, v, NAME_COL_NAME + " = ?", new String[] { app });
+		db.update(name, v, NAME_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { app, packageName });
+	}
+
+	public void clearStarred() {
+		ContentValues v = new ContentValues();
+		v.put(STARRED_COL_NAME, false);
+		db.update(name, v, null, null);
 	}
 
 	@Override
@@ -97,5 +103,11 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public static String getCreateTableScript() {
 		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
+	}
+
+	public void updateLabel(String p, String n, String l) {
+		ContentValues v = new ContentValues();
+		v.put(LABEL_COL_NAME, l);
+		db.update(name, v, PACKAGE_NAME_COL_NAME + " = ? and " + NAME_COL_NAME + "=?", new String[] { p, n });
 	}
 }

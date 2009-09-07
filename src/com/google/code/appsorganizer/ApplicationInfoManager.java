@@ -58,13 +58,13 @@ public class ApplicationInfoManager {
 
 	public void getOrReloadAppsMap(DatabaseHelper dbHelper) {
 		if (apps == null) {
-			loadAppsMap(dbHelper.appCacheDao, dbHelper.labelDao, null);
+			loadAppsMap(dbHelper.appCacheDao, dbHelper.labelDao, null, false);
 		}
 	}
 
-	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
+	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler, boolean discardCache) {
 		// Debug.startMethodTracing("splash");
-		loadAppsMap(appCacheDao, labelDao, handler);
+		loadAppsMap(appCacheDao, labelDao, handler, discardCache);
 		// Debug.stopMethodTracing();
 	}
 
@@ -74,7 +74,7 @@ public class ApplicationInfoManager {
 		}
 	};
 
-	private void loadAppsMap(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler) {
+	private void loadAppsMap(AppCacheDao appCacheDao, LabelDao labelDao, Handler handler, boolean discardCache) {
 		synchronized (this) {
 			DoubleArray appsLabels = labelDao.getAppsLabelsConcat();
 			AppCacheMap nameCache = appCacheDao.queryForCacheMap();
@@ -105,6 +105,12 @@ public class ApplicationInfoManager {
 						if (l != null) {
 							app.setLabel(l.toString());
 							appCacheDao.insert(new AppCache(app.getPackage(), name, app.getLabel()));
+						}
+					} else if (discardCache) {
+						CharSequence l = a.loadLabel(pm);
+						if (l != null) {
+							app.setLabel(l.toString());
+							appCacheDao.updateLabel(app.getPackage(), name, app.getLabel());
 						}
 					}
 					loadLabels(appsLabels, app);

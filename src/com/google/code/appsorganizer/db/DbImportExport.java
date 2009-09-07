@@ -30,7 +30,10 @@ import java.io.IOException;
 import android.app.Activity;
 
 import com.google.code.appsorganizer.FileImporter;
+import com.google.code.appsorganizer.maps.AppCacheMap;
+import com.google.code.appsorganizer.model.AppCache;
 import com.google.code.appsorganizer.model.AppLabel;
+import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 /**
@@ -55,8 +58,23 @@ public class DbImportExport {
 			bout.write(APP_LABEL_SEPARATOR_LINE);
 			bout.newLine();
 			writeApps(dbHelper.labelDao, bout);
+			bout.write(APP_LABEL_SEPARATOR_LINE);
+			bout.newLine();
+			writeStarredApps(dbHelper.appCacheDao, bout);
 		} finally {
 			bout.close();
+		}
+	}
+
+	private static void writeStarredApps(AppCacheDao appCacheDao, BufferedWriter bout) throws IOException {
+		AppCacheMap cache = appCacheDao.queryForCacheMap();
+		AppCache[] values = cache.values();
+		for (int i = 0; i < values.length; i++) {
+			AppCache a = values[i];
+			if (a.starred) {
+				bout.write(a.packageName + Application.SEPARATOR + a.name);
+				bout.newLine();
+			}
 		}
 	}
 
@@ -108,6 +126,20 @@ public class DbImportExport {
 	private static void importData(DatabaseHelper dbHelper, BufferedReader in) throws IOException {
 		TObjectLongHashMap<String> labelsId = importLabels(dbHelper.labelDao, in);
 		importApps(dbHelper.appsLabelDao, labelsId, in, dbHelper.labelDao);
+		importStarred(dbHelper.appCacheDao, in);
+	}
+
+	private static void importStarred(AppCacheDao appCacheDao, BufferedReader in) throws IOException {
+		String s = null;
+		appCacheDao.clearStarred();
+		while ((s = in.readLine()) != null) {
+			if (s.length() > 0) {
+				int i = s.indexOf(Application.SEPARATOR);
+				String packageName = s.substring(0, i);
+				String name = s.substring(i + 1);
+				appCacheDao.updateStarred(packageName, name, true);
+			}
+		}
 	}
 
 	private static void importApps(AppLabelDao appsLabelDao, TObjectLongHashMap<String> labelsId, BufferedReader in, LabelDao labelDao)
@@ -117,6 +149,9 @@ public class DbImportExport {
 		int labelPrefixLength = LABEL_PREFIX.length();
 		DoubleArray appsLabels = labelDao.getAppsLabels();
 		while ((s = in.readLine()) != null) {
+			if (s.equals(APP_LABEL_SEPARATOR_LINE)) {
+				break;
+			}
 			if (s.startsWith(LABEL_PREFIX)) {
 				String labelName = s.substring(labelPrefixLength);
 				if (!appLabelAlreadyExist(appsLabels, curApp, labelName)) {

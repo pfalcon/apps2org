@@ -38,7 +38,7 @@ public class AppLabelSaver {
 
 	public static void saveStarred(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
 			boolean starred, Object source) {
-		dbHelper.appCacheDao.updateStarred(application.name, starred);
+		dbHelper.appCacheDao.updateStarred(application.getPackage(), application.name, starred);
 		ApplicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
 	}
 
