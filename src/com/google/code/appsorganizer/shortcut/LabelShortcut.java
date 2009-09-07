@@ -27,8 +27,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -84,14 +82,15 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private boolean onlyStarred;
 
+	private static boolean firstTime = true;
+
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		// Debug.startMethodTracing("grid");
+		// Debug.startMethodTracing("grid1");
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getOrCreateGrid();
-		// setVisible(false);
 
 		final Intent intent = getIntent();
 
@@ -103,41 +102,42 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		new Thread() {
-			@Override
-			public void run() {
-				reloadGrid();
-				handler.sendEmptyMessage(CHANGE_CURSOR);
-				title = retrieveTitle();
-				handler.sendEmptyMessage(CHANGE_TITLE);
-				if (labelId != ALL_LABELS_ID) {
-					int tot = 0;
-					for (int i = 0; i < iconsToLoad.length; i++) {
-						String componentName = iconsToLoad[i];
-						if (Application.getIconFromCache(componentName) == null) {
-							Application.loadIcon(getPackageManager(), componentName);
-							tot++;
-							if (tot % 4 == 0) {
-								handler.sendEmptyMessage(DATASET_CHANGED);
-							}
-						}
-					}
-					if (tot % 4 != 0) {
-						handler.sendEmptyMessage(DATASET_CHANGED);
-					}
-				}
-
-			}
-		}.start();
+		new LoadIconTask().execute();
+		// new Thread() {
+		// @Override
+		// public void run() {
+		// reloadGrid();
+		// title = retrieveTitle();
+		// handler.sendEmptyMessage(CHANGE_TITLE);
+		// handler.sendEmptyMessage(CHANGE_CURSOR);
+		// if (labelId != ALL_LABELS_ID) {
+		// int tot = 0;
+		// for (int i = 0; i < iconsToLoad.length; i++) {
+		// String componentName = iconsToLoad[i];
+		// if (Application.getIconFromCache(componentName) == null) {
+		// Application.loadIcon(getPackageManager(), componentName);
+		// tot++;
+		// if (tot % 4 == 0) {
+		// handler.sendEmptyMessage(DATASET_CHANGED);
+		// }
+		// }
+		// }
+		// if (tot % 4 != 0) {
+		// handler.sendEmptyMessage(DATASET_CHANGED);
+		// }
+		// }
+		//
+		// }
+		// }.start();
 		// reloadGridInThread();
 	}
 
-	private final Handler handler = new Handler() {
-		@Override
-		public void dispatchMessage(Message msg) {
-			updateView(msg.what);
-		}
-	};
+	// private final Handler handler = new Handler() {
+	// @Override
+	// public void dispatchMessage(Message msg) {
+	// updateView(msg.what);
+	// }
+	// };
 
 	@Override
 	protected void onDestroy() {
@@ -146,25 +146,11 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		dbHelper.close();
 	}
 
-	private void reloadGridInThread() {
-		new LoadIconTask().execute();
-		// new Thread() {
-		// @Override
-		// public void run() {
-		// reloadGrid();
-		// }
-		// }.start();
-	}
-
 	private Cursor cursor;
 
 	private String[] iconsToLoad;
 
 	private void reloadGrid() {
-		if (dbHelper == null) {
-			dbHelper = new DatabaseHelperBasic(LabelShortcut.this);
-		}
-
 		if (labelId == ALL_LABELS_ID) {
 			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
@@ -229,10 +215,14 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 		@Override
 		protected Object doInBackground(String... ss) {
-			reloadGrid();
-			publishProgress(CHANGE_CURSOR);
+			if (dbHelper == null) {
+				dbHelper = new DatabaseHelperBasic(LabelShortcut.this);
+			}
 			title = retrieveTitle();
 			publishProgress(CHANGE_TITLE);
+
+			reloadGrid();
+			publishProgress(CHANGE_CURSOR);
 			if (labelId != ALL_LABELS_ID) {
 				int tot = 0;
 				for (int i = 0; i < iconsToLoad.length; i++) {
@@ -299,7 +289,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 					Cursor item = (Cursor) cursorAdapter.getItem(pos);
 					if (labelId == ALL_LABELS_ID) {
 						labelId = item.getLong(0);
-						reloadGridInThread();
+						new LoadIconTask().execute();
 					} else {
 						Intent i = new Intent(Intent.ACTION_MAIN);
 						i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -309,6 +299,9 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 					}
 				}
 			});
+			if (!firstTime) {
+				setVisible(false);
+			}
 		}
 		return grid;
 	}
@@ -327,7 +320,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		if (allLabelsSelected) {
 			if (labelId != ALL_LABELS_ID) {
 				labelId = ALL_LABELS_ID;
-				reloadGridInThread();
+				new LoadIconTask().execute();
 				return true;
 			}
 		}
@@ -335,7 +328,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	}
 
 	public void dataSetChanged(Object source, short type) {
-		reloadGrid();
+		new LoadIconTask().execute();
 	}
 
 	@Override
@@ -408,7 +401,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 					onlyStarred = isChecked;
-					reloadGrid();
+					new LoadIconTask().execute();
 				}
 			});
 			LinearLayout layout = (LinearLayout) findViewById(R.id.shortcutLayout);
@@ -436,6 +429,11 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 			} else {
 				cursorAdapter.changeCursor(cursor);
+			}
+			if (!firstTime) {
+				setVisible(true);
+			} else {
+				firstTime = false;
 			}
 		} else {
 			updateTitleView();

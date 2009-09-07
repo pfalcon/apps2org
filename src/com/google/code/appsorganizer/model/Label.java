@@ -141,9 +141,10 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 		this.name = name;
 	}
 
-	public Label(Long id, String name) {
+	public Label(long id, String name, int icon) {
 		setId(id);
 		this.name = name;
+		setIcon(icon);
 	}
 
 	public Label(String name) {
