@@ -103,41 +103,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	protected void onResume() {
 		super.onResume();
 		new LoadIconTask().execute();
-		// new Thread() {
-		// @Override
-		// public void run() {
-		// reloadGrid();
-		// title = retrieveTitle();
-		// handler.sendEmptyMessage(CHANGE_TITLE);
-		// handler.sendEmptyMessage(CHANGE_CURSOR);
-		// if (labelId != ALL_LABELS_ID) {
-		// int tot = 0;
-		// for (int i = 0; i < iconsToLoad.length; i++) {
-		// String componentName = iconsToLoad[i];
-		// if (Application.getIconFromCache(componentName) == null) {
-		// Application.loadIcon(getPackageManager(), componentName);
-		// tot++;
-		// if (tot % 4 == 0) {
-		// handler.sendEmptyMessage(DATASET_CHANGED);
-		// }
-		// }
-		// }
-		// if (tot % 4 != 0) {
-		// handler.sendEmptyMessage(DATASET_CHANGED);
-		// }
-		// }
-		//
-		// }
-		// }.start();
-		// reloadGridInThread();
 	}
-
-	// private final Handler handler = new Handler() {
-	// @Override
-	// public void dispatchMessage(Message msg) {
-	// updateView(msg.what);
-	// }
-	// };
 
 	@Override
 	protected void onDestroy() {
@@ -259,7 +225,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 						if (cursor.isNull(columnIndex)) {
 							icon.setImageResource(R.drawable.icon_default);
 						} else {
-							icon.setImageResource(Label.convertToIcon(cursor.getInt(columnIndex)));
+							int ic = Label.convertToIcon(cursor.getInt(columnIndex));
+							if (ic > 0) {
+								icon.setImageResource(ic);
+							} else {
+								icon.setImageResource(R.drawable.icon_default);
+							}
 						}
 					} else {
 						String appName = cursor.getString(4);

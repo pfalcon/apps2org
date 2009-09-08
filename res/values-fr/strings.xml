@@ -36,4 +36,10 @@
     <string name="directory_error">Erreur dossier</string>
     <string name="file_name">Nom du fichier</string>
     <string name="no_files_error">Aucun fichier trouvé dans le répertoir AppsOrganizer sur la SD card</string>	
+	<string name="Author">Author</string>
+	<string name="Any_suggestion_or_bug_to">Any suggestion or bug to</string>
+	<string name="Follow_me_on">Follow me on</string>
+	<string name="Help">Help</string>
+	<string name="How_to">How to use Apps Organizer</string>
+	<string name="Starred_apps">Starred apps</string>
 </resources>

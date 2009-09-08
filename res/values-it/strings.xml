@@ -38,6 +38,8 @@
 	<string name="no_files_error">Nessun file trovato nella directory AppsOrganizer nella sd card</string>
 	<string name="Author">Autore</string>
 	<string name="Any_suggestion_or_bug_to">Per suggerimenti o bug</string>
+	<string name="Help">Help</string>
 	<string name="Follow_me_on">Follow me on</string>
 	<string name="How_to">Guida di Apps Organizer</string>
+	<string name="Starred_apps">Apps speciali</string>
 </resources>
