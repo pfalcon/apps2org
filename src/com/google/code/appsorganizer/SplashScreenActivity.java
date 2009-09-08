@@ -25,6 +25,7 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -105,6 +106,20 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 
 		setProgressBarIndeterminateVisibility(true);
 		reload();
+		showStartHowTo();
+	}
+
+	private void showStartHowTo() {
+		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
+		boolean showStartHowTo = settings.getBoolean("showStartHowTo", true);
+		if (showStartHowTo) {
+			String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
+			genericDialogManager.showSimpleDialog(getString(R.string.app_name), msg, false, R.drawable.icon, null);
+
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putBoolean("showStartHowTo", false);
+			editor.commit();
+		}
 	}
 
 	@Override

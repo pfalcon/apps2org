@@ -42,4 +42,6 @@
 	<string name="Follow_me_on">Follow me on</string>
 	<string name="How_to">Guida di Apps Organizer</string>
 	<string name="Starred_apps">Apps speciali</string>
+	<string name="how_to_message">Con Apps Organizer puoi creare collegamenti alle label cliccando nella home di android </string>
+	<string name="how_to_message_2">Una giuda è disponibile online (il link è disponibile nel menù about)</string>
 </resources>

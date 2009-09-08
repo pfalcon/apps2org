@@ -31,6 +31,7 @@ public class SimpleDialog extends GenericDialogCreator {
 	private String message;
 	private boolean showNegativeButton = true;
 	private OnOkClickListener onOkListener;
+	private int icon = R.drawable.alert_dialog_icon;
 
 	public SimpleDialog() {
 	}
@@ -68,14 +69,17 @@ public class SimpleDialog extends GenericDialogCreator {
 
 	@Override
 	public Dialog createDialog() {
-		Builder d = new AlertDialog.Builder(owner).setIcon(R.drawable.alert_dialog_icon).setTitle(title).setPositiveButton(
-				R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
+		Builder d = new AlertDialog.Builder(owner).setTitle(title).setPositiveButton(R.string.alert_dialog_ok,
+				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
 						if (onOkListener != null) {
 							onOkListener.onClick(null, dialog, which);
 						}
 					}
 				});
+		if (icon > 0) {
+			d = d.setIcon(icon);
+		}
 		if (showNegativeButton) {
 			d = d.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
@@ -114,5 +118,13 @@ public class SimpleDialog extends GenericDialogCreator {
 
 	public String getMessage() {
 		return message;
+	}
+
+	public int getIcon() {
+		return icon;
+	}
+
+	public void setIcon(int icon) {
+		this.icon = icon;
 	}
 }

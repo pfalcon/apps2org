@@ -42,4 +42,6 @@
 	<string name="Help">Help</string>
 	<string name="How_to">How to use Apps Organizer</string>
 	<string name="Starred_apps">Starred apps</string>
+	<string name="how_to_message">You can create labels home shortcuts with a long click on your Android home</string>
+	<string name="how_to_message_2">An how to is available online (see about dialog for details)</string>
 </resources>
