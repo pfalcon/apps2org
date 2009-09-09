@@ -20,7 +20,6 @@ package com.google.code.appsorganizer;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 
@@ -30,13 +29,13 @@ public class AppsReloader {
 
 	private final Context context;
 
-	private final boolean startHomeOnComplete;
+	private final boolean discardCache;
 
 	private final ApplicationInfoManager singleton;
 
-	public AppsReloader(Context context, boolean startHomeOnComplete) {
+	public AppsReloader(Context context, boolean discardCache) {
 		this.context = context;
-		this.startHomeOnComplete = startHomeOnComplete;
+		this.discardCache = discardCache;
 		singleton = ApplicationInfoManager.singleton(context.getPackageManager());
 	}
 
@@ -47,10 +46,6 @@ public class AppsReloader {
 				pd.setMessage(context.getText(R.string.preparing_apps_list));
 				ApplicationInfoManager.notifyDataSetChanged(this);
 				pd.hide();
-				if (startHomeOnComplete) {
-					Intent intent = new Intent(context, context.getClass());
-					context.startActivity(intent);
-				}
 			} else {
 				pd.setMessage(context.getString(R.string.total_apps) + ": " + msg.what);
 			}
@@ -66,7 +61,7 @@ public class AppsReloader {
 			@Override
 			public void run() {
 				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
-				singleton.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler, true);
+				singleton.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, handler, discardCache);
 				handler.sendEmptyMessage(-1);
 			}
 		};

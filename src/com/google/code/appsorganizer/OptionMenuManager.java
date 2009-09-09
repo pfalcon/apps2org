@@ -85,7 +85,7 @@ public class OptionMenuManager {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.reload_apps:
-			new AppsReloader(context, false).reload();
+			new AppsReloader(context, true).reload();
 			return true;
 		case R.id.export_menu:
 			context.showDialog(textEntryDialog.getDialogId());
