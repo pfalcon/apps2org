@@ -150,6 +150,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Label label = mAdapter.getGroup(groupPos);
 			menu.setHeaderTitle(label.getName());
+			menu.setHeaderIcon(label.getIcon());
 			MenuItem renameItem = menu.add(0, MENU_ITEM_RENAME, 0, R.string.rename);
 			MenuItem deleteItem = menu.add(0, MENU_ITEM_DELETE, 1, R.string.delete);
 			MenuItem changeIconItem = menu.add(0, MENU_ITEM_CHANGE_ICON, 2, R.string.change_icon);
