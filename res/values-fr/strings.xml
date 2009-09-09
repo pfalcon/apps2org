@@ -36,12 +36,12 @@
     <string name="directory_error">Erreur dossier</string>
     <string name="file_name">Nom du fichier</string>
     <string name="no_files_error">Aucun fichier trouvé dans le répertoir AppsOrganizer sur la SD card</string>	
-	<string name="Author">Author</string>
-	<string name="Any_suggestion_or_bug_to">Any suggestion or bug to</string>
-	<string name="Follow_me_on">Follow me on</string>
-	<string name="Help">Help</string>
-	<string name="How_to">How to use Apps Organizer</string>
-	<string name="Starred_apps">Starred apps</string>
-	<string name="how_to_message">You can create labels home shortcuts with a long click on your Android home</string>
-	<string name="how_to_message_2">An how to is available online (see about dialog for details)</string>
+    <string name="Author">Auteur</string>
+    <string name="Any_suggestion_or_bug_to">Envoyer suggestion ou reporter bug à</string>
+    <string name="Follow_me_on">Suivez-moi sur</string>
+    <string name="Help">Aide</string>
+    <string name="How_to">Comment utiliser Apps Organizer</string>
+    <string name="Starred_apps">Applis favorites</string>
+    <string name="how_to_message">Vous pouvez créer des raccourcis vers vos libellés en appuyant longuement sur le home Android</string>
+    <string name="how_to_message_2">Manuel utilisateur consultable en ligne (voir section "A propos" pour plus de détails)</string>
 </resources>
