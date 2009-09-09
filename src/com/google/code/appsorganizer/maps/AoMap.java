@@ -43,7 +43,7 @@ public abstract class AoMap<K extends Comparable<K>, V> {
 
 	public V get(K key) {
 		int i = Arrays.binarySearch(keys, key);
-		if (i == -1) {
+		if (i < 0) {
 			return null;
 		} else {
 			return values[i];
