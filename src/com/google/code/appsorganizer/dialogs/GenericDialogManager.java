@@ -42,11 +42,18 @@ public class GenericDialogManager {
 	}
 
 	public void onPrepareDialog(int id, Dialog dialog) {
-		dialogs.get(id).prepareDialog(dialog);
+		GenericDialogCreator d = dialogs.get(id);
+		if (d != null) {
+			d.prepareDialog(dialog);
+		}
 	}
 
 	public Dialog onCreateDialog(int id) {
-		return dialogs.get(id).createDialog();
+		GenericDialogCreator d = dialogs.get(id);
+		if (d != null) {
+			return d.createDialog();
+		}
+		return null;
 	}
 
 	private SimpleDialog simpleDialog;
