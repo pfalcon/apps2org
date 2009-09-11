@@ -109,6 +109,9 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	protected void onDestroy() {
 		super.onDestroy();
 		ApplicationInfoManager.removeListener(this);
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
 		dbHelper.close();
 	}
 
@@ -121,7 +124,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
 					("upper(" + LabelDao.LABEL_COL_NAME + ")"));
-
 		} else {
 			if (labelId == ALL_STARRED_ID) {
 				cursor = dbHelper.getDb().rawQuery("select label, package, name from apps where starred = 1 order by label", null);

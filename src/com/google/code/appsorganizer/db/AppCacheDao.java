@@ -110,4 +110,12 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		v.put(LABEL_COL_NAME, l);
 		db.update(name, v, PACKAGE_NAME_COL_NAME + " = ? and " + NAME_COL_NAME + "=?", new String[] { p, n });
 	}
+
+	public void removeUninstalledApps(boolean[] installedApps, String[] appNames) {
+		for (int i = 0; i < installedApps.length; i++) {
+			if (!installedApps[i]) {
+				db.delete(name, NAME_COL_NAME + " = ?", new String[] { appNames[i] });
+			}
+		}
+	}
 }

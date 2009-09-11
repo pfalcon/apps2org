@@ -50,7 +50,27 @@ public abstract class AoMap<K extends Comparable<K>, V> {
 		}
 	}
 
+	public V getAt(int i) {
+		if (i < 0) {
+			return null;
+		} else {
+			return values[i];
+		}
+	}
+
+	public int getPosition(K key) {
+		return Arrays.binarySearch(keys, key);
+	}
+
+	public K[] keys() {
+		return keys;
+	}
+
 	public V[] values() {
 		return values;
+	}
+
+	public int size() {
+		return keys.length;
 	}
 }

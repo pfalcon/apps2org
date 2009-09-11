@@ -84,4 +84,12 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 	public static String getCreateTableScript() {
 		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
 	}
+
+	public void removeUninstalledApps(boolean[] installedApps, String[] appNames) {
+		for (int i = 0; i < installedApps.length; i++) {
+			if (!installedApps[i]) {
+				db.delete(name, APP_COL_NAME + " = ?", new String[] { appNames[i] });
+			}
+		}
+	}
 }

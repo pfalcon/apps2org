@@ -135,7 +135,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			}
 		}
 		if (changed) {
-			ApplicationInfoManager.notifyDataSetChanged(this);
+			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
 		}
 	}
 

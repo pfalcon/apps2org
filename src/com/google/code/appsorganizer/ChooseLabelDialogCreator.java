@@ -25,7 +25,6 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.os.Debug;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -39,7 +38,6 @@ import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
-	private static boolean debug = true;
 
 	private final DatabaseHelper labelAdapter;
 
@@ -60,14 +58,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		if (debug) {
-			Debug.startMethodTracing("splash");
-		}
 		List<AppLabelBinding> allLabels = getAllLabels(application);
-		if (debug) {
-			Debug.stopMethodTracing();
-			debug = false;
-		}
 		adapter = new ChooseLabelListAdapter(owner, allLabels);
 		listView.setAdapter(adapter);
 
