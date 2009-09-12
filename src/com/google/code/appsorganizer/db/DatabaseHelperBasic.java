@@ -20,6 +20,7 @@ package com.google.code.appsorganizer.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -98,17 +99,29 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 			db.execSQL(AppCacheDao.getCreateTableScript());
 		}
 		if (oldVersion <= 13) {
-			db.execSQL("alter table " + AppCacheDao.TABLE_NAME + " add " + AppCacheDao.STARRED_COL_NAME + ' '
-					+ AppCacheDao.STARRED.getDescription());
+			addColumn(db, AppCacheDao.TABLE_NAME, AppCacheDao.STARRED);
 		}
 		if (oldVersion <= 14) {
 			db.delete(AppCacheDao.TABLE_NAME, null, null);
-			db.execSQL("alter table " + AppCacheDao.TABLE_NAME + " add " + AppCacheDao.PACKAGE_NAME_COL_NAME + ' '
-					+ AppCacheDao.PACKAGE_NAME.getDescription());
+			addColumn(db, AppCacheDao.TABLE_NAME, AppCacheDao.PACKAGE_NAME);
 		}
 		// db.execSQL(appsLabelDao.getDropTableScript());
 		// db.execSQL(labelDao.getDropTableScript());
 		// onCreate(db);
+	}
+
+	private void addColumn(SQLiteDatabase db, String tableName, DbColumns column) {
+		// add column only if does't exists
+		Cursor c = null;
+		try {
+			c = db.query(tableName, new String[] { column.getName() }, null, null, null, null, null);
+			c.close();
+		} catch (Exception e) {
+			if (c != null) {
+				c.close();
+			}
+			db.execSQL("alter table " + tableName + " add " + column.getName() + ' ' + column.getDescription());
+		}
 	}
 
 	private long insertLabel(SQLiteDatabase db, Long id, String value, Integer icon) {
