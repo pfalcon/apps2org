@@ -55,6 +55,7 @@ import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 import com.google.code.appsorganizer.model.Application;
+import com.google.code.appsorganizer.service.StartupListener;
 
 public class SplashScreenActivity extends ListActivity implements DbChangeListener, GenericDialogManagerActivity {
 
@@ -245,6 +246,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				((ArrayAdapter<?>) getListAdapter()).notifyDataSetChanged();
 			} else if (msg.what == -2) {
 				setProgressBarIndeterminateVisibility(false);
+				StartupListener.startService(SplashScreenActivity.this);
 			}
 		}
 	};

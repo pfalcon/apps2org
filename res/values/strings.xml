@@ -44,4 +44,11 @@
 	<string name="Starred_apps">Starred apps</string>
 	<string name="how_to_message">You can create labels home shortcuts with a long click on your Android home</string>
 	<string name="how_to_message_2">An how to is available online (see about dialog for details)</string>
+	<string name="Preferences">Preferences</string>
+	<string name="Shortcut_folder">Shortcut folder</string>
+	<string name="show_close_button_in_folder">Show close button</string>
+	<string name="close_folder_after_launch">Close after launch</string>
+	<string name="starred_first">Starred first</string>
+	<string name="use_service">Use service</string>
+	<string name="use_service_summary">Use a background service for performance improvement</string>
 </resources>

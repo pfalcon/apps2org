@@ -22,6 +22,8 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.code.appsorganizer.AppsOrganizerApplication;
@@ -35,12 +37,27 @@ public class StartupListener extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Log.i(AppsOrganizerApplication.TAG, "Starting service StartupListener");
-		// if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-		ComponentName comp = new ComponentName(context.getPackageName(), BackgroundLoader.class.getName());
-		ComponentName service = context.startService(new Intent().setComponent(comp));
-		if (null == service) {
-			Log.e(AppsOrganizerApplication.TAG, "Could not start service " + comp.toString());
+		if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+			startService(context);
 		}
-		// }
+	}
+
+	public static void startService(Context context) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		if (prefs.getBoolean("use_service", true)) {
+			ComponentName comp = new ComponentName(context.getPackageName(), BackgroundLoader.class.getName());
+			ComponentName service = context.startService(new Intent().setComponent(comp));
+			if (null == service) {
+				Log.e(AppsOrganizerApplication.TAG, "Could not start service " + comp.toString());
+			}
+		}
+	}
+
+	public static void stopService(Context context) {
+		ComponentName comp = new ComponentName(context.getPackageName(), BackgroundLoader.class.getName());
+		boolean stopped = context.stopService(new Intent().setComponent(comp));
+		if (stopped) {
+			Log.e(AppsOrganizerApplication.TAG, "Could not stop service " + comp.toString());
+		}
 	}
 }

@@ -21,12 +21,15 @@ package com.google.code.appsorganizer.shortcut;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,6 +43,7 @@ import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -60,6 +64,7 @@ import com.google.code.appsorganizer.model.Label;
 
 public class LabelShortcut extends Activity implements DbChangeListener {
 
+	private static final String ONLY_STARRED_PREF = "onlyStarred";
 	public static final long ALL_LABELS_ID = -2l;
 	public static final long ALL_STARRED_ID = -3l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
@@ -79,8 +84,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
 	private GenericDialogManager genericDialogManager;
-
-	private boolean onlyStarred;
 
 	public static boolean firstTime = true;
 
@@ -128,11 +131,13 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			if (labelId == ALL_STARRED_ID) {
 				cursor = dbHelper.getDb().rawQuery("select label, package, name from apps where starred = 1 order by label", null);
 			} else {
-				cursor = dbHelper.getDb()
-						.rawQuery(
-								"select a.label, a.package, a.name from apps a inner join apps_labels al "
-										+ "on a.name = al.app where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "")
-										+ " order by a.label", new String[] { Long.toString(labelId) });
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+				boolean starredFirst = prefs.getBoolean("starred_first", true);
+				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
+				cursor = dbHelper.getDb().rawQuery(
+						"select a.label, a.package, a.name from apps a inner join apps_labels al "
+								+ "on a.name = al.app where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "") + " order by "
+								+ (starredFirst ? "a.starred desc," : "") + "a.label", new String[] { Long.toString(labelId) });
 			}
 			int count = cursor.getCount();
 			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,
@@ -269,6 +274,10 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 						i.setClassName(item.getString(3), item.getString(4));
 						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						startActivity(i);
+						SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this);
+						if (prefs.getBoolean("close_folder_after_launch", false)) {
+							finish();
+						}
 					}
 				}
 			});
@@ -367,24 +376,34 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	private void updateTitleView() {
 		if (titleView == null) {
 			LayoutInflater factory = LayoutInflater.from(LabelShortcut.this);
-			View titleLayout = factory.inflate(R.layout.shortcut_grid_title, null);
+			RelativeLayout titleLayout = (RelativeLayout) factory.inflate(R.layout.shortcut_grid_title, null);
 			titleLayout.setBackgroundColor(Color.GRAY);
 			titleView = (TextView) titleLayout.findViewById(R.id.title);
 			starCheck = (CheckBox) titleLayout.findViewById(R.id.starCheck);
 			starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-					onlyStarred = isChecked;
+					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this);
+					Editor edit = prefs.edit();
+					edit.putBoolean(ONLY_STARRED_PREF, isChecked);
+					edit.commit();
 					new LoadIconTask().execute();
 				}
 			});
+			starCheck.setChecked(PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this).getBoolean(ONLY_STARRED_PREF, false));
 			LinearLayout layout = (LinearLayout) findViewById(R.id.shortcutLayout);
-			layout.addView(titleLayout, 0, new LayoutParams(LayoutParams.FILL_PARENT, 34));
 
-			findViewById(R.id.closeButton).setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					finish();
-				}
-			});
+			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+			boolean showCloseButton = pref.getBoolean("show_close_button_in_folder", true);
+			View closeButton = titleLayout.findViewById(R.id.closeButton);
+			closeButton.setVisibility(showCloseButton ? View.VISIBLE : View.INVISIBLE);
+			if (showCloseButton) {
+				closeButton.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						finish();
+					}
+				});
+			}
+			layout.addView(titleLayout, 0, new LayoutParams(LayoutParams.FILL_PARENT, 34));
 		}
 		titleView.setText(title);
 		int v = labelId > 0 ? View.VISIBLE : View.INVISIBLE;

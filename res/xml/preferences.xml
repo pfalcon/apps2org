@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<CheckBoxPreference android:key="use_service"
+		android:title="@string/use_service" android:summary="@string/use_service_summary"
+		android:defaultValue="true" />
+
+	<PreferenceCategory android:title="@string/Shortcut_folder">
+
+		<CheckBoxPreference android:key="show_close_button_in_folder"
+			android:title="@string/show_close_button_in_folder"
+			android:defaultValue="true" />
+
+		<CheckBoxPreference android:key="close_folder_after_launch"
+			android:title="@string/close_folder_after_launch" />
+
+		<CheckBoxPreference android:key="starred_first"
+			android:title="@string/starred_first" android:defaultValue="true" />
+
+	</PreferenceCategory>
+
+</PreferenceScreen>

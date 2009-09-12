@@ -18,7 +18,9 @@
  */
 package com.google.code.appsorganizer.model;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -113,7 +115,7 @@ public class Application implements Comparable<Application> {
 		drawableIcon = loadIconOrCache(pm, packageName, name);
 	}
 
-	private static final HashMap<String, Drawable> iconsCache = new HashMap<String, Drawable>();
+	private static final Map<String, Drawable> iconsCache = Collections.synchronizedMap(new HashMap<String, Drawable>());
 	public static final char SEPARATOR = '#';
 
 	public static Drawable loadIconOrCache(PackageManager pm, String packageName, String name) {

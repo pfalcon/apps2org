@@ -30,6 +30,7 @@ import com.google.code.appsorganizer.db.DbImportExport;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
+import com.google.code.appsorganizer.preferences.PreferencesFromXml;
 
 /**
  * @author fabio
@@ -77,7 +78,8 @@ public class OptionMenuManager {
 		menu.getItem(1).setIcon(R.drawable.fileexport);
 		menu.getItem(2).setIcon(R.drawable.reload);
 
-		menu.getItem(3).setIcon(R.drawable.info);
+		menu.getItem(3).setIcon(R.drawable.advancedsettings);
+		menu.getItem(4).setIcon(R.drawable.info);
 
 		return true;
 	}
@@ -92,6 +94,9 @@ public class OptionMenuManager {
 			return true;
 		case R.id.import_menu:
 			context.startActivity(new Intent(context, FileImporter.class));
+			return true;
+		case R.id.preferneces:
+			context.startActivity(new Intent(context, PreferencesFromXml.class));
 			return true;
 		case R.id.about:
 			context.showDialog(aboutDialogCreator.getDialogId());
