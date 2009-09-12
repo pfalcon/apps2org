@@ -162,7 +162,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				} catch (InterruptedException e) {
 				}
 
-				applicationInfoManager.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, dbHelper.appsLabelDao, handler, false);
+				applicationInfoManager.reloadAll(dbHelper, handler, false);
 				handler.sendEmptyMessage(-1);
 
 				final Application[] apps = applicationInfoManager.getAppsArray();

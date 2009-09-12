@@ -63,10 +63,8 @@ public class ApplicationInfoManager {
 		}
 	}
 
-	public void reloadAll(AppCacheDao appCacheDao, LabelDao labelDao, AppLabelDao appsLabelDao, Handler handler, boolean discardCache) {
-		// Debug.startMethodTracing("splash");
-		loadAppsMap(appCacheDao, labelDao, appsLabelDao, handler, discardCache);
-		// Debug.stopMethodTracing();
+	public void reloadAll(DatabaseHelper dbHelper, Handler handler, boolean discardCache) {
+		loadAppsMap(dbHelper.appCacheDao, dbHelper.labelDao, dbHelper.appsLabelDao, handler, discardCache);
 	}
 
 	private static final Comparator<Application> appNameComparator = new Comparator<Application>() {

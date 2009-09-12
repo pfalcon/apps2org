@@ -61,7 +61,7 @@ public class AppsReloader {
 			@Override
 			public void run() {
 				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
-				singleton.reloadAll(dbHelper.appCacheDao, dbHelper.labelDao, dbHelper.appsLabelDao, handler, discardCache);
+				singleton.reloadAll(dbHelper, handler, discardCache);
 				handler.sendEmptyMessage(-1);
 			}
 		};

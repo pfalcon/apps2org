@@ -82,7 +82,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private boolean onlyStarred;
 
-	private static boolean firstTime = true;
+	public static boolean firstTime = true;
 
 	@Override
 	public void onCreate(Bundle icicle) {

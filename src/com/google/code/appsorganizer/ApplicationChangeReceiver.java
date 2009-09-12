@@ -18,29 +18,28 @@
  */
 package com.google.code.appsorganizer;
 
-import android.app.Application;
-
-import com.google.code.appsorganizer.db.DatabaseHelper;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
 /**
  * @author fabio
  * 
  */
-public class AppsOrganizerApplication extends Application {
-
-	public static final String TAG = "AppsOrganizer";
+public class ApplicationChangeReceiver extends BroadcastReceiver {
 
 	@Override
-	public void onCreate() {
-		super.onCreate();
-		// ComponentName comp = new ComponentName(getPackageName(),
-		// BackgroundLoader.class.getName());
-		// startService(new Intent().setComponent(comp));
-	}
-
-	@Override
-	public void onTerminate() {
-		super.onTerminate();
-		DatabaseHelper.singleton().close();
+	public void onReceive(Context context, Intent intent) {
+		String packageName = intent.getDataString();
+		if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
+			Log.i("ApplicationChangeReceiver", packageName + " added");
+			if (!ApplicationInfoManager.isSingletonNull()) {
+				ApplicationInfoManager.singleton(null).reloadAll(null, null, false);
+			}
+		} else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+			Log.i("ApplicationChangeReceiver", packageName + " removed");
+			ApplicationInfoManager.singleton(null).reloadAll(null, null, false);
+		}
 	}
 }
