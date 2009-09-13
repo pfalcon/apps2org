@@ -75,6 +75,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		BugReportActivity.registerExceptionHandler(this);
 		setContentView(R.layout.main_labels);
 		dbHelper = DatabaseHelper.singleton();
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());

@@ -76,6 +76,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		BugReportActivity.registerExceptionHandler(this);
+
 		// Debug.startMethodTracing("splash");
 		genericDialogManager = new GenericDialogManager(SplashScreenActivity.this);
 

@@ -50,6 +50,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.google.code.appsorganizer.ApplicationInfoManager;
+import com.google.code.appsorganizer.BugReportActivity;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
@@ -91,6 +92,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		// Debug.startMethodTracing("grid1");
+		BugReportActivity.registerExceptionHandler(this);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getOrCreateGrid();

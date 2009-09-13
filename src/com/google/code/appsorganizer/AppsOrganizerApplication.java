@@ -33,9 +33,6 @@ public class AppsOrganizerApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		// ComponentName comp = new ComponentName(getPackageName(),
-		// BackgroundLoader.class.getName());
-		// startService(new Intent().setComponent(comp));
 	}
 
 	@Override
