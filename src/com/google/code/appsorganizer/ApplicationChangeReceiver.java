@@ -23,6 +23,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.google.code.appsorganizer.db.DatabaseHelper;
+
 /**
  * @author fabio
  * 
@@ -32,14 +34,21 @@ public class ApplicationChangeReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String packageName = intent.getDataString();
+		Log.i("ApplicationChangeReceiver", intent.getAction());
 		if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
 			Log.i("ApplicationChangeReceiver", packageName + " added");
 			if (!ApplicationInfoManager.isSingletonNull()) {
-				ApplicationInfoManager.singleton(null).reloadAll(null, null, false);
+				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
+				ApplicationInfoManager.singleton(null).reloadAll(dbHelper, null, false);
+				ApplicationInfoManager.notifyDataSetChanged(this);
 			}
 		} else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
 			Log.i("ApplicationChangeReceiver", packageName + " removed");
-			ApplicationInfoManager.singleton(null).reloadAll(null, null, false);
+			if (!ApplicationInfoManager.isSingletonNull()) {
+				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
+				ApplicationInfoManager.singleton(null).reloadAll(dbHelper, null, false);
+				ApplicationInfoManager.notifyDataSetChanged(this);
+			}
 		}
 	}
 }

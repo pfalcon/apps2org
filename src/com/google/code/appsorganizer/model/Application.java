@@ -134,6 +134,15 @@ public class Application implements Comparable<Application> {
 		return iconsCache.get(comp);
 	}
 
+	public static Drawable loadIconIfNotCached(PackageManager pm, String packageName, String name) {
+		String comp = packageName + SEPARATOR + name;
+		Drawable drawable = iconsCache.get(comp);
+		if (drawable != null) {
+			return drawable;
+		}
+		return loadIcon(pm, comp);
+	}
+
 	public static Drawable loadIcon(PackageManager pm, String packageName, String name) {
 		try {
 			Drawable d = pm.getActivityIcon(new ComponentName(packageName, name));

@@ -50,7 +50,7 @@ public class BackgroundLoader extends Service {
 		Application[] appsArray = applicationInfoManager.getAppsArray();
 		for (int i = 0; i < appsArray.length; i++) {
 			Application a = appsArray[i];
-			Application.loadIcon(getPackageManager(), a.getPackage(), a.name);
+			Application.loadIconIfNotCached(getPackageManager(), a.getPackage(), a.name);
 		}
 		LabelShortcut.firstTime = false;
 	}
