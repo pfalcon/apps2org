@@ -66,5 +66,4 @@
 		android:targetPackage="com.google.code.appsorganizer"></instrumentation>
 		
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-	<uses-permission android:name="android.permission.BROADCAST_PACKAGE_REMOVED" />
 </manifest> 
