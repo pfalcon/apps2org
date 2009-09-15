@@ -44,4 +44,16 @@
     <string name="Starred_apps">Applis favorites</string>
     <string name="how_to_message">Vous pouvez créer des raccourcis vers vos libellés en appuyant longuement sur le home Android</string>
     <string name="how_to_message_2">Manuel utilisateur consultable en ligne (voir section "A propos" pour plus de détails)</string>
+	<string name="Preferences">Préférences</string>
+    <string name="Shortcut_folder">Dossier de raccourcis</string>
+    <string name="show_close_button_in_folder">Afficher le bouton fermer</string>
+    <string name="close_folder_after_launch">Fermer le dossier après lancement de l'appli</string>
+    <string name="starred_first">Applis favorites en premier</string>
+    <string name="use_service">Apps Organizer en tâche de fond</string>
+    <string name="use_service_summary">Apps Organizer tourne en tâche de fond afin d'améliorer les temps de chargement</string>
+    <string name="Bug_report">Rapport d'erreur</string>
+    <string name="Bug_report_1">Apps Organizer a planté</string>
+    <string name="Bug_report_2">Pour nous aider à régler ces erreurs, merci de nous les reporter</string>
+    <string name="Bug_report_button">Envoyer email</string>
+    <string name="Bug_report_3">Merci!</string>    
 </resources>
