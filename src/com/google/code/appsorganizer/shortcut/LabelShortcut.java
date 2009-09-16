@@ -128,11 +128,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private String[] iconsToLoad;
 
-	private void reloadGrid() {
+	private Cursor reloadGrid() {
 		if (labelId == ALL_LABELS_ID) {
 			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
 					("upper(" + LabelDao.LABEL_COL_NAME + ")"));
+			return cursor;
 		} else {
 			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
@@ -161,8 +162,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 			} finally {
 				tmpCursor.close();
 			}
-			closeCurrentCursor();
 			cursor = m;
+			return cursor;
 		}
 	}
 
@@ -186,24 +187,18 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		return title;
 	}
 
-	private String title;
-
-	private static final int CHANGE_CURSOR = -1;
-	private static final int DATASET_CHANGED = -2;
-	private static final int CHANGE_TITLE = -3;
-
-	private class LoadIconTask extends AsyncTask<String, Integer, Object> {
+	private class LoadIconTask extends AsyncTask<String, Object, Object> {
 
 		@Override
 		protected Object doInBackground(String... ss) {
 			if (dbHelper == null) {
 				dbHelper = new DatabaseHelperBasic(LabelShortcut.this);
 			}
-			title = retrieveTitle();
-			publishProgress(CHANGE_TITLE);
+			publishProgress(retrieveTitle());
 
-			reloadGrid();
-			publishProgress(CHANGE_CURSOR);
+			Cursor prevCursor = cursor;
+			Cursor actual = reloadGrid();
+			publishProgress(prevCursor, actual);
 			if (labelId != ALL_LABELS_ID) {
 				int tot = 0;
 				for (int i = 0; i < iconsToLoad.length; i++) {
@@ -212,20 +207,41 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 						Application.loadIcon(getPackageManager(), componentName);
 						tot++;
 						if (tot % 4 == 0) {
-							publishProgress(DATASET_CHANGED);
+							publishProgress();
 						}
 					}
 				}
 				if (tot % 4 != 0) {
-					publishProgress(DATASET_CHANGED);
+					publishProgress();
 				}
 			}
 			return null;
 		}
 
 		@Override
-		protected void onProgressUpdate(Integer... progress) {
-			updateView(progress[0]);
+		protected void onProgressUpdate(Object... progress) {
+			if (progress.length == 0) {
+				cursorAdapter.notifyDataSetChanged();
+			} else if (progress.length == 1) {
+				updateTitleView((String) progress[0]);
+				// Debug.stopMethodTracing();
+			} else {
+				Cursor prevCursor = (Cursor) progress[0];
+				Cursor actualCursor = (Cursor) progress[1];
+				if (cursorAdapter == null) {
+					createAdapter(actualCursor);
+				} else {
+					cursorAdapter.changeCursor(actualCursor);
+				}
+				if (prevCursor != null && !prevCursor.isClosed()) {
+					prevCursor.close();
+				}
+				if (!firstTime) {
+					setVisible(true);
+				} else {
+					firstTime = false;
+				}
+			}
 		}
 	}
 
@@ -381,7 +397,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		return genericDialogManager.onCreateDialog(id);
 	}
 
-	private void updateTitleView() {
+	private void updateTitleView(String title) {
 		if (titleView == null) {
 			LayoutInflater factory = LayoutInflater.from(LabelShortcut.this);
 			RelativeLayout titleLayout = (RelativeLayout) factory.inflate(R.layout.shortcut_grid_title, null);
@@ -417,27 +433,6 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		int v = labelId > 0 ? View.VISIBLE : View.INVISIBLE;
 		if (starCheck.getVisibility() != v) {
 			starCheck.setVisibility(v);
-		}
-	}
-
-	private void updateView(int p) {
-		if (p == DATASET_CHANGED) {
-			cursorAdapter.notifyDataSetChanged();
-		} else if (p == CHANGE_CURSOR) {
-			if (cursorAdapter == null) {
-				createAdapter(cursor);
-
-			} else {
-				cursorAdapter.changeCursor(cursor);
-			}
-			if (!firstTime) {
-				setVisible(true);
-			} else {
-				firstTime = false;
-			}
-		} else {
-			updateTitleView();
-			// Debug.stopMethodTracing();
 		}
 	}
 }
