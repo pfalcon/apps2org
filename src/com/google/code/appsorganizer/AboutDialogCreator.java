@@ -20,6 +20,7 @@ package com.google.code.appsorganizer;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -43,12 +44,10 @@ public class AboutDialogCreator extends GenericDialogCreator {
 		authorText.setText(authorText.getText() + " Fabio Collini");
 		AlertDialog.Builder builder = new AlertDialog.Builder(owner);
 		builder = builder.setIcon(R.drawable.icon);
-		try {
-			PackageInfo packageInfo = owner.getPackageManager().getPackageInfo(owner.getPackageName(), 0);
-			if (packageInfo.versionName != null) {
-				builder = builder.setTitle(owner.getString(R.string.app_name) + " " + packageInfo.versionName);
-			}
-		} catch (NameNotFoundException e) {
+		String versionName = getVersionName(owner);
+		if (versionName != null) {
+			builder = builder.setTitle(owner.getString(R.string.app_name) + " " + versionName);
+		} else {
 			builder = builder.setTitle(R.string.app_name);
 		}
 		builder = builder.setView(body);
@@ -57,6 +56,15 @@ public class AboutDialogCreator extends GenericDialogCreator {
 			}
 		});
 		return builder.create();
+	}
+
+	public static String getVersionName(Context owner) {
+		try {
+			PackageInfo packageInfo = owner.getPackageManager().getPackageInfo(owner.getPackageName(), 0);
+			return packageInfo.versionName;
+		} catch (NameNotFoundException e) {
+		}
+		return null;
 	}
 
 }

@@ -56,7 +56,7 @@ public class BugReportActivity extends Activity {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
-		return sw.toString();
+		return "Version: " + AboutDialogCreator.getVersionName(this) + "\n" + sw.toString();
 	}
 
 	public static void registerExceptionHandler(final Context context) {
@@ -64,6 +64,7 @@ public class BugReportActivity extends Activity {
 			public void uncaughtException(Thread thread, Throwable ex) {
 				Intent intent = new Intent(context, BugReportActivity.class);
 				intent.putExtra("exception", ex);
+				ex.printStackTrace();
 				context.startActivity(intent);
 			}
 		});
