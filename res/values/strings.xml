@@ -56,4 +56,5 @@
 	<string name="Bug_report_2">If you want to help us to fix this bug please report it</string>
 	<string name="Bug_report_button">Send email</string>
 	<string name="Bug_report_3">Thank you!</string>
+	<string name="Load_from_sd">Load from sd card</string>
 </resources>
