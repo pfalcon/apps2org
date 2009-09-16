@@ -114,10 +114,14 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	protected void onDestroy() {
 		super.onDestroy();
 		ApplicationInfoManager.removeListener(this);
+		closeCurrentCursor();
+		dbHelper.close();
+	}
+
+	private void closeCurrentCursor() {
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
-		dbHelper.close();
 	}
 
 	private Cursor cursor;
@@ -130,32 +134,34 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
 					("upper(" + LabelDao.LABEL_COL_NAME + ")"));
 		} else {
+			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
-				cursor = dbHelper.getDb().rawQuery("select label, package, name from apps where starred = 1 order by label", null);
+				tmpCursor = dbHelper.getDb().rawQuery("select label, package, name from apps where starred = 1 order by label", null);
 			} else {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
-				cursor = dbHelper.getDb().rawQuery(
+				tmpCursor = dbHelper.getDb().rawQuery(
 						"select a.label, a.package, a.name from apps a inner join apps_labels al "
 								+ "on a.name = al.app where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "") + " order by "
 								+ (starredFirst ? "a.starred desc," : "") + "a.label", new String[] { Long.toString(labelId) });
 			}
-			int count = cursor.getCount();
+			int count = tmpCursor.getCount();
 			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,
 					AppCacheDao.PACKAGE_NAME_COL_NAME, AppCacheDao.NAME_COL_NAME }, count);
 			iconsToLoad = new String[count];
 			int i = 0;
 			try {
-				while (cursor.moveToNext()) {
-					String packageName = cursor.getString(1);
-					String name = cursor.getString(2);
-					m.addRow(new Object[] { i, cursor.getString(0), null, packageName, name });
+				while (tmpCursor.moveToNext()) {
+					String packageName = tmpCursor.getString(1);
+					String name = tmpCursor.getString(2);
+					m.addRow(new Object[] { i, tmpCursor.getString(0), null, packageName, name });
 					iconsToLoad[i++] = packageName + Application.SEPARATOR + name;
 				}
 			} finally {
-				cursor.close();
+				tmpCursor.close();
 			}
+			closeCurrentCursor();
 			cursor = m;
 		}
 	}
