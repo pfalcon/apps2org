@@ -134,6 +134,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		if (!appButton.isChecked()) {
 			appButton.setChecked(true);
 		}
+		BugReportActivity.showLastException(this);
 	}
 
 	private final Handler handler = new Handler() {

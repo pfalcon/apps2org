@@ -25,6 +25,8 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,38 +37,75 @@ import android.view.View.OnClickListener;
  */
 public class BugReportActivity extends Activity {
 
+	private static final String EXCEPTION = "exception";
+	private static final String LAST_EXCEPTION = "lastException";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.bug_report);
 		findViewById(R.id.sendEmailButton).setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				String exceptionString = getExceptionString();
 				final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
 				emailIntent.setType("plain/text");
 				emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[] { "appsorganizer@gmail.com" });
 				emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Bug report");
-				emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, getExceptionString());
+				emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, exceptionString);
 				startActivity(Intent.createChooser(emailIntent, getText(R.string.Bug_report)));
 			}
 		});
+		saveExceptionToPreferences(this, null);
 	}
 
 	private String getExceptionString() {
-		final Throwable t = (Throwable) getIntent().getSerializableExtra("exception");
+		return "Version: " + AboutDialogCreator.getVersionName(this) + "\n" + getIntent().getStringExtra(EXCEPTION);
+	}
+
+	private static void startBugreportActivity(final Context context, String exceptionString) {
+		Intent intent = new Intent(context, BugReportActivity.class);
+		intent.putExtra(EXCEPTION, exceptionString);
+		context.startActivity(intent);
+	}
+
+	private static void saveExceptionToPreferences(final Context context, Throwable ex) {
+		SharedPreferences settings = context.getSharedPreferences("appsOrganizer_pref", 0);
+		Editor edit = settings.edit();
+		if (ex != null) {
+			edit.putString(LAST_EXCEPTION, convertToString(ex));
+		} else {
+			edit.remove(LAST_EXCEPTION);
+		}
+		edit.commit();
+	}
+
+	public static String getLastException(Context context) {
+		SharedPreferences settings = context.getSharedPreferences("appsOrganizer_pref", 0);
+		return settings.getString(LAST_EXCEPTION, null);
+	}
+
+	private static String convertToString(final Throwable t) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
-		return "Version: " + AboutDialogCreator.getVersionName(this) + "\n" + sw.toString();
+		return sw.toString();
 	}
 
 	public static void registerExceptionHandler(final Context context) {
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			public void uncaughtException(Thread thread, Throwable ex) {
-				Intent intent = new Intent(context, BugReportActivity.class);
-				intent.putExtra("exception", ex);
 				ex.printStackTrace();
-				context.startActivity(intent);
+				saveExceptionToPreferences(context, ex);
+				throw new RuntimeException(ex);
+				// startBugreportActivity(context, convertToString(ex));
 			}
 		});
+	}
+
+	public static void showLastException(Context context) {
+		String lastException = getLastException(context);
+		if (lastException != null) {
+			startBugreportActivity(context, lastException);
+		}
 	}
 }
