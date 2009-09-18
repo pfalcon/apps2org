@@ -200,9 +200,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 				});
 				break;
 			case MENU_ITEM_CHANGE_ICON:
-				Intent intent = new Intent(this, ChooseIconActivity.class);
-				intent.putExtra("group", groupPos);
-				startActivityForResult(intent, 2);
+				showChooseIconActivity(groupPos);
 				return true;
 			case MENU_ITEM_SELECT_APPS:
 				chooseAppsDialogCreator.setCurrentLabelId(label.getId());
@@ -214,14 +212,26 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		return false;
 	}
 
+	private void showChooseIconActivity(int groupPos) {
+		Intent intent = new Intent(this, ChooseIconActivity.class);
+		intent.putExtra("group", groupPos);
+		startActivityForResult(intent, 2);
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		ApplicationContextMenuManager.singleton().onActivityResult(this, requestCode, resultCode, data);
 		if (resultCode == RESULT_OK && requestCode == 2) {
-			int icon = data.getIntExtra("icon", -1);
+			byte[] image = data.getByteArrayExtra("image");
 			Label label = mAdapter.getGroup(data.getIntExtra("group", -1));
-			label.setIcon(icon);
+			if (image != null) {
+				label.setImageBytes(image);
+			} else {
+				int icon = data.getIntExtra("icon", -1);
+				label.setIcon(icon);
+				label.setImageBytes(null);
+			}
 			dbHelper.labelDao.update(label);
 			mAdapter.notifyDataSetChanged();
 		}

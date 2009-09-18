@@ -34,7 +34,8 @@ public class PreferencesFromXml extends PreferenceActivity {
 
 		addPreferencesFromResource(R.xml.preferences);
 
-		getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+		SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
+		sharedPreferences.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 				if (key.equals("use_service")) {
 					boolean useService = sharedPreferences.getBoolean(key, true);

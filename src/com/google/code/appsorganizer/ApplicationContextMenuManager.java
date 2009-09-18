@@ -20,7 +20,6 @@ package com.google.code.appsorganizer;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 
@@ -59,15 +58,10 @@ public class ApplicationContextMenuManager {
 			activity.showDialog(chooseLabelDialog.getDialogId());
 			break;
 		case LAUNCH:
-			Intent intent = app.getIntent();
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			activity.startActivity(intent);
+			app.startApplication(activity);
 			break;
 		case UNINSTALL:
-			Uri packageURI = Uri.parse("package:" + app.getPackage());
-			Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
-			uninstallIntent.putExtra("package", app.getPackage());
-			activity.startActivityForResult(uninstallIntent, 1);
+			app.uninstallApplication(activity);
 			break;
 		}
 	}

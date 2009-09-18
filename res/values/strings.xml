@@ -57,4 +57,12 @@
 	<string name="Bug_report_button">Send email</string>
 	<string name="Bug_report_3">Thank you!</string>
 	<string name="Load_from_sd">Load from sd card</string>
+	<string name="list_default_action">Single click action</string>
+	<string name="list_default_action_summary">Default action on single click on an app</string>
+	<string name="choose_action">Choose action</string>
+	<string name="Application_not_found">Application not found</string>
+	<string name="Application_not_found_message">You need AndExplorer for select a file, you can download it from market (it's free)</string>
+	<string name="Open_market">Open market</string>
+	<string name="select_jpg_bmp_title">File type error</string>
+	<string name="select_jpg_bmp">You must choose a bmp or jpg file</string>
 </resources>

@@ -34,13 +34,17 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public static final String TABLE_NAME = "labels";
 
-	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME };
+	public static final String IMAGE_COL_NAME = "image";
+
+	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME, IMAGE_COL_NAME };
 
 	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null unique");
 
 	public static final DbColumns ICON = new DbColumns(ICON_COL_NAME, "integer");
 
-	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, LABEL, ICON };
+	public static final DbColumns IMAGE = new DbColumns(IMAGE_COL_NAME, "blob");
+
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, LABEL, ICON, IMAGE };
 
 	LabelDao() {
 		super(TABLE_NAME);
@@ -119,8 +123,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public Cursor getLabelCursor() {
-		return db.query(TABLE_NAME, new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME }, null, null, null, null, ("upper("
-				+ LABEL_COL_NAME + ")"));
+		return db.query(TABLE_NAME, COLS_STRING, null, null, null, null, ("upper(" + LABEL_COL_NAME + ")"));
 	}
 
 	public long insert(String label) {
@@ -135,6 +138,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		t.setId(c.getLong(0));
 		t.setName(c.getString(1));
 		t.setIconDb(c.getInt(2));
+		t.setImageBytes(c.getBlob(3));
 		return t;
 	}
 
@@ -144,6 +148,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		v.put(ID_COL_NAME, obj.getId());
 		v.put(LABEL_COL_NAME, obj.getLabel());
 		v.put(ICON_COL_NAME, obj.getIconDb());
+		v.put(IMAGE_COL_NAME, obj.getImageBytes());
 		return v;
 	}
 

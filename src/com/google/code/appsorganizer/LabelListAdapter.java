@@ -23,6 +23,7 @@ import gnu.trove.TLongObjectHashMap;
 import java.util.List;
 
 import android.app.Activity;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -124,11 +125,16 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 		Label label = getGroup(groupPosition);
 
 		v.setText(label.getName());
-		Integer icon = label.getIcon();
-		if (icon != null) {
-			image.setImageResource(icon);
+		byte[] imageBytes = label.getImageBytes();
+		if (imageBytes != null) {
+			image.setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
 		} else {
-			image.setImageDrawable(null);
+			Integer icon = label.getIcon();
+			if (icon != null) {
+				image.setImageResource(icon);
+			} else {
+				image.setImageDrawable(null);
+			}
 		}
 		return cv;
 	}

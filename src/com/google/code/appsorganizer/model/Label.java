@@ -31,6 +31,7 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 
 	private String name;
 	private int iconDb;
+	private byte[] imageBytes;
 
 	/**
 	 * Map that associate a database id to drawable id (if a drawable is added
@@ -225,5 +226,13 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 
 	public String getLabel() {
 		return name;
+	}
+
+	public byte[] getImageBytes() {
+		return imageBytes;
+	}
+
+	public void setImageBytes(byte[] imageBytes) {
+		this.imageBytes = imageBytes;
 	}
 }

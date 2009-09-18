@@ -29,6 +29,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -333,8 +334,16 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		}
 		OnClickListener onClickListener = new OnClickListener() {
 			public void onClick(View v) {
-				chooseLabelDialog.setCurrentApp(a);
-				context.showDialog(chooseLabelDialog.getDialogId());
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+				String defaultAction = prefs.getString("defaultAction", "choose_labels");
+				if (defaultAction.equals("choose_labels")) {
+					chooseLabelDialog.setCurrentApp(a);
+					context.showDialog(chooseLabelDialog.getDialogId());
+				} else if (defaultAction.equals("uninstall")) {
+					a.uninstallApplication(context);
+				} else {
+					a.startApplication(context);
+				}
 			}
 		};
 		viewHolder.labels.setOnClickListener(onClickListener);
@@ -357,10 +366,8 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		viewHolder.starred.setChecked(a.isStarred());
 		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				// Debug.startMethodTracing("splash");
 				a.setStarred(isChecked);
 				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, a, isChecked, context);
-				// Debug.stopMethodTracing();
 			}
 		});
 		return v;

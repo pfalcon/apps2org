@@ -18,24 +18,44 @@
  */
 package com.google.code.appsorganizer.chooseicon;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.net.URI;
+
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.Bitmap.CompressFormat;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.model.Label;
 
 public class ChooseIconActivity extends Activity {
 	private GridView mGrid;
 
+	private GenericDialogManager genericDialogManager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		genericDialogManager = new GenericDialogManager(this);
 
 		loadIcons();
 
@@ -53,6 +73,82 @@ public class ChooseIconActivity extends Activity {
 				finish();
 			}
 		});
+
+		findViewById(R.id.loadButton).setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				try {
+					openFileDialog();
+				} catch (ActivityNotFoundException e) {
+					genericDialogManager.showSimpleDialog(getString(R.string.Application_not_found),
+							getString(R.string.Application_not_found_message), true, new OnOkClickListener() {
+								public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+									Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
+											.parse("market://search?q=pname:lysesoft.andexplorer"));
+									startActivity(emailIntent);
+								}
+							}, getString(R.string.Open_market));
+				}
+			}
+		});
+	}
+
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog) {
+		genericDialogManager.onPrepareDialog(id, dialog);
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		return genericDialogManager.onCreateDialog(id);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (resultCode == RESULT_OK) {
+			Uri uri = intent.getData();
+			// String type = intent.getType();
+			if (uri != null) {
+				final int group = getIntent().getIntExtra("group", -1);
+				String path = uri.toString().toLowerCase();
+				// genericDialogManager.showSimpleDialog(path + " " + type,
+				// false, null);
+				if (!path.endsWith(".jpg") || !path.endsWith(".bmp")) {
+					genericDialogManager.showSimpleDialog(R.string.select_jpg_bmp_title, R.string.select_jpg_bmp, false, null);
+				} else if (path.startsWith("file://")) {
+					File file = new File(URI.create(path));
+					Bitmap bitmap = getScaledImage(file);
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					bitmap.compress(CompressFormat.JPEG, 100, os);
+
+					Intent res = new Intent();
+					res.putExtra("image", os.toByteArray());
+					res.putExtra("group", group);
+					setResult(RESULT_OK, res);
+					finish();
+				}
+			}
+		}
+	}
+
+	private Bitmap getScaledImage(File file) {
+		Bitmap bitmapOrg = BitmapFactory.decodeFile(file.getAbsolutePath());
+
+		int width = bitmapOrg.getWidth();
+		int height = bitmapOrg.getHeight();
+		int newWidth = 48;
+		int newHeight = 48;
+
+		// calculate the scale - in this case = 0.4f
+		float scaleWidth = ((float) newWidth) / width;
+		float scaleHeight = ((float) newHeight) / height;
+
+		// createa matrix for the manipulation
+		Matrix matrix = new Matrix();
+		// resize the bit map
+		matrix.postScale(scaleWidth, scaleHeight);
+
+		// recreate the new Bitmap
+		return Bitmap.createBitmap(bitmapOrg, 0, 0, width, height, matrix, true);
 	}
 
 	private int[] mIcons;
@@ -92,6 +188,25 @@ public class ChooseIconActivity extends Activity {
 		// android.R.drawable.ic_menu_zoom
 		// };
 		mIcons = Label.getIconsList();
+	}
+
+	private void openFileDialog() {
+		Intent intent = new Intent();
+		intent.setAction(Intent.ACTION_PICK);
+		Uri startDir = Uri.fromFile(new File("/sdcard"));
+		intent.setDataAndType(startDir, "vnd.android.cursor.dir/lysesoft.andexplorer.file");
+		// Title
+		intent.putExtra("explorer_title", "Select a file");
+		// Optional colors
+		intent.putExtra("browser_title_background_color", "440000AA");
+		intent.putExtra("browser_title_foreground_color", "FFFFFFFF");
+		intent.putExtra("browser_list_background_color", "66000000");
+		// Optional font scale
+		intent.putExtra("browser_list_fontscale", "140%");
+		// Optional 0=simple list, 1 = list with filename and size, 2 =
+		// list with filename, size and date.
+		intent.putExtra("browser_list_layout", "2");
+		startActivityForResult(intent, 0);
 	}
 
 	public class AppsAdapter extends BaseAdapter {

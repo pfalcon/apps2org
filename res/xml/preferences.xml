@@ -6,6 +6,13 @@
 		android:defaultValue="true" />
 
 	<PreferenceCategory android:title="@string/Shortcut_folder">
+		<ListPreference android:key="defaultAction"
+			android:title="@string/list_default_action" android:summary="@string/list_default_action_summary"
+			android:entries="@array/entries_list_preference" android:entryValues="@array/entryvalues_list_preference"
+			android:dialogTitle="@string/choose_action" android:defaultValue="choose_labels" />
+	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/Shortcut_folder">
 
 		<CheckBoxPreference android:key="show_close_button_in_folder"
 			android:title="@string/show_close_button_in_folder"

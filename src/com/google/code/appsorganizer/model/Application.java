@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -206,5 +208,18 @@ public class Application implements Comparable<Application> {
 			return false;
 		}
 		return labelIds.indexOf(Application.LABEL_ID_SEPARATOR + Long.toString(labelId) + Application.LABEL_ID_SEPARATOR) != -1;
+	}
+
+	public void startApplication(Context activity) {
+		Intent intent = getIntent();
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		activity.startActivity(intent);
+	}
+
+	public void uninstallApplication(Activity activity) {
+		Uri packageURI = Uri.parse("package:" + getPackage());
+		Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
+		uninstallIntent.putExtra("package", getPackage());
+		activity.startActivityForResult(uninstallIntent, 1);
 	}
 }
