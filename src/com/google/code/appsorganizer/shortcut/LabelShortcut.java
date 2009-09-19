@@ -137,7 +137,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 		} else {
 			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
-				tmpCursor = dbHelper.getDb().rawQuery("select label, package, name from apps where starred = 1 order by label", null);
+				tmpCursor = dbHelper.getDb()
+						.rawQuery("select label, package, name from apps where starred = 1 order by upper(label)", null);
 			} else {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
@@ -145,7 +146,7 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 				tmpCursor = dbHelper.getDb().rawQuery(
 						"select a.label, a.package, a.name from apps a inner join apps_labels al "
 								+ "on a.name = al.app where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "") + " order by "
-								+ (starredFirst ? "a.starred desc," : "") + "a.label", new String[] { Long.toString(labelId) });
+								+ (starredFirst ? "a.starred desc," : "") + "upper(a.label)", new String[] { Long.toString(labelId) });
 			}
 			int count = tmpCursor.getCount();
 			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,

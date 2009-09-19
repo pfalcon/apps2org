@@ -106,13 +106,13 @@ public class ChooseIconActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if (resultCode == RESULT_OK) {
 			Uri uri = intent.getData();
-			// String type = intent.getType();
+			String type = intent.getType();
 			if (uri != null) {
 				final int group = getIntent().getIntExtra("group", -1);
 				String path = uri.toString().toLowerCase();
 				// genericDialogManager.showSimpleDialog(path + " " + type,
 				// false, null);
-				if (!path.endsWith(".jpg") || !path.endsWith(".bmp")) {
+				if (type == null || (!type.equals("image/jpeg") && !type.equals("image/png"))) {
 					genericDialogManager.showSimpleDialog(R.string.select_jpg_bmp_title, R.string.select_jpg_bmp, false, null);
 				} else if (path.startsWith("file://")) {
 					File file = new File(URI.create(path));

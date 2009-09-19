@@ -7,7 +7,7 @@
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:paddingBottom="8px" android:textSize="18px"></TextView>
 
-	<TextView android:text="code.google.com/p/appsorganizer/"
+	<TextView android:text="sites.google.com/site/appsorganizer/"
 		android:gravity="center_horizontal" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:paddingBottom="16px"
 		android:textSize="16px" android:autoLink="web"></TextView>
@@ -31,7 +31,7 @@
 	<TextView android:text="@string/How_to" android:gravity="center_horizontal"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:textSize="16px"></TextView>
-	<TextView android:text="code.google.com/p/appsorganizer/wiki/HowTo"
+	<TextView android:text="sites.google.com/site/appsorganizer/how-to"
 		android:gravity="center_horizontal" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:paddingBottom="16px"
 		android:textSize="16px" android:autoLink="web"></TextView>

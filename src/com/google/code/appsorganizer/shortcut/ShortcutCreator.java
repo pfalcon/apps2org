@@ -22,6 +22,7 @@ import java.util.List;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
@@ -66,9 +67,14 @@ public class ShortcutCreator extends ListActivity {
 		Intent intent = new Intent();
 		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
 		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, label.getName());
-		Parcelable iconResource = Intent.ShortcutIconResource.fromContext(this, label.getIcon());
-		intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
 
+		byte[] imageBytes = label.getImageBytes();
+		if (imageBytes != null) {
+			intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
+		} else {
+			Parcelable iconResource = Intent.ShortcutIconResource.fromContext(this, label.getIcon());
+			intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
+		}
 		setResult(LabelShortcut.RESULT_OK, intent);
 	}
 

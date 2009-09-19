@@ -56,4 +56,13 @@
 	<string name="Bug_report_2">Se vuoi aiutarci a risolvere questo bug per favore segnalacelo</string>
 	<string name="Bug_report_button">Manda email</string>
 	<string name="Bug_report_3">Grazie!</string>	
+	<string name="Load_from_sd">Carica da disco</string>
+	<string name="list_default_action">Azione di default</string>
+	<string name="list_default_action_summary">Azione di defualt sul click su una applicazione</string>
+	<string name="choose_action">scegli azione</string>
+	<string name="Application_not_found">Applicazione non trovata</string>
+	<string name="Application_not_found_message">E' necessario avere AndExplorer installato per selezionare un file, puoi scaricarla gratuitamente dal market</string>
+	<string name="Open_market">Apri market</string>
+	<string name="select_jpg_bmp_title">Errore tipo file</string>
+	<string name="select_jpg_bmp">E' possibile selezionare solo un file png o jpg</string>
 </resources>
