@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.shortcut;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -54,16 +52,15 @@ import com.google.code.appsorganizer.BugReportActivity;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
-import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DatabaseHelperBasic;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.db.ObjectWithIdDao;
-import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.ActivityWithDialog;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
-public class LabelShortcut extends Activity implements DbChangeListener {
+public class LabelShortcut extends ActivityWithDialog implements DbChangeListener {
 
 	private static final String ONLY_STARRED_PREF = "onlyStarred";
 	public static final long ALL_LABELS_ID = -2l;
@@ -84,13 +81,12 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
-	private GenericDialogManager genericDialogManager;
-
 	public static boolean firstTime = true;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
+		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
 		// Debug.startMethodTracing("grid1");
 		BugReportActivity.registerExceptionHandler(this);
 
@@ -373,29 +369,8 @@ public class LabelShortcut extends Activity implements DbChangeListener {
 	// }
 
 	private void showChooseAppsDialog() {
-		initDialogs();
 		chooseAppsDialogCreator.setCurrentLabelId(labelId);
-		showDialog(chooseAppsDialogCreator.getDialogId());
-	}
-
-	private void initDialogs() {
-		if (chooseAppsDialogCreator == null) {
-			chooseAppsDialogCreator = new ChooseAppsDialogCreator(DatabaseHelper.initOrSingleton(this), getPackageManager());
-			genericDialogManager = new GenericDialogManager(this);
-			genericDialogManager.addDialog(chooseAppsDialogCreator);
-		}
-	}
-
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
-		initDialogs();
-		genericDialogManager.onPrepareDialog(id, dialog);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		initDialogs();
-		return genericDialogManager.onCreateDialog(id);
+		showDialog(chooseAppsDialogCreator);
 	}
 
 	private void updateTitleView(String title) {

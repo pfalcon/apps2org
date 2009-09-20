@@ -18,15 +18,19 @@
  */
 package com.google.code.appsorganizer.dialogs;
 
+import java.io.Serializable;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
+import android.os.Bundle;
 
 import com.google.code.appsorganizer.R;
 
-public class SimpleDialog extends GenericDialogCreator {
+public class SimpleDialog extends GenericDialogCreator implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private String title;
 	private String message;
 	private String okMessageText;
@@ -34,29 +38,35 @@ public class SimpleDialog extends GenericDialogCreator {
 	private OnOkClickListener onOkListener;
 	private int icon = R.drawable.alert_dialog_icon;
 
-	public SimpleDialog() {
+	public SimpleDialog(GenericDialogManager dialogManager) {
+		super(dialogManager);
 	}
 
-	public SimpleDialog(String title) {
+	public SimpleDialog(GenericDialogManager dialogManager, String title) {
+		super(dialogManager);
 		this.title = title;
 	}
 
-	public SimpleDialog(String title, String message) {
+	public SimpleDialog(GenericDialogManager dialogManager, String title, String message) {
+		super(dialogManager);
 		this.title = title;
 		this.message = message;
 	}
 
-	public SimpleDialog(String title, OnOkClickListener onOkListener) {
+	public SimpleDialog(GenericDialogManager dialogManager, String title, OnOkClickListener onOkListener) {
+		super(dialogManager);
 		this.title = title;
 		this.onOkListener = onOkListener;
 	}
 
-	public SimpleDialog(String title, boolean showNegativeButton) {
+	public SimpleDialog(GenericDialogManager dialogManager, String title, boolean showNegativeButton) {
+		super(dialogManager);
 		this.title = title;
 		this.showNegativeButton = showNegativeButton;
 	}
 
-	public SimpleDialog(String title, boolean showNegativeButton, OnOkClickListener onOkListener) {
+	public SimpleDialog(GenericDialogManager dialogManager, String title, boolean showNegativeButton, OnOkClickListener onOkListener) {
+		super(dialogManager);
 		this.title = title;
 		this.showNegativeButton = showNegativeButton;
 		this.onOkListener = onOkListener;
@@ -140,5 +150,27 @@ public class SimpleDialog extends GenericDialogCreator {
 
 	public void setOkMessageText(String okMessageText) {
 		this.okMessageText = okMessageText;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString("title__" + getDialogId(), title);
+		outState.putString("message__" + getDialogId(), message);
+		outState.putString("okMessageText__" + getDialogId(), okMessageText);
+		outState.putBoolean("showNegativeButton__" + getDialogId(), showNegativeButton);
+		outState.putSerializable("onOkListener__" + getDialogId(), onOkListener);
+		outState.putInt("icon__" + getDialogId(), icon);
+	}
+
+	@Override
+	public void onRestoreInstanceState(Bundle state) {
+		super.onRestoreInstanceState(state);
+		title = state.getString("title__" + getDialogId());
+		message = state.getString("message__" + getDialogId());
+		okMessageText = state.getString("okMessageText__" + getDialogId());
+		showNegativeButton = state.getBoolean("showNegativeButton__" + getDialogId());
+		onOkListener = (OnOkClickListener) state.getSerializable("onOkListener__" + getDialogId());
+		icon = state.getInt("icon__" + getDialogId());
 	}
 }

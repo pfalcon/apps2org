@@ -26,11 +26,28 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+
+import com.google.code.appsorganizer.ApplicationInfoManager;
+import com.google.code.appsorganizer.ChooseLabelDialogCreator;
+import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.db.DatabaseHelper;
+import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 
 public class Application implements Comparable<Application> {
 
@@ -221,5 +238,68 @@ public class Application implements Comparable<Application> {
 		Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
 		uninstallIntent.putExtra("package", getPackage());
 		activity.startActivityForResult(uninstallIntent, 1);
+	}
+
+	static class ViewHolder {
+		ImageView image;
+		TextView labels;
+		TextView name;
+		CheckBox starred;
+	}
+
+	public View getAppView(final Activity context, final DatabaseHelper dbHelper, final ApplicationInfoManager applicationInfoManager,
+			View v, final ChooseLabelDialogCreator chooseLabelDialog) {
+		ViewHolder viewHolder;
+		if (v == null) {
+			LayoutInflater factory = LayoutInflater.from(context);
+			v = factory.inflate(R.layout.app_row, null);
+			viewHolder = new ViewHolder();
+			viewHolder.image = (ImageView) v.findViewById(R.id.image);
+			viewHolder.labels = (TextView) v.findViewById(R.id.labels);
+			viewHolder.name = (TextView) v.findViewById(R.id.name);
+			viewHolder.starred = (CheckBox) v.findViewById(R.id.starCheck);
+			v.setTag(viewHolder);
+		} else {
+			viewHolder = (ViewHolder) v.getTag();
+		}
+		OnClickListener onClickListener = new OnClickListener() {
+			public void onClick(View v) {
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+				String defaultAction = prefs.getString("defaultAction", "choose_labels");
+				if (defaultAction.equals("choose_labels")) {
+					chooseLabelDialog.setCurrentApp(Application.this);
+					((GenericDialogManagerActivity) context).showDialog(chooseLabelDialog);
+				} else if (defaultAction.equals("uninstall")) {
+					uninstallApplication(context);
+				} else {
+					startApplication(context);
+				}
+			}
+		};
+		viewHolder.labels.setOnClickListener(onClickListener);
+		viewHolder.image.setOnClickListener(onClickListener);
+		viewHolder.name.setOnClickListener(onClickListener);
+
+		OnLongClickListener onLongClickListener = new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				return false;
+			}
+		};
+		viewHolder.labels.setOnLongClickListener(onLongClickListener);
+		viewHolder.image.setOnLongClickListener(onLongClickListener);
+		viewHolder.name.setOnLongClickListener(onLongClickListener);
+
+		viewHolder.image.setImageDrawable(getIcon());
+		viewHolder.labels.setText(getLabelListString());
+		viewHolder.name.setText(getLabel());
+		viewHolder.starred.setOnCheckedChangeListener(null);
+		viewHolder.starred.setChecked(isStarred());
+		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				setStarred(isChecked);
+				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, Application.this, isChecked, context);
+			}
+		});
+		return v;
 	}
 }

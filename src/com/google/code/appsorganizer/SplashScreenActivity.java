@@ -20,18 +20,13 @@ package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.view.ContextMenu;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,32 +34,23 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
-import com.google.code.appsorganizer.dialogs.GenericDialogManager;
-import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
-import com.google.code.appsorganizer.model.AppLabelSaver;
+import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
+import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.service.StartupListener;
 
-public class SplashScreenActivity extends ListActivity implements DbChangeListener, GenericDialogManagerActivity {
+public class SplashScreenActivity extends ListActivityWithDialog implements DbChangeListener {
 
 	private DatabaseHelper dbHelper;
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
-
-	private GenericDialogManager genericDialogManager;
 
 	private ApplicationInfoManager applicationInfoManager;
 
@@ -80,13 +66,12 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		BugReportActivity.registerExceptionHandler(this);
 
 		// Debug.startMethodTracing("splash");
-		genericDialogManager = new GenericDialogManager(SplashScreenActivity.this);
 
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
-		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
 		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
-		genericDialogManager.addDialog(chooseLabelDialog);
+
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper, applicationInfoManager);
 
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -95,7 +80,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 				chooseLabelDialog.setCurrentApp(((Application) getListAdapter().getItem(position)));
-				showDialog(chooseLabelDialog.getDialogId());
+				showDialog(chooseLabelDialog);
 			}
 		});
 		getListView().setClickable(true);
@@ -118,7 +103,12 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		boolean showStartHowTo = settings.getBoolean("showStartHowTo", true);
 		if (showStartHowTo) {
 			String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
-			genericDialogManager.showSimpleDialog(getString(R.string.app_name), msg, false, R.drawable.icon, null);
+
+			SimpleDialog howToDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg);
+			howToDialog.setIcon(R.drawable.icon);
+			howToDialog.setShowNegativeButton(false);
+
+			showDialog(howToDialog);
 
 			SharedPreferences.Editor editor = settings.edit();
 			editor.putBoolean("showStartHowTo", false);
@@ -178,7 +168,7 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 				appsAdapter = new ArrayAdapter<Application>(SplashScreenActivity.this, R.layout.app_row, l) {
 					@Override
 					public View getView(int position, View v, ViewGroup parent) {
-						return getAppView(SplashScreenActivity.this, dbHelper, applicationInfoManager, v, getItem(position),
+						return getItem(position).getAppView(SplashScreenActivity.this, dbHelper, applicationInfoManager, v,
 								chooseLabelDialog);
 					}
 
@@ -193,13 +183,6 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 			}
 		};
 		t.start();
-	}
-
-	static class ViewHolder {
-		ImageView image;
-		TextView labels;
-		TextView name;
-		CheckBox starred;
 	}
 
 	@Override
@@ -227,20 +210,6 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		ApplicationContextMenuManager.singleton().onActivityResult(this, requestCode, resultCode, data);
-	}
-
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
-		genericDialogManager.onPrepareDialog(id, dialog);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		return genericDialogManager.onCreateDialog(id);
-	}
-
-	public ChooseLabelDialogCreator getChooseLabelDialog() {
-		return chooseLabelDialog;
 	}
 
 	private final Handler listHandler = new Handler() {
@@ -312,64 +281,4 @@ public class SplashScreenActivity extends ListActivity implements DbChangeListen
 		return optionMenuManager.onOptionsItemSelected(item);
 	}
 
-	public GenericDialogManager getGenericDialogManager() {
-		return genericDialogManager;
-	}
-
-	public static View getAppView(final Activity context, final DatabaseHelper dbHelper,
-			final ApplicationInfoManager applicationInfoManager, View v, final Application a,
-			final ChooseLabelDialogCreator chooseLabelDialog) {
-		ViewHolder viewHolder;
-		if (v == null) {
-			LayoutInflater factory = LayoutInflater.from(context);
-			v = factory.inflate(R.layout.app_row, null);
-			viewHolder = new ViewHolder();
-			viewHolder.image = (ImageView) v.findViewById(R.id.image);
-			viewHolder.labels = (TextView) v.findViewById(R.id.labels);
-			viewHolder.name = (TextView) v.findViewById(R.id.name);
-			viewHolder.starred = (CheckBox) v.findViewById(R.id.starCheck);
-			v.setTag(viewHolder);
-		} else {
-			viewHolder = (ViewHolder) v.getTag();
-		}
-		OnClickListener onClickListener = new OnClickListener() {
-			public void onClick(View v) {
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-				String defaultAction = prefs.getString("defaultAction", "choose_labels");
-				if (defaultAction.equals("choose_labels")) {
-					chooseLabelDialog.setCurrentApp(a);
-					context.showDialog(chooseLabelDialog.getDialogId());
-				} else if (defaultAction.equals("uninstall")) {
-					a.uninstallApplication(context);
-				} else {
-					a.startApplication(context);
-				}
-			}
-		};
-		viewHolder.labels.setOnClickListener(onClickListener);
-		viewHolder.image.setOnClickListener(onClickListener);
-		viewHolder.name.setOnClickListener(onClickListener);
-
-		OnLongClickListener onLongClickListener = new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				return false;
-			}
-		};
-		viewHolder.labels.setOnLongClickListener(onLongClickListener);
-		viewHolder.image.setOnLongClickListener(onLongClickListener);
-		viewHolder.name.setOnLongClickListener(onLongClickListener);
-
-		viewHolder.image.setImageDrawable(a.getIcon());
-		viewHolder.labels.setText(a.getLabelListString());
-		viewHolder.name.setText(a.getLabel());
-		viewHolder.starred.setOnCheckedChangeListener(null);
-		viewHolder.starred.setChecked(a.isStarred());
-		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				a.setStarred(isChecked);
-				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, a, isChecked, context);
-			}
-		});
-		return v;
-	}
 }

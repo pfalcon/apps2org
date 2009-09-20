@@ -29,12 +29,17 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 
 /**
  * @author fabio
  * 
  */
 public class AboutDialogCreator extends GenericDialogCreator {
+
+	public AboutDialogCreator(GenericDialogManager dialogManager) {
+		super(dialogManager);
+	}
 
 	@Override
 	public Dialog createDialog() {

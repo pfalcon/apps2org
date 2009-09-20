@@ -35,15 +35,18 @@ public class TextEntryDialog extends GenericDialogCreator {
 	private String defaultValue;
 	private OnOkClickListener onOkListener;
 
-	public TextEntryDialog() {
+	public TextEntryDialog(GenericDialogManager dialogManager) {
+		super(dialogManager);
 	}
 
-	public TextEntryDialog(String title, String label) {
+	public TextEntryDialog(GenericDialogManager dialogManager, String title, String label) {
+		super(dialogManager);
 		this.title = title;
 		this.label = label;
 	}
 
-	public TextEntryDialog(String title, String label, OnOkClickListener onOkListener) {
+	public TextEntryDialog(GenericDialogManager dialogManager, String title, String label, OnOkClickListener onOkListener) {
+		super(dialogManager);
 		this.title = title;
 		this.label = label;
 		this.onOkListener = onOkListener;

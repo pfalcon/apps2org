@@ -22,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URI;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -42,20 +40,25 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.google.code.appsorganizer.R;
-import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.ActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.model.Label;
 
-public class ChooseIconActivity extends Activity {
+public class ChooseIconActivity extends ActivityWithDialog {
 	private GridView mGrid;
 
-	private GenericDialogManager genericDialogManager;
+	private SimpleDialog applicationNotFoundDialog;
+
+	private SimpleDialog selectImageDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		genericDialogManager = new GenericDialogManager(this);
+		applicationNotFoundDialog = createApplicationNotFoundDialog();
+		selectImageDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.select_jpg_bmp_title),
+				getString(R.string.select_jpg_bmp));
 
 		loadIcons();
 
@@ -79,27 +82,10 @@ public class ChooseIconActivity extends Activity {
 				try {
 					openFileDialog();
 				} catch (ActivityNotFoundException e) {
-					genericDialogManager.showSimpleDialog(getString(R.string.Application_not_found),
-							getString(R.string.Application_not_found_message), true, new OnOkClickListener() {
-								public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-									Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
-											.parse("market://search?q=pname:lysesoft.andexplorer"));
-									startActivity(emailIntent);
-								}
-							}, getString(R.string.Open_market));
+					getGenericDialogManager().showDialog(applicationNotFoundDialog);
 				}
 			}
 		});
-	}
-
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
-		genericDialogManager.onPrepareDialog(id, dialog);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		return genericDialogManager.onCreateDialog(id);
 	}
 
 	@Override
@@ -113,7 +99,7 @@ public class ChooseIconActivity extends Activity {
 				// genericDialogManager.showSimpleDialog(path + " " + type,
 				// false, null);
 				if (type == null || (!type.equals("image/jpeg") && !type.equals("image/png"))) {
-					genericDialogManager.showSimpleDialog(R.string.select_jpg_bmp_title, R.string.select_jpg_bmp, false, null);
+					getGenericDialogManager().showDialog(selectImageDialog);
 				} else if (path.startsWith("file://")) {
 					File file = new File(URI.create(path));
 					Bitmap bitmap = getScaledImage(file);
@@ -207,6 +193,22 @@ public class ChooseIconActivity extends Activity {
 		// list with filename, size and date.
 		intent.putExtra("browser_list_layout", "2");
 		startActivityForResult(intent, 0);
+	}
+
+	private SimpleDialog createApplicationNotFoundDialog() {
+		String title = getString(R.string.Application_not_found);
+		SimpleDialog applicationNotFoundDialog = new SimpleDialog(getGenericDialogManager(), title,
+				getString(R.string.Application_not_found_message));
+		applicationNotFoundDialog.setOnOkListener(new OnOkClickListener() {
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
+						.parse("market://search?q=pname:lysesoft.andexplorer"));
+				startActivity(emailIntent);
+			}
+		});
+		applicationNotFoundDialog.setOkMessageText(getString(R.string.Open_market));
+		applicationNotFoundDialog.setShowNegativeButton(true);
+		return applicationNotFoundDialog;
 	}
 
 	public class AppsAdapter extends BaseAdapter {

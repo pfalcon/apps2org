@@ -22,4 +22,5 @@ public interface GenericDialogManagerActivity {
 
 	GenericDialogManager getGenericDialogManager();
 
+	void showDialog(GenericDialogCreator d);
 }

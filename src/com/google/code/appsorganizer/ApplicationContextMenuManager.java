@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 
+import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.model.Application;
 
 /**
@@ -55,7 +56,7 @@ public class ApplicationContextMenuManager {
 		switch (item.getItemId()) {
 		case CHOOSE_LABELS:
 			chooseLabelDialog.setCurrentApp(app);
-			activity.showDialog(chooseLabelDialog.getDialogId());
+			((GenericDialogManagerActivity) activity).showDialog(chooseLabelDialog);
 			break;
 		case LAUNCH:
 			app.startApplication(activity);

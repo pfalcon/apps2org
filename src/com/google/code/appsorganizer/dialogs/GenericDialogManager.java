@@ -18,94 +18,103 @@
  */
 package com.google.code.appsorganizer.dialogs;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.os.Bundle;
 
 public class GenericDialogManager {
+
+	private static final String SIMPLE_DIALOG = "simpleDialog";
 
 	private final Map<Integer, GenericDialogCreator> dialogs = new HashMap<Integer, GenericDialogCreator>();
 
 	private final Activity owner;
 
+	private final Set<Integer> dialogsPrepared = new HashSet<Integer>();
+	private final Set<Integer> prepareDialogs = new HashSet<Integer>();
+
 	public GenericDialogManager(Activity owner) {
 		this.owner = owner;
-	}
-
-	public void addDialog(GenericDialogCreator d) {
-		int id = dialogs.size();
-		d.setDialogId(id);
-		d.setOwner(owner);
-		dialogs.put(id, d);
 	}
 
 	public void onPrepareDialog(int id, Dialog dialog) {
 		GenericDialogCreator d = dialogs.get(id);
 		if (d != null) {
 			d.prepareDialog(dialog);
+			dialogsPrepared.add(id);
 		}
 	}
 
 	public Dialog onCreateDialog(int id) {
 		GenericDialogCreator d = dialogs.get(id);
 		if (d != null) {
-			return d.createDialog();
+			Dialog dialog = d.createDialog();
+			d.setDialog(dialog);
+			return dialog;
 		}
 		return null;
 	}
 
 	private SimpleDialog simpleDialog;
 
-	public void showSimpleDialog(String title, boolean showNegativeButton, OnOkClickListener onOkListener) {
-		if (simpleDialog == null) {
-			simpleDialog = new SimpleDialog();
-			addDialog(simpleDialog);
+	public void onSaveInstanceState(Bundle outState) {
+		for (Entry<Integer, GenericDialogCreator> e : dialogs.entrySet()) {
+			GenericDialogCreator dialogCreator = e.getValue();
+			dialogCreator.onSaveInstanceState(outState);
+			Dialog dialog = dialogCreator.getDialog();
+			if (dialog != null && dialog.isShowing()) {
+				outState.putBoolean("prepareDialog_" + e.getKey(), true);
+			}
 		}
-		simpleDialog.setTitle(title);
-		simpleDialog.setOnOkListener(onOkListener);
-		simpleDialog.setShowNegativeButton(showNegativeButton);
-		owner.showDialog(simpleDialog.getDialogId());
+		if (simpleDialog != null) {
+			Dialog dialog = simpleDialog.getDialog();
+			if (dialog != null && dialog.isShowing()) {
+				outState.putSerializable(SIMPLE_DIALOG, simpleDialog);
+			}
+		}
 	}
 
-	public void showSimpleDialog(int title, int message, boolean showNegativeButton, OnOkClickListener onOkListener) {
-		showSimpleDialog(owner.getString(title), owner.getString(message), showNegativeButton, onOkListener);
+	public void onRestoreInstanceState(Bundle state) {
+		Serializable serializable = state.getSerializable(SIMPLE_DIALOG);
+		if (serializable != null) {
+			simpleDialog = (SimpleDialog) serializable;
+			addDialog(simpleDialog);
+			prepareDialogs.add(simpleDialog.getDialogId());
+		}
+		for (Entry<Integer, GenericDialogCreator> e : dialogs.entrySet()) {
+			GenericDialogCreator dialogCreator = e.getValue();
+			dialogCreator.onRestoreInstanceState(state);
+			int dialogId = dialogCreator.getDialogId();
+			if (!dialogsPrepared.contains(dialogId) && state.getBoolean("prepareDialog_" + e.getKey(), false)) {
+				prepareDialogs.add(dialogId);
+			}
+		}
 	}
 
-	public void showSimpleDialog(String title, String message, boolean showNegativeButton, OnOkClickListener onOkListener) {
-		if (simpleDialog == null || !message.equals(simpleDialog.getMessage())) {
-			simpleDialog = new SimpleDialog(title, message);
-			addDialog(simpleDialog);
+	public void onResume() {
+		for (Entry<Integer, GenericDialogCreator> e : dialogs.entrySet()) {
+			GenericDialogCreator dialogCreator = e.getValue();
+			if (prepareDialogs.contains(dialogCreator.getDialogId())) {
+				dialogCreator.prepareDialog(dialogCreator.getDialog());
+			}
 		}
-		simpleDialog.setTitle(title);
-		simpleDialog.setOnOkListener(onOkListener);
-		simpleDialog.setShowNegativeButton(showNegativeButton);
-		owner.showDialog(simpleDialog.getDialogId());
 	}
 
-	public void showSimpleDialog(String title, String message, boolean showNegativeButton, OnOkClickListener onOkListener,
-			String okMessageText) {
-		if (simpleDialog == null || !message.equals(simpleDialog.getMessage()) || !okMessageText.equals(simpleDialog.getOkMessageText())) {
-			simpleDialog = new SimpleDialog(title, message);
-			addDialog(simpleDialog);
-		}
-		simpleDialog.setTitle(title);
-		simpleDialog.setOnOkListener(onOkListener);
-		simpleDialog.setOkMessageText(okMessageText);
-		simpleDialog.setShowNegativeButton(showNegativeButton);
-		owner.showDialog(simpleDialog.getDialogId());
+	void addDialog(GenericDialogCreator d) {
+		int id = dialogs.size();
+		d.setDialogId(id);
+		d.setOwner(owner);
+		dialogs.put(id, d);
 	}
 
-	public void showSimpleDialog(String title, String message, boolean showNegativeButton, int icon, OnOkClickListener onOkListener) {
-		if (simpleDialog == null || !message.equals(simpleDialog.getMessage()) || simpleDialog.getIcon() != icon) {
-			simpleDialog = new SimpleDialog(title, message);
-			simpleDialog.setIcon(icon);
-			addDialog(simpleDialog);
-		}
-		simpleDialog.setTitle(title);
-		simpleDialog.setOnOkListener(onOkListener);
-		simpleDialog.setShowNegativeButton(showNegativeButton);
-		owner.showDialog(simpleDialog.getDialogId());
+	public void showDialog(GenericDialogCreator d) {
+		owner.showDialog(d.getDialogId());
 	}
 }

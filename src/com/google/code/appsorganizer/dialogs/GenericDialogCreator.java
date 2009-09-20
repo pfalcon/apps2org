@@ -20,18 +20,25 @@ package com.google.code.appsorganizer.dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.os.Bundle;
 
 public abstract class GenericDialogCreator {
 
-	private int dialogId = 1;
+	private int dialogId;
 
 	protected Activity owner;
 
-	public int getDialogId() {
+	private Dialog dialog;
+
+	public GenericDialogCreator(GenericDialogManager dialogManager) {
+		dialogManager.addDialog(this);
+	}
+
+	int getDialogId() {
 		return dialogId;
 	}
 
-	public void setDialogId(int dialogId) {
+	void setDialogId(int dialogId) {
 		this.dialogId = dialogId;
 	}
 
@@ -47,5 +54,19 @@ public abstract class GenericDialogCreator {
 
 	public void setOwner(Activity owner) {
 		this.owner = owner;
+	}
+
+	public Dialog getDialog() {
+		return dialog;
+	}
+
+	public void setDialog(Dialog dialog) {
+		this.dialog = dialog;
+	}
+
+	public void onSaveInstanceState(Bundle outState) {
+	}
+
+	public void onRestoreInstanceState(Bundle state) {
 	}
 }

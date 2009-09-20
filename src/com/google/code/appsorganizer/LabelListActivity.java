@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer;
 
-import android.app.Dialog;
-import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -39,14 +37,15 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
-import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.ExpandableListActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
-public class LabelListActivity extends ExpandableListActivity implements DbChangeListener, GenericDialogManagerActivity {
+public class LabelListActivity extends ExpandableListActivityWithDialog implements DbChangeListener, GenericDialogManagerActivity {
 	private static final int MENU_ITEM_SELECT_APPS = 2;
 
 	private static final int MENU_ITEM_CHANGE_ICON = 1;
@@ -67,13 +66,13 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 	private ApplicationInfoManager applicationInfoManager;
 
-	private GenericDialogManager genericDialogManager;
-
 	private ToggleButton labelButton;
 
 	private ToggleButton appButton;
 
 	private OptionMenuManager optionMenuManager;
+
+	private SimpleDialog confirmDeleteDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -82,7 +81,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 		setContentView(R.layout.main_labels);
 		dbHelper = DatabaseHelper.singleton();
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-		chooseLabelDialog = new ChooseLabelDialogCreator(dbHelper, applicationInfoManager);
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper, applicationInfoManager);
 
 		mAdapter = new LabelListAdapter(this, dbHelper, applicationInfoManager, chooseLabelDialog);
 
@@ -90,12 +89,10 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 
 		setListAdapter(mAdapter);
 
-		genericDialogManager = new GenericDialogManager(this);
-		chooseAppsDialogCreator = new ChooseAppsDialogCreator(dbHelper, applicationInfoManager);
-		textEntryDialog = new TextEntryDialog(getString(R.string.rename_label), getString(R.string.label_name));
-		genericDialogManager.addDialog(chooseLabelDialog);
-		genericDialogManager.addDialog(chooseAppsDialogCreator);
-		genericDialogManager.addDialog(textEntryDialog);
+		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
+		textEntryDialog = new TextEntryDialog(getGenericDialogManager(), getString(R.string.rename_label), getString(R.string.label_name));
+
+		confirmDeleteDialog = new SimpleDialog(getGenericDialogManager());
 
 		optionMenuManager = new OptionMenuManager(this, dbHelper);
 
@@ -111,7 +108,7 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 				Application app = mAdapter.getChild(groupPosition, childPosition);
 				chooseLabelDialog.setCurrentApp(app);
-				showDialog(chooseLabelDialog.getDialogId());
+				showDialog(chooseLabelDialog);
 				return false;
 			}
 		});
@@ -202,23 +199,27 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
 					}
 				});
-				showDialog(textEntryDialog.getDialogId());
+				showDialog(textEntryDialog);
 				break;
 			case MENU_ITEM_DELETE:
-				genericDialogManager.showSimpleDialog(getString(R.string.delete_confirm, label.getName()), true, new OnOkClickListener() {
+				confirmDeleteDialog.setTitle(getString(R.string.delete_confirm, label.getName()));
+				confirmDeleteDialog.setOnOkListener(new OnOkClickListener() {
+					private static final long serialVersionUID = 1L;
+
 					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
 						dbHelper.appsLabelDao.deleteAppsOfLabel(label.getId());
 						dbHelper.labelDao.delete(label.getId());
 						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
 					}
 				});
+				getGenericDialogManager().showDialog(confirmDeleteDialog);
 				break;
 			case MENU_ITEM_CHANGE_ICON:
 				showChooseIconActivity(groupPos);
 				return true;
 			case MENU_ITEM_SELECT_APPS:
 				chooseAppsDialogCreator.setCurrentLabelId(label.getId());
-				showDialog(chooseAppsDialogCreator.getDialogId());
+				showDialog(chooseAppsDialogCreator);
 				break;
 			}
 		}
@@ -252,16 +253,6 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 	}
 
 	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
-		genericDialogManager.onPrepareDialog(id, dialog);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		return genericDialogManager.onCreateDialog(id);
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		return optionMenuManager.onCreateOptionsMenu(menu);
 	}
@@ -269,9 +260,5 @@ public class LabelListActivity extends ExpandableListActivity implements DbChang
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return optionMenuManager.onOptionsItemSelected(item);
-	}
-
-	public GenericDialogManager getGenericDialogManager() {
-		return genericDialogManager;
 	}
 }

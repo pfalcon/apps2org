@@ -299,7 +299,7 @@ public class ApplicationInfoManager {
 		return ret;
 	}
 
-	private Application getApplication(String app) {
+	public Application getApplication(String app) {
 		return applicationMap.get(app);
 	}
 

@@ -26,33 +26,23 @@ import java.util.Set;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
 
 public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
-	private final DatabaseHelper dbHelper;
-
-	private final ApplicationInfoManager applicationInfoManager;
-
 	private long currentLabelId;
 
 	private ArrayAdapter<Application> adapter;
 
-	public ChooseAppsDialogCreator(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager) {
-		this.dbHelper = dbHelper;
-		this.applicationInfoManager = applicationInfoManager;
-	}
-
-	public ChooseAppsDialogCreator(DatabaseHelper dbHelper, PackageManager pm) {
-		this.dbHelper = dbHelper;
-		this.applicationInfoManager = ApplicationInfoManager.singleton(pm);
+	public ChooseAppsDialogCreator(GenericDialogManager dialogManager) {
+		super(dialogManager);
 	}
 
 	private ListView listView;
@@ -61,6 +51,8 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	@Override
 	public void prepareDialog(Dialog dialog) {
+		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(owner);
+		ApplicationInfoManager applicationInfoManager = ApplicationInfoManager.singleton(owner.getPackageManager());
 		applicationInfoManager.getOrReloadAppsMap(dbHelper);
 		Application[] l1 = applicationInfoManager.getApps(currentLabelId, false);
 		checkedApps = createSet(l1);
@@ -118,6 +110,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private void save(Set<String> checkedSet) {
 		boolean changed = false;
+		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(owner);
 		int count = adapter.getCount();
 		for (int i = 0; i < count; i++) {
 			Application app = (Application) listView.getItemAtPosition(i);
@@ -135,7 +128,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			}
 		}
 		if (changed) {
-			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
+			ApplicationInfoManager.singleton(owner.getPackageManager()).reloadAppsLabel(dbHelper.labelDao);
 		}
 	}
 

@@ -27,8 +27,10 @@ import android.view.MenuItem;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbImportExport;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.preferences.PreferencesFromXml;
 
@@ -44,26 +46,30 @@ public class OptionMenuManager {
 
 	private final AboutDialogCreator aboutDialogCreator;
 
+	private final SimpleDialog exportErrorDialog;
+
 	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper) {
 		this.context = context;
-		textEntryDialog = new TextEntryDialog(context.getString(R.string.export_menu), context.getString(R.string.file_name),
-				new OnOkClickListener() {
-					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-						String fileName = FileImporter.EXPORT_DIR + charSequence;
-						if (!fileName.endsWith("." + FileImporter.FILE_EXTENSION)) {
-							fileName += "." + FileImporter.FILE_EXTENSION;
-						}
-						try {
-							DbImportExport.export(dbHelper, fileName);
-						} catch (Throwable e) {
-							((GenericDialogManagerActivity) context).getGenericDialogManager().showSimpleDialog(
-									context.getString(R.string.export_error) + ": " + e.getMessage(), false, null);
-						}
-					}
-				});
-		aboutDialogCreator = new AboutDialogCreator();
-		((GenericDialogManagerActivity) context).getGenericDialogManager().addDialog(textEntryDialog);
-		((GenericDialogManagerActivity) context).getGenericDialogManager().addDialog(aboutDialogCreator);
+
+		final GenericDialogManager genericDialogManager = ((GenericDialogManagerActivity) context).getGenericDialogManager();
+		exportErrorDialog = new SimpleDialog(genericDialogManager, context.getString(R.string.export_error));
+
+		textEntryDialog = new TextEntryDialog(genericDialogManager, context.getString(R.string.export_menu), context
+				.getString(R.string.file_name), new OnOkClickListener() {
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				String fileName = FileImporter.EXPORT_DIR + charSequence;
+				if (!fileName.endsWith("." + FileImporter.FILE_EXTENSION)) {
+					fileName += "." + FileImporter.FILE_EXTENSION;
+				}
+				try {
+					DbImportExport.export(dbHelper, fileName);
+				} catch (Throwable e) {
+					exportErrorDialog.setTitle(context.getString(R.string.export_error) + ": " + e.getMessage());
+					genericDialogManager.showDialog(exportErrorDialog);
+				}
+			}
+		});
+		aboutDialogCreator = new AboutDialogCreator(genericDialogManager);
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,7 +96,7 @@ public class OptionMenuManager {
 			new AppsReloader(context, true).reload();
 			return true;
 		case R.id.export_menu:
-			context.showDialog(textEntryDialog.getDialogId());
+			((GenericDialogManagerActivity) context).showDialog(textEntryDialog);
 			return true;
 		case R.id.import_menu:
 			context.startActivity(new Intent(context, FileImporter.class));
@@ -99,7 +105,7 @@ public class OptionMenuManager {
 			context.startActivity(new Intent(context, PreferencesFromXml.class));
 			return true;
 		case R.id.about:
-			context.showDialog(aboutDialogCreator.getDialogId());
+			((GenericDialogManagerActivity) context).showDialog(aboutDialogCreator);
 			return true;
 		}
 		return false;

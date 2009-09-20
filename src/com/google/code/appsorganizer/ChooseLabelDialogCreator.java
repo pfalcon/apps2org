@@ -25,6 +25,7 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -33,11 +34,14 @@ import android.widget.TextView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
+
+	private static final String APPLICATION_BUNDLE_NAME = "application_label_dialog";
 
 	private final DatabaseHelper labelAdapter;
 
@@ -47,7 +51,9 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private ChooseLabelListAdapter adapter;
 
-	public ChooseLabelDialogCreator(DatabaseHelper labelAdapter, ApplicationInfoManager applicationInfoManager) {
+	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, DatabaseHelper labelAdapter,
+			ApplicationInfoManager applicationInfoManager) {
+		super(dialogManager);
 		this.labelAdapter = labelAdapter;
 		this.applicationInfoManager = applicationInfoManager;
 	}
@@ -143,5 +149,20 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	public void setCurrentApp(Application application) {
 		this.application = application;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		if (application != null) {
+			outState.putString(APPLICATION_BUNDLE_NAME, application.name);
+		}
+	}
+
+	@Override
+	public void onRestoreInstanceState(Bundle state) {
+		String appName = state.getString(APPLICATION_BUNDLE_NAME);
+		if (appName != null) {
+			application = applicationInfoManager.getApplication(appName);
+		}
 	}
 }

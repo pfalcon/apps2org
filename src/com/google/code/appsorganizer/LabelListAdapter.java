@@ -98,8 +98,8 @@ public class LabelListAdapter extends BaseExpandableListAdapter {
 	}
 
 	public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View cv, ViewGroup parent) {
-		return SplashScreenActivity.getAppView(context, dbHelper, applicationInfoManager, cv, getChild(groupPosition, childPosition),
-				chooseLabelDialog);
+		Application application = getChild(groupPosition, childPosition);
+		return application.getAppView(context, dbHelper, applicationInfoManager, cv, chooseLabelDialog);
 	}
 
 	public Label getGroup(int groupPosition) {

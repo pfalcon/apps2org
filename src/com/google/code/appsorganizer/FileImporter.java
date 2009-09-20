@@ -22,8 +22,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import android.app.Dialog;
-import android.app.ListActivity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -34,13 +32,14 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.google.code.appsorganizer.db.DbImportExport;
-import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
+import com.google.code.appsorganizer.dialogs.SimpleDialog;
 
 /**
  * @author fabio
  * 
  */
-public class FileImporter extends ListActivity {
+public class FileImporter extends ListActivityWithDialog {
 
 	public static final String FILE_EXTENSION = "txt";
 
@@ -49,7 +48,7 @@ public class FileImporter extends ListActivity {
 	protected ArrayList<String> mFileList;
 	protected File mRoot;
 
-	private GenericDialogManager genericDialogManager;
+	private SimpleDialog importErrorDialog;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -59,7 +58,7 @@ public class FileImporter extends ListActivity {
 
 		setContentView(R.layout.filelister);
 
-		genericDialogManager = new GenericDialogManager(this);
+		importErrorDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.import_error));
 
 		initialize(getString(R.string.import_menu), EXPORT_DIR);
 		getListView().setOnItemClickListener(new OnItemClickListener() {
@@ -70,7 +69,8 @@ public class FileImporter extends ListActivity {
 					new AppsReloader(FileImporter.this, false).reload();
 					finish();
 				} catch (Throwable e) {
-					genericDialogManager.showSimpleDialog(getString(R.string.import_error) + ": " + e.getMessage(), false, null);
+					importErrorDialog.setTitle(getString(R.string.import_error) + ": " + e.getMessage());
+					getGenericDialogManager().showDialog(importErrorDialog);
 				}
 			}
 		});
@@ -151,15 +151,5 @@ public class FileImporter extends ListActivity {
 		fileAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, mFileList);
 
 		setListAdapter(fileAdapter);
-	}
-
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
-		genericDialogManager.onPrepareDialog(id, dialog);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		return genericDialogManager.onCreateDialog(id);
 	}
 }
