@@ -59,6 +59,7 @@ public class ChooseIconActivity extends ActivityWithDialog {
 		applicationNotFoundDialog = createApplicationNotFoundDialog();
 		selectImageDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.select_jpg_bmp_title),
 				getString(R.string.select_jpg_bmp));
+		selectImageDialog.setShowNegativeButton(false);
 
 		loadIcons();
 
@@ -198,14 +199,16 @@ public class ChooseIconActivity extends ActivityWithDialog {
 	private SimpleDialog createApplicationNotFoundDialog() {
 		String title = getString(R.string.Application_not_found);
 		SimpleDialog applicationNotFoundDialog = new SimpleDialog(getGenericDialogManager(), title,
-				getString(R.string.Application_not_found_message));
-		applicationNotFoundDialog.setOnOkListener(new OnOkClickListener() {
-			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
-						.parse("market://search?q=pname:lysesoft.andexplorer"));
-				startActivity(emailIntent);
-			}
-		});
+				getString(R.string.Application_not_found_message), new OnOkClickListener() {
+					private static final long serialVersionUID = 1L;
+
+					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+						Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
+								.parse("market://search?q=pname:lysesoft.andexplorer"));
+						startActivity(emailIntent);
+					}
+				});
+
 		applicationNotFoundDialog.setOkMessageText(getString(R.string.Open_market));
 		applicationNotFoundDialog.setShowNegativeButton(true);
 		return applicationNotFoundDialog;

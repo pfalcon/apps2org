@@ -55,5 +55,14 @@
     <string name="Bug_report_1">Apps Organizer a planté</string>
     <string name="Bug_report_2">Pour nous aider à régler ces erreurs, merci de nous les reporter</string>
     <string name="Bug_report_button">Envoyer email</string>
-    <string name="Bug_report_3">Merci!</string>    
+    <string name="Bug_report_3">Merci!</string>
+	<string name="Load_from_sd">sélectionner icônes depuis la carte SD</string>
+	<string name="list_default_action">1 clic</string>
+	<string name="list_default_action_summary">action par défaut quand l'appli est cliquée une fois</string>
+	<string name="choose_action">Choisir action</string>
+	<string name="Application_not_found">Application introuvable</string>
+	<string name="Application_not_found_message">Vous devez télécharger AndExplorer pour sélectionner les fichiers (gratuit)</string>
+	<string name="Open_market">Aller sur l'android market</string>
+	<string name="select_jpg_bmp_title">format fichier non supporté</string>
+	<string name="select_jpg_bmp">Vous devez sélectionner un fichier png ou jpg</string>    
 </resources>

@@ -38,6 +38,7 @@ import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.ExpandableListActivityWithDialog;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
@@ -72,14 +73,14 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	private OptionMenuManager optionMenuManager;
 
-	private SimpleDialog confirmDeleteDialog;
+	private ConfirmDeleteDialog confirmDeleteDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		BugReportActivity.registerExceptionHandler(this);
 		setContentView(R.layout.main_labels);
-		dbHelper = DatabaseHelper.singleton();
+		dbHelper = DatabaseHelper.initOrSingleton(this);
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper, applicationInfoManager);
 
@@ -92,7 +93,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
 		textEntryDialog = new TextEntryDialog(getGenericDialogManager(), getString(R.string.rename_label), getString(R.string.label_name));
 
-		confirmDeleteDialog = new SimpleDialog(getGenericDialogManager());
+		confirmDeleteDialog = new ConfirmDeleteDialog(getGenericDialogManager());
 
 		optionMenuManager = new OptionMenuManager(this, dbHelper);
 
@@ -114,6 +115,39 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		});
 
 		registerForContextMenu(getExpandableListView());
+	}
+
+	private static final class ConfirmDeleteDialog extends SimpleDialog {
+
+		private static final long serialVersionUID = 1L;
+
+		long labelId;
+
+		public ConfirmDeleteDialog(GenericDialogManager dialogManager) {
+			super(dialogManager);
+			this.onOkListener = new OnOkClickListener() {
+				private static final long serialVersionUID = 1L;
+
+				public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+					DatabaseHelper dbHelper = DatabaseHelper.singleton();
+					dbHelper.appsLabelDao.deleteAppsOfLabel(labelId);
+					dbHelper.labelDao.delete(labelId);
+					ApplicationInfoManager.singleton(null).reloadAppsLabel(dbHelper.labelDao);
+				}
+			};
+		}
+
+		@Override
+		public void onRestoreInstanceState(Bundle state) {
+			super.onRestoreInstanceState(state);
+			labelId = state.getLong("ConfirmDeleteDialog_labelId");
+		}
+
+		@Override
+		public void onSaveInstanceState(Bundle outState) {
+			super.onSaveInstanceState(outState);
+			outState.putLong("ConfirmDeleteDialog_labelId", labelId);
+		}
 	}
 
 	@Override
@@ -203,15 +237,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 				break;
 			case MENU_ITEM_DELETE:
 				confirmDeleteDialog.setTitle(getString(R.string.delete_confirm, label.getName()));
-				confirmDeleteDialog.setOnOkListener(new OnOkClickListener() {
-					private static final long serialVersionUID = 1L;
-
-					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-						dbHelper.appsLabelDao.deleteAppsOfLabel(label.getId());
-						dbHelper.labelDao.delete(label.getId());
-						applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
-					}
-				});
+				confirmDeleteDialog.labelId = label.getId();
 				getGenericDialogManager().showDialog(confirmDeleteDialog);
 				break;
 			case MENU_ITEM_CHANGE_ICON:

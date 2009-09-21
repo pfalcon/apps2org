@@ -29,7 +29,9 @@ public class DatabaseHelper extends DatabaseHelperBasic {
 	private static DatabaseHelper singleton;
 
 	public static void init(Context context) {
-		singleton = new DatabaseHelper(context);
+		synchronized (DatabaseHelper.class) {
+			singleton = new DatabaseHelper(context);
+		}
 	}
 
 	public static DatabaseHelper initOrSingleton(Context context) {
