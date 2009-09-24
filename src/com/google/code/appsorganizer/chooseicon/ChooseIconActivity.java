@@ -105,7 +105,7 @@ public class ChooseIconActivity extends ActivityWithDialog {
 					File file = new File(URI.create(path));
 					Bitmap bitmap = getScaledImage(file);
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					bitmap.compress(CompressFormat.JPEG, 100, os);
+					bitmap.compress(CompressFormat.PNG, 100, os);
 
 					Intent res = new Intent();
 					res.putExtra("image", os.toByteArray());
