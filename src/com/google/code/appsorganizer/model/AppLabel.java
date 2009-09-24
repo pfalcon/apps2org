@@ -23,7 +23,8 @@ import com.google.code.appsorganizer.db.ObjectWithId;
 public class AppLabel extends ObjectWithId {
 
 	private String app;
-	private Long labelId;
+	private String packageName;
+	public long labelId;
 
 	public String getApp() {
 		return app;
@@ -39,6 +40,14 @@ public class AppLabel extends ObjectWithId {
 
 	public void setLabelId(Long labelId) {
 		this.labelId = labelId;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
 	}
 
 }

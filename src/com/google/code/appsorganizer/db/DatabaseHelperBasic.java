@@ -33,7 +33,7 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 
 	private static final String TAG = "DatabaseHelper";
 
-	private static final int DATABASE_VERSION = 19;
+	private static final int DATABASE_VERSION = 21;
 
 	protected final SQLiteDatabase db;
 
@@ -61,35 +61,35 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 	}
 
 	private void insertUtilityApps(SQLiteDatabase db, long id) {
-		insertApp(db, SplashScreenActivity.class.getName(), id);
+		insertApp(db, "aaa", SplashScreenActivity.class.getName(), id);
 	}
 
 	private void insertMultimediaApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.music.MusicBrowserActivity", id);
-		insertApp(db, "com.android.music.VideoBrowserActivity", id);
-		insertApp(db, "com.android.camera.Camera", id);
-		insertApp(db, "com.android.camera.VideoCamera", id);
-		insertApp(db, "com.android.camera.GalleryPicker", id);
+		insertApp(db, "aaa", "com.android.music.MusicBrowserActivity", id);
+		insertApp(db, "aaa", "com.android.music.VideoBrowserActivity", id);
+		insertApp(db, "aaa", "com.android.camera.Camera", id);
+		insertApp(db, "aaa", "com.android.camera.VideoCamera", id);
+		insertApp(db, "aaa", "com.android.camera.GalleryPicker", id);
 	}
 
 	private void insertAndroidApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.alarmclock.AlarmClock", id);
-		insertApp(db, "com.android.calendar.LaunchActivity", id);
-		insertApp(db, "com.android.vending.AssetBrowserActivity", id);
-		insertApp(db, "com.android.settings.Settings", id);
-		insertApp(db, "com.android.contacts.DialtactsActivity", id);
-		insertApp(db, "com.android.contacts.DialtactsContactsEntryActivity", id);
-		insertApp(db, "com.android.mms.ui.ConversationList", id);
-		insertApp(db, "com.android.calculator2.Calculator", id);
+		insertApp(db, "aaa", "com.android.alarmclock.AlarmClock", id);
+		insertApp(db, "aaa", "com.android.calendar.LaunchActivity", id);
+		insertApp(db, "aaa", "com.android.vending.AssetBrowserActivity", id);
+		insertApp(db, "aaa", "com.android.settings.Settings", id);
+		insertApp(db, "aaa", "com.android.contacts.DialtactsActivity", id);
+		insertApp(db, "aaa", "com.android.contacts.DialtactsContactsEntryActivity", id);
+		insertApp(db, "aaa", "com.android.mms.ui.ConversationList", id);
+		insertApp(db, "aaa", "com.android.calculator2.Calculator", id);
 	}
 
 	private void insertInterneApps(SQLiteDatabase db, long id) {
-		insertApp(db, "com.android.browser.BrowserActivity", id);
-		insertApp(db, "com.google.android.talk.SigningInActivity", id);
-		insertApp(db, "com.google.android.maps.MapsActivity", id);
-		insertApp(db, "com.google.android.youtube.HomePage", id);
-		insertApp(db, "com.google.android.gm.ConversationListActivityGmail", id);
-		insertApp(db, "com.android.email.activity.Welcome", id);
+		insertApp(db, "aaa", "com.android.browser.BrowserActivity", id);
+		insertApp(db, "aaa", "com.google.android.talk.SigningInActivity", id);
+		insertApp(db, "aaa", "com.google.android.maps.MapsActivity", id);
+		insertApp(db, "aaa", "com.google.android.youtube.HomePage", id);
+		insertApp(db, "aaa", "com.google.android.gm.ConversationListActivityGmail", id);
+		insertApp(db, "aaa", "com.android.email.activity.Welcome", id);
 	}
 
 	@Override
@@ -108,22 +108,65 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		if (oldVersion <= 18) {
 			addColumn(db, LabelDao.TABLE_NAME, LabelDao.IMAGE);
 		}
+		if (oldVersion <= 19) {
+			addColumn(db, AppLabelDao.TABLE_NAME, AppLabelDao.PACKAGE);
+		}
+		if (oldVersion <= 20) {
+			addPackages(db);
+		}
 		// db.execSQL(appsLabelDao.getDropTableScript());
 		// db.execSQL(labelDao.getDropTableScript());
 		// onCreate(db);
 	}
 
-	private void addColumn(SQLiteDatabase db, String tableName, DbColumns column) {
+	public void addPackages() {
+		addPackages(db);
+	}
+
+	private void addPackages(SQLiteDatabase db) {
+		Cursor query = db.query(AppLabelDao.TABLE_NAME, new String[] { "_id", AppLabelDao.APP_COL_NAME }, AppLabelDao.PACKAGE_NAME_COL_NAME
+				+ " is null", null, null, null, null);
+		try {
+			while (query.moveToNext()) {
+				Cursor c = db.query(AppCacheDao.TABLE_NAME, new String[] { AppCacheDao.PACKAGE_NAME_COL_NAME }, AppCacheDao.NAME_COL_NAME
+						+ "=?", new String[] { query.getString(1) }, null, null, null);
+				try {
+					if (c.moveToNext()) {
+						ContentValues contentValues = new ContentValues();
+						contentValues.put(AppLabelDao.PACKAGE_NAME_COL_NAME, c.getString(0));
+						db.update(AppLabelDao.TABLE_NAME, contentValues, "_id=?", new String[] { Long.toString(query.getLong(0)) });
+					} else {
+						db.delete(AppLabelDao.TABLE_NAME, "_id=?", new String[] { Long.toString(query.getLong(0)) });
+					}
+				} finally {
+					c.close();
+				}
+			}
+		} finally {
+			query.close();
+		}
+		//
+		// db.execSQL("update " + AppLabelDao.TABLE_NAME + " set " +
+		// AppLabelDao.PACKAGE_NAME_COL_NAME + "=(select min(ac.package) from "
+		// + AppCacheDao.TABLE_NAME + " ac where ac." +
+		// AppCacheDao.NAME_COL_NAME + "=" + AppLabelDao.APP_COL_NAME +
+		// ") where "
+		// + AppLabelDao.PACKAGE_NAME_COL_NAME + " is null");
+	}
+
+	private boolean addColumn(SQLiteDatabase db, String tableName, DbColumns column) {
 		// add column only if does't exists
 		Cursor c = null;
 		try {
 			c = db.query(tableName, new String[] { column.getName() }, null, null, null, null, null);
 			c.close();
+			return false;
 		} catch (Exception e) {
 			if (c != null) {
 				c.close();
 			}
 			db.execSQL("alter table " + tableName + " add " + column.getName() + ' ' + column.getDescription());
+			return true;
 		}
 	}
 
@@ -137,10 +180,11 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		return db.insert(LabelDao.TABLE_NAME, null, v);
 	}
 
-	private void insertApp(SQLiteDatabase db, String value, long labelId) {
+	private void insertApp(SQLiteDatabase db, String packageName, String value, long labelId) {
 		ContentValues v = new ContentValues();
 		v.put(AppLabelDao.APP.getName(), value);
 		v.put(AppLabelDao.LABEL_ID.getName(), labelId);
+		v.put(AppLabelDao.PACKAGE_NAME_COL_NAME, packageName);
 		db.insert(AppLabelDao.TABLE_NAME, null, v);
 	}
 

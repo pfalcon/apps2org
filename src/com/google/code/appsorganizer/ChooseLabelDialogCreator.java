@@ -42,6 +42,7 @@ import com.google.code.appsorganizer.model.Label;
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private static final String APPLICATION_BUNDLE_NAME = "application_label_dialog";
+	private static final String PACKAGE_BUNDLE_NAME = "application_package_label_dialog";
 
 	private final DatabaseHelper labelAdapter;
 
@@ -155,6 +156,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void onSaveInstanceState(Bundle outState) {
 		if (application != null) {
 			outState.putString(APPLICATION_BUNDLE_NAME, application.name);
+			outState.putString(PACKAGE_BUNDLE_NAME, application.getPackage());
 		}
 	}
 
@@ -162,7 +164,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void onRestoreInstanceState(Bundle state) {
 		String appName = state.getString(APPLICATION_BUNDLE_NAME);
 		if (appName != null) {
-			application = applicationInfoManager.getApplication(appName);
+			application = applicationInfoManager.getApplication(state.getString(PACKAGE_BUNDLE_NAME), appName);
 		}
 	}
 }

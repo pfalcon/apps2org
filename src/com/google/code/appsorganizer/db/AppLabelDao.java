@@ -25,28 +25,32 @@ import com.google.code.appsorganizer.model.AppLabel;
 
 public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 
-	private static final String APP_COL_NAME = "app";
+	public static final String APP_COL_NAME = "app";
 
 	private static final String LABEL_ID_COL_NAME = "id_label";
 
+	public static final String PACKAGE_NAME_COL_NAME = "package";
+
 	public static final String TABLE_NAME = "apps_labels";
 
-	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, APP_COL_NAME, LABEL_ID_COL_NAME };
+	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, APP_COL_NAME, LABEL_ID_COL_NAME, PACKAGE_NAME_COL_NAME };
 
 	public static final DbColumns APP = new DbColumns(APP_COL_NAME, "text not null");
 	public static final DbColumns LABEL_ID = new DbColumns(LABEL_ID_COL_NAME, "integer not null");
+	public static final DbColumns PACKAGE = new DbColumns(PACKAGE_NAME_COL_NAME, "text null");
 
-	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, APP, LABEL_ID };
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, APP, LABEL_ID, PACKAGE };
 
 	AppLabelDao() {
 		super(TABLE_NAME);
 		columns = DB_COLUMNS;
 	}
 
-	public long insert(String app, long labelId) {
+	public long insert(String packageName, String app, long labelId) {
 		ContentValues v = new ContentValues();
 		v.put(APP_COL_NAME, app);
 		v.put(LABEL_ID_COL_NAME, labelId);
+		v.put(PACKAGE_NAME_COL_NAME, packageName);
 		return db.insert(name, null, v);
 	}
 
@@ -56,16 +60,13 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		t.setId(c.getLong(0));
 		t.setApp(c.getString(1));
 		t.setLabelId(c.getLong(2));
+		t.setPackageName(c.getString(3));
 		return t;
 	}
 
-	public AppLabel[] getApps(String app) {
-		Cursor c = db.query(name, COLS_STRING, APP_COL_NAME + "=?", new String[] { app }, null, null, null);
-		return convertCursorToArray(c, new AppLabel[c.getCount()]);
-	}
-
-	public int delete(String appName, Long labelId) {
-		return db.delete(name, LABEL_ID_COL_NAME + " = ? and " + APP_COL_NAME + " = ?", new String[] { labelId.toString(), appName });
+	public int delete(String packageName, String appName, Long labelId) {
+		return db.delete(name, LABEL_ID_COL_NAME + " = ? and " + APP_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] {
+				labelId.toString(), appName, packageName });
 	}
 
 	public int deleteAppsOfLabel(Long labelId) {
@@ -78,6 +79,7 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		v.put(ID_COL_NAME, obj.getId());
 		v.put(APP_COL_NAME, obj.getApp());
 		v.put(LABEL_ID_COL_NAME, obj.getLabelId());
+		v.put(PACKAGE_NAME_COL_NAME, obj.getPackageName());
 		return v;
 	}
 

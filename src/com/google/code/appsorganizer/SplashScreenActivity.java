@@ -18,6 +18,11 @@
  */
 package com.google.code.appsorganizer;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 import android.app.ProgressDialog;
@@ -64,7 +69,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		BugReportActivity.registerExceptionHandler(this);
-
+		// provaDownload();
 		// Debug.startMethodTracing("splash");
 
 		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
@@ -96,6 +101,31 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 		setProgressBarIndeterminateVisibility(true);
 		reload();
 		showStartHowTo();
+	}
+
+	private void provaDownload() {
+		try {
+			URL u = new URL("http://www.cyrket.com/package/com.google.code.appsorganizer");
+			HttpURLConnection c = (HttpURLConnection) u.openConnection();
+			c.setRequestMethod("GET");
+			c.setDoOutput(true);
+			c.connect();
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(c.getInputStream()));
+
+			String s = null;
+			while ((s = in.readLine()) != null) {
+				int indexOf = s.indexOf("<label>Category</label>");
+				if (indexOf != -1) {
+					String category = in.readLine().trim();
+					System.out.println(category);
+					break;
+				}
+			}
+			in.close();
+		} catch (IOException e) {
+			// TODO: handle exception
+		}
 	}
 
 	private void showStartHowTo() {

@@ -127,6 +127,8 @@ public class DbImportExport {
 		TObjectLongHashMap<String> labelsId = importLabels(dbHelper.labelDao, in);
 		importApps(dbHelper.appsLabelDao, labelsId, in, dbHelper.labelDao);
 		importStarred(dbHelper.appCacheDao, in);
+		// old files doesn't contain package
+		dbHelper.addPackages();
 	}
 
 	private static void importStarred(AppCacheDao appCacheDao, BufferedReader in) throws IOException {
@@ -156,7 +158,13 @@ public class DbImportExport {
 				String labelName = s.substring(labelPrefixLength);
 				if (!appLabelAlreadyExist(appsLabels, curApp, labelName)) {
 					AppLabel appLabel = new AppLabel();
-					appLabel.setApp(curApp);
+					int indexOf = curApp.indexOf(Application.SEPARATOR);
+					if (indexOf == -1) {
+						appLabel.setApp(curApp);
+					} else {
+						appLabel.setApp(curApp.substring(indexOf + 1));
+						appLabel.setPackageName(curApp.substring(0, indexOf));
+					}
 					appLabel.setLabelId(labelsId.get(labelName));
 					appsLabelDao.insert(appLabel);
 				}
@@ -171,9 +179,11 @@ public class DbImportExport {
 		String[] labels = appsLabels.values;
 		for (int i = 0; i < apps.length; i++) {
 			String a = apps[i];
-			if (a.equals(curApp)) {
+			if (a.endsWith(curApp)) {
 				for (; i < labels.length; i++) {
-					if (!apps[i].equals(curApp)) {
+					// for backward compatibility curApp can be only app name
+					// (with no package)
+					if (!a.endsWith(curApp)) {
 						return false;
 					}
 					if (labels[i].equals(label)) {

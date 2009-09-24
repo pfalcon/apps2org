@@ -141,8 +141,9 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
 				tmpCursor = dbHelper.getDb().rawQuery(
 						"select a.label, a.package, a.name from apps a inner join apps_labels al "
-								+ "on a.name = al.app where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "") + " order by "
-								+ (starredFirst ? "a.starred desc," : "") + "upper(a.label)", new String[] { Long.toString(labelId) });
+								+ "on a.name = al.app and a.package = al.package where id_label = ? "
+								+ (onlyStarred ? "and a.starred = 1" : "") + " order by " + (starredFirst ? "a.starred desc," : "")
+								+ "upper(a.label)", new String[] { Long.toString(labelId) });
 			}
 			int count = tmpCursor.getCount();
 			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,

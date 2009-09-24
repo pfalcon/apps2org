@@ -50,9 +50,9 @@ public class AppLabelSaver {
 					if (b.checked && labelId == null) {
 						labelId = dbHelper.labelDao.insert(b.label);
 					}
-					dbHelper.appsLabelDao.insert(application.name, labelId);
+					dbHelper.appsLabelDao.insert(application.getPackage(), application.name, labelId);
 				} else {
-					dbHelper.appsLabelDao.delete(application.name, labelId);
+					dbHelper.appsLabelDao.delete(application.getPackage(), application.name, labelId);
 				}
 			}
 			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);

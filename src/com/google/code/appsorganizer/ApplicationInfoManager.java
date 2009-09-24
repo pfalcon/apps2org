@@ -20,10 +20,8 @@ package com.google.code.appsorganizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
 import android.content.Intent;
 import android.content.pm.ComponentInfo;
@@ -40,7 +38,6 @@ import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.maps.ApplicationMap;
 import com.google.code.appsorganizer.model.AppCache;
-import com.google.code.appsorganizer.model.AppLabel;
 import com.google.code.appsorganizer.model.Application;
 
 public class ApplicationInfoManager {
@@ -86,7 +83,7 @@ public class ApplicationInfoManager {
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
-					String name = resolveInfo.activityInfo.name;
+					String name = resolveInfo.activityInfo.packageName + Application.SEPARATOR + resolveInfo.activityInfo.name;
 					Application app = oldApps.get(name);
 					int appCachePosition = nameCache.getPosition(name);
 					AppCache appCache = nameCache.getAt(appCachePosition);
@@ -147,7 +144,7 @@ public class ApplicationInfoManager {
 	}
 
 	private int loadLabels(DoubleArray appsLabels, Application app) {
-		int pos = Arrays.binarySearch(appsLabels.keys, app.name);
+		int pos = Arrays.binarySearch(appsLabels.keys, app.getPackage() + Application.SEPARATOR + app.name);
 		if (pos >= 0) {
 			app.setLabelListString(appsLabels.values[pos]);
 			app.setLabelIds(appsLabels.labelIds[pos]);
@@ -184,29 +181,6 @@ public class ApplicationInfoManager {
 		return apps;
 	}
 
-	public Collection<Application> convertToApplicationList(AppLabel[] l) {
-		TreeSet<Application> ret = new TreeSet<Application>();
-		for (int i = 0; i < l.length; i++) {
-			AppLabel appLabel = l[i];
-			Application application = getApplication(appLabel.getApp());
-			if (application != null) {
-				ret.add(application);
-			}
-		}
-		return ret;
-	}
-
-	public Collection<Application> convertToApplicationList(String[] l) {
-		TreeSet<Application> ret = new TreeSet<Application>();
-		for (int i = 0; i < l.length; i++) {
-			Application application = getApplication(l[i]);
-			if (application != null) {
-				ret.add(application);
-			}
-		}
-		return ret;
-	}
-
 	public Application[] getAppsNoLabel() {
 		Application[] ret = new Application[apps.length];
 		int pos = 0;
@@ -218,17 +192,6 @@ public class ApplicationInfoManager {
 			}
 		}
 		return copyArray(ret, pos);
-	}
-
-	public Application[] getStarredApps() {
-		Application[] ret = new Application[apps.length];
-		int i = 0;
-		for (Application application : apps) {
-			if (application.isStarred()) {
-				ret[i++] = application;
-			}
-		}
-		return copyArray(ret, i);
 	}
 
 	public Application[] getApps(long labelId, boolean onlyStarred) {
@@ -246,61 +209,14 @@ public class ApplicationInfoManager {
 		return copyArray(ret, i);
 	}
 
-	public Application[] convertToApplicationArray(String[] l, boolean onlyStarred) {
-		Application[] ret = new Application[l.length];
-		int pos = 0;
-		for (int i = 0; i < l.length; i++) {
-			Application a = getApplication(l[i]);
-			if (a != null && (!onlyStarred || a.isStarred())) {
-				ret[pos++] = a;
-			}
-		}
-		ret = copyArray(ret, pos);
-		Arrays.sort(ret);
-		return ret;
-	}
-
 	private Application[] copyArray(Application[] ret, int pos) {
 		Application[] a = new Application[pos];
 		System.arraycopy(ret, 0, a, 0, pos);
 		return a;
 	}
 
-	public Collection<Application> convertToApplicationList(List<AppLabel> l) {
-		TreeSet<Application> ret = new TreeSet<Application>();
-		for (AppLabel appLabel : l) {
-			Application application = getApplication(appLabel.getApp());
-			if (application != null) {
-				ret.add(application);
-			}
-		}
-		return ret;
-	}
-
-	public Collection<Application> convertToApplicationListNotSorted(List<AppLabel> l) {
-		List<Application> ret = new ArrayList<Application>();
-		for (AppLabel appLabel : l) {
-			Application application = getApplication(appLabel.getApp());
-			if (application != null) {
-				ret.add(application);
-			}
-		}
-		return ret;
-	}
-
-	public Collection<Application> convertToApplicationListFromString(List<String> l) {
-		TreeSet<Application> ret = new TreeSet<Application>();
-		for (String app : l) {
-			Application application = getApplication(app);
-			if (application != null) {
-				ret.add(application);
-			}
-		}
-		return ret;
-	}
-
-	public Application getApplication(String app) {
-		return applicationMap.get(app);
+	public Application getApplication(String packageName, String app) {
+		return applicationMap.get(packageName + Application.SEPARATOR + app);
 	}
 
 	private static final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();

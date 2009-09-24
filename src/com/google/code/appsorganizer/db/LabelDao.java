@@ -52,16 +52,17 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public DoubleArray getAppsLabels() {
-		Cursor c = db.rawQuery(
-				"select al.app, l.label from labels l inner join apps_labels al on l._id = al.id_label order by al.app, l.label",
-				new String[] {});
+		Cursor c = db
+				.rawQuery(
+						"select al.app, l.label, al.package from labels l inner join apps_labels al on l._id = al.id_label order by al.package, al.app, l.label",
+						new String[] {});
 		int tot = c.getCount();
 		String[] keys = new String[tot];
 		String[] values = new String[tot];
 		int pos = 0;
 		try {
 			while (c.moveToNext()) {
-				keys[pos] = c.getString(0);
+				keys[pos] = c.getString(2) + Application.SEPARATOR + c.getString(0);
 				values[pos++] = c.getString(1);
 			}
 		} finally {
@@ -71,9 +72,10 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	}
 
 	public DoubleArray getAppsLabelsConcat() {
-		Cursor c = db.rawQuery(
-				"select al.app, l.label, l._id from labels l inner join apps_labels al on l._id = al.id_label order by al.app, l.label",
-				new String[] {});
+		Cursor c = db
+				.rawQuery(
+						"select al.app, l.label, l._id, al.package from labels l inner join apps_labels al on l._id = al.id_label order by al.package, al.app, l.label",
+						new String[] {});
 		int tot = c.getCount();
 		String[] keys = new String[tot];
 		String[] values = new String[tot];
@@ -84,7 +86,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		String curApp = null;
 		try {
 			while (c.moveToNext()) {
-				String appName = c.getString(0);
+				String appName = c.getString(3) + Application.SEPARATOR + c.getString(0);
 				String label = c.getString(1);
 				long labelId = c.getLong(2);
 				if (appName.equals(curApp)) {

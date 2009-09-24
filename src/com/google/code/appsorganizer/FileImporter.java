@@ -59,6 +59,7 @@ public class FileImporter extends ListActivityWithDialog {
 		setContentView(R.layout.filelister);
 
 		importErrorDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.import_error));
+		importErrorDialog.setShowNegativeButton(false);
 
 		initialize(getString(R.string.import_menu), EXPORT_DIR);
 		getListView().setOnItemClickListener(new OnItemClickListener() {
@@ -69,6 +70,7 @@ public class FileImporter extends ListActivityWithDialog {
 					new AppsReloader(FileImporter.this, false).reload();
 					finish();
 				} catch (Throwable e) {
+					e.printStackTrace();
 					importErrorDialog.setTitle(getString(R.string.import_error) + ": " + e.getMessage());
 					getGenericDialogManager().showDialog(importErrorDialog);
 				}

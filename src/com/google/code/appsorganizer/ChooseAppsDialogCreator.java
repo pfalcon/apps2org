@@ -117,12 +117,12 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			String appName = app.name;
 			if (listView.isItemChecked(i)) {
 				if (!checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.insert(appName, currentLabelId);
+					dbHelper.appsLabelDao.insert(app.getPackage(), appName, currentLabelId);
 					changed = true;
 				}
 			} else {
 				if (checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.delete(appName, currentLabelId);
+					dbHelper.appsLabelDao.delete(app.getPackage(), appName, currentLabelId);
 					changed = true;
 				}
 			}

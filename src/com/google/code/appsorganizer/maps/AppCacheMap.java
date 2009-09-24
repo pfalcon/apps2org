@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer.maps;
 
 import com.google.code.appsorganizer.model.AppCache;
+import com.google.code.appsorganizer.model.Application;
 
 /**
  * @author fabio
@@ -37,6 +38,6 @@ public class AppCacheMap extends AoMap<String, AppCache> {
 
 	@Override
 	protected String createKey(AppCache v) {
-		return v.name;
+		return v.packageName + Application.SEPARATOR + v.name;
 	}
 }
