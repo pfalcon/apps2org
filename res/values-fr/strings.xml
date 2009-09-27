@@ -49,8 +49,6 @@
     <string name="show_close_button_in_folder">Afficher le bouton fermer</string>
     <string name="close_folder_after_launch">Fermer le dossier après lancement de l'appli</string>
     <string name="starred_first">Applis favorites en premier</string>
-    <string name="use_service">Apps Organizer en tâche de fond</string>
-    <string name="use_service_summary">Apps Organizer tourne en tâche de fond afin d'améliorer les temps de chargement</string>
     <string name="Bug_report">Rapport d'erreur</string>
     <string name="Bug_report_1">Apps Organizer a planté</string>
     <string name="Bug_report_2">Pour nous aider à régler ces erreurs, merci de nous les reporter</string>

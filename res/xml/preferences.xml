@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<CheckBoxPreference android:key="use_service"
-		android:title="@string/use_service" android:summary="@string/use_service_summary"
-		android:defaultValue="true" />
-
 	<PreferenceCategory android:title="@string/Shortcut_folder">
 		<ListPreference android:key="defaultAction"
 			android:title="@string/list_default_action" android:summary="@string/list_default_action_summary"

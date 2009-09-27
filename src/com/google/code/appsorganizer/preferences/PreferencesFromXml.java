@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer.preferences;
 
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
@@ -32,21 +30,5 @@ public class PreferencesFromXml extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 
 		addPreferencesFromResource(R.xml.preferences);
-
-		SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
-		sharedPreferences.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
-			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-				if (key.equals("use_service")) {
-					// TODO togliere dalle preferenze
-					// boolean useService = sharedPreferences.getBoolean(key,
-					// true);
-					// if (useService) {
-					// StartupListener.startService(PreferencesFromXml.this);
-					// } else {
-					// StartupListener.stopService(PreferencesFromXml.this);
-					// }
-				}
-			}
-		});
 	}
 }
