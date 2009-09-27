@@ -35,39 +35,31 @@ public class ApplicationContextMenuManager {
 	private static final int UNINSTALL = 2;
 	private static final int LAUNCH = 1;
 	private static final int CHOOSE_LABELS = 0;
-	private static final ApplicationContextMenuManager singleton = new ApplicationContextMenuManager();
 
-	public static ApplicationContextMenuManager singleton() {
-		return singleton;
-	}
-
-	private ApplicationContextMenuManager() {
-	}
-
-	public void createMenu(ContextMenu menu, Application app) {
-		menu.setHeaderTitle(app.getLabel());
+	public static void createMenu(ContextMenu menu, String label) {
+		menu.setHeaderTitle(label);
 		menu.add(0, CHOOSE_LABELS, 0, R.string.choose_labels_header);
 		menu.add(0, LAUNCH, 1, R.string.launch);
 		menu.add(0, UNINSTALL, 2, R.string.uninstall);
 	}
 
-	public void onContextItemSelected(MenuItem item, final Application app, final Activity activity,
-			ChooseLabelDialogCreator chooseLabelDialog, final ApplicationInfoManager applicationInfoManager) {
+	public static void onContextItemSelected(MenuItem item, String packageName, String name, Activity activity,
+			ChooseLabelDialogCreator chooseLabelDialog, ApplicationInfoManager applicationInfoManager) {
 		switch (item.getItemId()) {
 		case CHOOSE_LABELS:
-			chooseLabelDialog.setCurrentApp(app);
+			chooseLabelDialog.setCurrentApp(packageName, name);
 			((GenericDialogManagerActivity) activity).showDialog(chooseLabelDialog);
 			break;
 		case LAUNCH:
-			app.startApplication(activity);
+			Application.startApplication(activity, packageName, name);
 			break;
 		case UNINSTALL:
-			app.uninstallApplication(activity);
+			Application.uninstallApplication(activity, packageName);
 			break;
 		}
 	}
 
-	public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+	public static void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
 		if (requestCode == 1) {
 			new AppsReloader(activity, false).reload();
 		}

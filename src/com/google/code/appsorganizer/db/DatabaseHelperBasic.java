@@ -33,7 +33,7 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 
 	private static final String TAG = "DatabaseHelper";
 
-	private static final int DATABASE_VERSION = 21;
+	private static final int DATABASE_VERSION = 24;
 
 	protected final SQLiteDatabase db;
 
@@ -61,35 +61,35 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 	}
 
 	private void insertUtilityApps(SQLiteDatabase db, long id) {
-		insertApp(db, "aaa", SplashScreenActivity.class.getName(), id);
+		insertApp(db, "com.google.code.appsorganizer", SplashScreenActivity.class.getName(), id);
 	}
 
 	private void insertMultimediaApps(SQLiteDatabase db, long id) {
-		insertApp(db, "aaa", "com.android.music.MusicBrowserActivity", id);
-		insertApp(db, "aaa", "com.android.music.VideoBrowserActivity", id);
-		insertApp(db, "aaa", "com.android.camera.Camera", id);
-		insertApp(db, "aaa", "com.android.camera.VideoCamera", id);
-		insertApp(db, "aaa", "com.android.camera.GalleryPicker", id);
+		insertApp(db, "com.android.music", "com.android.music.MusicBrowserActivity", id);
+		insertApp(db, "com.android.music", "com.android.music.VideoBrowserActivity", id);
+		insertApp(db, "com.android.camera", "com.android.camera.Camera", id);
+		insertApp(db, "com.android.camera", "com.android.camera.VideoCamera", id);
+		insertApp(db, "com.android.camera", "com.android.camera.GalleryPicker", id);
 	}
 
 	private void insertAndroidApps(SQLiteDatabase db, long id) {
-		insertApp(db, "aaa", "com.android.alarmclock.AlarmClock", id);
-		insertApp(db, "aaa", "com.android.calendar.LaunchActivity", id);
-		insertApp(db, "aaa", "com.android.vending.AssetBrowserActivity", id);
-		insertApp(db, "aaa", "com.android.settings.Settings", id);
-		insertApp(db, "aaa", "com.android.contacts.DialtactsActivity", id);
-		insertApp(db, "aaa", "com.android.contacts.DialtactsContactsEntryActivity", id);
-		insertApp(db, "aaa", "com.android.mms.ui.ConversationList", id);
-		insertApp(db, "aaa", "com.android.calculator2.Calculator", id);
+		insertApp(db, "com.android.alarmclock", "com.android.alarmclock.AlarmClock", id);
+		insertApp(db, "com.android.calendar", "com.android.calendar.LaunchActivity", id);
+		insertApp(db, "com.android.vending", "com.android.vending.AssetBrowserActivity", id);
+		insertApp(db, "com.android.settings", "com.android.settings.Settings", id);
+		insertApp(db, "com.android.contacts", "com.android.contacts.DialtactsActivity", id);
+		insertApp(db, "com.android.contacts", "com.android.contacts.DialtactsContactsEntryActivity", id);
+		insertApp(db, "com.android.mms", "com.android.mms.ui.ConversationList", id);
+		insertApp(db, "com.android.calculator2", "com.android.calculator2.Calculator", id);
 	}
 
 	private void insertInterneApps(SQLiteDatabase db, long id) {
-		insertApp(db, "aaa", "com.android.browser.BrowserActivity", id);
-		insertApp(db, "aaa", "com.google.android.talk.SigningInActivity", id);
-		insertApp(db, "aaa", "com.google.android.maps.MapsActivity", id);
-		insertApp(db, "aaa", "com.google.android.youtube.HomePage", id);
-		insertApp(db, "aaa", "com.google.android.gm.ConversationListActivityGmail", id);
-		insertApp(db, "aaa", "com.android.email.activity.Welcome", id);
+		insertApp(db, "com.android.browser", "com.android.browser.BrowserActivity", id);
+		insertApp(db, "com.google.android.talk", "com.google.android.talk.SigningInActivity", id);
+		insertApp(db, "com.google.android.apps.maps", "com.google.android.maps.MapsActivity", id);
+		insertApp(db, "com.google.android.youtube", "com.google.android.youtube.HomePage", id);
+		insertApp(db, "com.google.android.gm", "com.google.android.gm.ConversationListActivityGmail", id);
+		insertApp(db, "com.android.email", "com.android.email.activity.Welcome", id);
 	}
 
 	@Override
@@ -113,6 +113,13 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		}
 		if (oldVersion <= 20) {
 			addPackages(db);
+		}
+		if (oldVersion <= 22) {
+			// TODO toglere
+			db.delete(AppCacheDao.TABLE_NAME, null, null);
+		}
+		if (oldVersion <= 23) {
+			addColumn(db, AppCacheDao.TABLE_NAME, AppCacheDao.IMAGE);
 		}
 		// db.execSQL(appsLabelDao.getDropTableScript());
 		// db.execSQL(labelDao.getDropTableScript());

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.code.appsorganizer.AppLabelBinding;
 import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
@@ -71,51 +72,8 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return new DoubleArray(keys, values, null);
 	}
 
-	public DoubleArray getAppsLabelsConcat() {
-		Cursor c = db
-				.rawQuery(
-						"select al.app, l.label, l._id, al.package from labels l inner join apps_labels al on l._id = al.id_label order by al.package, al.app, l.label",
-						new String[] {});
-		int tot = c.getCount();
-		String[] keys = new String[tot];
-		String[] values = new String[tot];
-		String[] labelIds = new String[tot];
-		int pos = 0;
-		StringBuilder b = null;
-		StringBuilder bl = null;
-		String curApp = null;
-		try {
-			while (c.moveToNext()) {
-				String appName = c.getString(3) + Application.SEPARATOR + c.getString(0);
-				String label = c.getString(1);
-				long labelId = c.getLong(2);
-				if (appName.equals(curApp)) {
-					b.append(", ").append(label);
-					bl.append(labelId).append(Application.LABEL_ID_SEPARATOR);
-				} else {
-					if (curApp != null) {
-						keys[pos] = curApp;
-						values[pos] = b.toString();
-						labelIds[pos++] = bl.toString();
-					}
-					curApp = appName;
-					b = new StringBuilder(label);
-					bl = new StringBuilder().append(Application.LABEL_ID_SEPARATOR).append(labelId).append(Application.LABEL_ID_SEPARATOR);
-				}
-			}
-			keys[pos] = curApp;
-			values[pos] = b.toString();
-			labelIds[pos++] = bl.toString();
-		} finally {
-			c.close();
-		}
-		String[] k2 = new String[pos];
-		System.arraycopy(keys, 0, k2, 0, pos);
-		return new DoubleArray(k2, values, labelIds);
-	}
-
 	public ArrayList<Label> getLabels() {
-		Cursor c = db.query(name, COLS_STRING, null, null, null, null, "upper(" + LABEL_COL_NAME + ")");
+		Cursor c = getLabelCursor();
 		return convertCursorToList(c);
 	}
 
@@ -126,6 +84,24 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public Cursor getLabelCursor() {
 		return db.query(TABLE_NAME, COLS_STRING, null, null, null, null, ("upper(" + LABEL_COL_NAME + ")"));
+	}
+
+	public ArrayList<AppLabelBinding> getAppsLabelList(String packageName, String name) {
+		Cursor c = db.rawQuery("select l._ID, l.label, case when b._id is null then 0 else 1 end as checked from labels l"
+				+ " left outer join apps_labels b on l._id = b.id_label and b.package = ? and b.app = ? "
+				+ "order by checked desc, upper(l.label)", new String[] { packageName, name });
+		ArrayList<AppLabelBinding> l = new ArrayList<AppLabelBinding>(c.getCount());
+		try {
+			while (c.moveToNext()) {
+				boolean checked = c.getInt(2) == 1;
+				AppLabelBinding a = new AppLabelBinding(c.getString(1), c.getLong(0), checked);
+				a.checked = checked;
+				l.add(a);
+			}
+		} finally {
+			c.close();
+		}
+		return l;
 	}
 
 	public long insert(String label) {

@@ -26,6 +26,7 @@ public class AppCache extends ObjectWithId {
 	public final String name;
 	public final String label;
 	public boolean starred;
+	public byte[] image;
 
 	public AppCache(String packageName, String name, String label) {
 		this.packageName = packageName;

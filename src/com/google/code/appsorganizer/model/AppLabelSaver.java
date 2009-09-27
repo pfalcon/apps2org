@@ -29,20 +29,22 @@ public class AppLabelSaver {
 
 	private final DatabaseHelper dbHelper;
 
-	private final ApplicationInfoManager applicationInfoManager;
-
-	public AppLabelSaver(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager) {
+	public AppLabelSaver(DatabaseHelper dbHelper) {
 		this.dbHelper = dbHelper;
-		this.applicationInfoManager = applicationInfoManager;
 	}
 
-	public static void saveStarred(DatabaseHelper dbHelper, ApplicationInfoManager applicationInfoManager, Application application,
-			boolean starred, Object source) {
+	public static void saveStarred(DatabaseHelper dbHelper, Application application, boolean starred,
+			Object source) {
 		dbHelper.appCacheDao.updateStarred(application.getPackage(), application.name, starred);
 		ApplicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
 	}
 
-	public void save(Application application, List<AppLabelBinding> modifiedLabels, Object source) {
+	public static void saveStarred(DatabaseHelper dbHelper, String packageName, String name, boolean starred, Object source) {
+		dbHelper.appCacheDao.updateStarred(packageName, name, starred);
+		ApplicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
+	}
+
+	public void save(String packageName, String name, List<AppLabelBinding> modifiedLabels, Object source) {
 		if (!modifiedLabels.isEmpty()) {
 			for (AppLabelBinding b : modifiedLabels) {
 				Long labelId = b.labelId;
@@ -50,12 +52,11 @@ public class AppLabelSaver {
 					if (b.checked && labelId == null) {
 						labelId = dbHelper.labelDao.insert(b.label);
 					}
-					dbHelper.appsLabelDao.insert(application.getPackage(), application.name, labelId);
+					dbHelper.appsLabelDao.insert(packageName, name, labelId);
 				} else {
-					dbHelper.appsLabelDao.delete(application.getPackage(), application.name, labelId);
+					dbHelper.appsLabelDao.delete(packageName, name, labelId);
 				}
 			}
-			applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
 			ApplicationInfoManager.notifyDataSetChanged(source);
 		}
 	}

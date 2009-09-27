@@ -20,13 +20,15 @@ package com.google.code.appsorganizer.db;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
+import com.google.code.appsorganizer.model.Application;
 
 public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
-	private static final String LABEL_COL_NAME = "label";
+	public static final String LABEL_COL_NAME = "label";
 
 	public static final String NAME_COL_NAME = "name";
 
@@ -34,7 +36,10 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public static final String STARRED_COL_NAME = "starred";
 
-	private static final String[] ALL_COLUMNS = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME };
+	public static final String IMAGE_COL_NAME = "image";
+
+	private static final String[] ALL_COLUMNS = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME,
+			IMAGE_COL_NAME };
 
 	public static final String TABLE_NAME = "apps";
 
@@ -42,8 +47,11 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null");
 	public static final DbColumns STARRED = new DbColumns(STARRED_COL_NAME, "integer not null default 0");
 	public static final DbColumns PACKAGE_NAME = new DbColumns(PACKAGE_NAME_COL_NAME, "text");
+	public static final DbColumns IMAGE = new DbColumns(IMAGE_COL_NAME, "blob");
 
-	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME };
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME, IMAGE };
+
+	public static final long OTHER_LABEL_ID = -1l;
 
 	AppCacheDao() {
 		super(TABLE_NAME);
@@ -51,17 +59,14 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	}
 
 	public AppCacheMap queryForCacheMap() {
-		Cursor c = db.query(name, ALL_COLUMNS, null, null, null, null, NAME_COL_NAME);
-		return convertCursorToCacheMap(c);
-	}
-
-	protected AppCacheMap convertCursorToCacheMap(Cursor c) {
+		Cursor c = db.query(name, ALL_COLUMNS, null, null, null, null, PACKAGE_NAME_COL_NAME + "," + NAME_COL_NAME);
 		AppCache[] v = new AppCache[c.getCount()];
 		try {
 			int i = 0;
 			while (c.moveToNext()) {
 				AppCache a = new AppCache(c.getString(3), c.getString(0), c.getString(1));
 				a.starred = c.getInt(2) == 1;
+				a.image = c.getBlob(4);
 				v[i++] = a;
 			}
 		} finally {
@@ -98,6 +103,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		v.put(LABEL_COL_NAME, obj.label);
 		v.put(STARRED_COL_NAME, obj.starred ? 1 : 0);
 		v.put(PACKAGE_NAME_COL_NAME, obj.packageName);
+		v.put(IMAGE_COL_NAME, obj.image);
 		return v;
 	}
 
@@ -105,9 +111,10 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
 	}
 
-	public void updateLabel(String p, String n, String l) {
+	public void updateLabel(String p, String n, String l, byte[] img) {
 		ContentValues v = new ContentValues();
 		v.put(LABEL_COL_NAME, l);
+		v.put(IMAGE_COL_NAME, img);
 		db.update(name, v, PACKAGE_NAME_COL_NAME + " = ? and " + NAME_COL_NAME + "=?", new String[] { p, n });
 	}
 
@@ -117,5 +124,46 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 				db.delete(name, NAME_COL_NAME + " = ?", new String[] { appNames[i] });
 			}
 		}
+	}
+
+	public static Cursor getAppsOfLabelCursor(SQLiteDatabase db, long labelId, boolean starredFirst, boolean onlyStarred) {
+		return db.rawQuery("select a._id, a.label, a.image, a.package, a.name from apps a inner join apps_labels al "
+				+ "on a.name = al.app and a.package = al.package where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "")
+				+ " order by " + (starredFirst ? "a.starred desc," : "") + "upper(a.label)", new String[] { Long.toString(labelId) });
+	}
+
+	public Application[] getAppsOfLabel(long labelId, boolean starredFirst, boolean onlyStarred) {
+		Cursor c = getAppsOfLabelCursor(db, labelId, starredFirst, onlyStarred);
+		return convertToAppList(c);
+	}
+
+	private Application[] convertToAppList(Cursor c) {
+		Application[] v = new Application[c.getCount()];
+		try {
+			int i = 0;
+			while (c.moveToNext()) {
+				Application a = new Application(c.getString(2), c.getString(3), c.getLong(0));
+				a.setLabel(c.getString(1));
+				v[i++] = a;
+			}
+		} finally {
+			c.close();
+		}
+		return v;
+	}
+
+	public Cursor getAppsCursor(Long label) {
+		String select = "select a._id, a.label, a.name, a.starred, a.image, a.package from apps a left outer join apps_labels al "
+				+ "on a.name = al.app and a.package = al.package where ";
+		String orderBy = " order by upper(a.label)";
+		if (label == OTHER_LABEL_ID) {
+			return db.rawQuery(select + "id_label is null" + orderBy, null);
+		} else {
+			return db.rawQuery(select + "id_label=?" + orderBy, new String[] { label.toString() });
+		}
+	}
+
+	public Cursor getAllApps(String[] cols) {
+		return db.query(TABLE_NAME, cols, null, null, null, null, "upper(label)");
 	}
 }

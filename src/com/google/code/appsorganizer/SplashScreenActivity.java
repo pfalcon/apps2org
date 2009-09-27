@@ -18,16 +18,11 @@
  */
 package com.google.code.appsorganizer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,12 +30,10 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
 import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
@@ -49,7 +42,6 @@ import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.model.Application;
-import com.google.code.appsorganizer.service.StartupListener;
 
 public class SplashScreenActivity extends ListActivityWithDialog implements DbChangeListener {
 
@@ -76,15 +68,14 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
 		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper, applicationInfoManager);
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper);
 
-		requestWindowFeature(Window.FEATURE_PROGRESS);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.main);
 
 		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-				chooseLabelDialog.setCurrentApp(((Application) getListAdapter().getItem(position)));
+				Application app = (Application) getListAdapter().getItem(position);
+				chooseLabelDialog.setCurrentApp(app.getPackage(), app.name);
 				showDialog(chooseLabelDialog);
 			}
 		});
@@ -98,35 +89,35 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 			}
 		});
 
-		setProgressBarIndeterminateVisibility(true);
 		reload();
 		showStartHowTo();
 	}
 
-	private void provaDownload() {
-		try {
-			URL u = new URL("http://www.cyrket.com/package/com.google.code.appsorganizer");
-			HttpURLConnection c = (HttpURLConnection) u.openConnection();
-			c.setRequestMethod("GET");
-			c.setDoOutput(true);
-			c.connect();
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(c.getInputStream()));
-
-			String s = null;
-			while ((s = in.readLine()) != null) {
-				int indexOf = s.indexOf("<label>Category</label>");
-				if (indexOf != -1) {
-					String category = in.readLine().trim();
-					System.out.println(category);
-					break;
-				}
-			}
-			in.close();
-		} catch (IOException e) {
-			// TODO: handle exception
-		}
-	}
+	// private void provaDownload() {
+	// try {
+	// URL u = new
+	// URL("http://www.cyrket.com/package/com.google.code.appsorganizer");
+	// HttpURLConnection c = (HttpURLConnection) u.openConnection();
+	// c.setRequestMethod("GET");
+	// c.setDoOutput(true);
+	// c.connect();
+	//
+	// BufferedReader in = new BufferedReader(new
+	// InputStreamReader(c.getInputStream()));
+	//
+	// String s = null;
+	// while ((s = in.readLine()) != null) {
+	// int indexOf = s.indexOf("<label>Category</label>");
+	// if (indexOf != -1) {
+	// String category = in.readLine().trim();
+	// System.out.println(category);
+	// break;
+	// }
+	// }
+	// in.close();
+	// } catch (IOException e) {
+	// }
+	// }
 
 	private void showStartHowTo() {
 		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
@@ -163,7 +154,9 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
 				pd.setMessage(getText(R.string.preparing_apps_list));
-			} else if (msg.what == -2) {
+				Cursor c = dbHelper.appCacheDao.getAllApps(ApplicationViewBinder.COLS);
+				createAppsAdapter(c);
+				// } else if (msg.what == -2) {
 				setListAdapter(appsAdapter);
 			} else if (msg.what == -3) {
 				pd.hide();
@@ -175,7 +168,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 	private ProgressDialog pd;
 
-	private ArrayAdapter<Application> appsAdapter;
+	private SimpleCursorAdapter appsAdapter;
 
 	public void reload() {
 		pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list), getText(R.string.please_wait_loading), true, false);
@@ -186,29 +179,11 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 				}
-
 				applicationInfoManager.reloadAll(dbHelper, handler, false);
 				handler.sendEmptyMessage(-1);
 
-				final Application[] apps = applicationInfoManager.getAppsArray();
-				ArrayList<Application> l = new ArrayList<Application>(apps.length);
-				for (int i = 0; i < apps.length; i++) {
-					l.add(apps[i]);
-				}
-				appsAdapter = new ArrayAdapter<Application>(SplashScreenActivity.this, R.layout.app_row, l) {
-					@Override
-					public View getView(int position, View v, ViewGroup parent) {
-						return getItem(position).getAppView(SplashScreenActivity.this, dbHelper, applicationInfoManager, v,
-								chooseLabelDialog);
-					}
-
-				};
-				appsAdapter.setNotifyOnChange(false);
-				handler.sendEmptyMessage(-2);
-
 				registerForContextMenu(getListView());
 				handler.sendEmptyMessage(-3);
-				loadIcons(apps);
 				ApplicationInfoManager.addListener(SplashScreenActivity.this);
 			}
 		};
@@ -224,81 +199,38 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-		Application app = (Application) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.singleton().createMenu(menu, app);
+		SQLiteCursor c = (SQLiteCursor) getListAdapter().getItem(info.position);
+		ApplicationContextMenuManager.createMenu(menu, c.getString(1));
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		Application app = (Application) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.singleton().onContextItemSelected(item, app, this, chooseLabelDialog, applicationInfoManager);
+		SQLiteCursor c = (SQLiteCursor) getListAdapter().getItem(info.position);
+		ApplicationContextMenuManager.onContextItemSelected(item, c.getString(5), c.getString(2), this, chooseLabelDialog,
+				applicationInfoManager);
 		return true;
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		ApplicationContextMenuManager.singleton().onActivityResult(this, requestCode, resultCode, data);
+		ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data);
 	}
-
-	private final Handler listHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			if (msg.what == -1) {
-				((ArrayAdapter<?>) getListAdapter()).notifyDataSetChanged();
-			} else if (msg.what == -2) {
-				setProgressBarIndeterminateVisibility(false);
-				StartupListener.startService(SplashScreenActivity.this);
-			}
-		}
-	};
 
 	public void dataSetChanged(Object source, short type) {
-		if (type == CHANGED_STARRED) {
-			if (source != this) {
-				appsAdapter.notifyDataSetChanged();
-			}
-		} else {
-			appsAdapter.setNotifyOnChange(false);
-			appsAdapter.clear();
-			Application[] appsArray = applicationInfoManager.getAppsArray();
-			for (int i = 0; i < appsArray.length; i++) {
-				appsAdapter.add(appsArray[i]);
-			}
+		if (appsAdapter != null) {
+			appsAdapter.runQueryOnBackgroundThread(null);
 			appsAdapter.notifyDataSetChanged();
-			loadInconsInThread(appsArray);
 		}
-	}
-
-	private void loadInconsInThread(final Application[] appsArray) {
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				loadIcons(appsArray);
-			}
-		};
-		t.start();
-	}
-
-	private void loadIcons(final Application[] appsArray) {
-		int pos = 0;
-		for (Application ab : appsArray) {
-			if (ab.getIcon() == null) {
-				ab.loadIcon(getPackageManager());
-				ab.setIcon(ab.getIcon());
-				pos++;
-			}
-			if (pos == 50) {
-				listHandler.sendEmptyMessage(-1);
-				pos = 0;
-			}
-		}
-		if (pos > 0) {
-			listHandler.sendEmptyMessage(-1);
-		}
-		listHandler.sendEmptyMessage(-2);
-		// Debug.stopMethodTracing();
+		// TODO si puo' gestire meglio
+		// if (type == CHANGED_STARRED) {
+		// if (source != this) {
+		// appsAdapter.notifyDataSetChanged();
+		// }
+		// } else {
+		// appsAdapter.runQueryOnBackgroundThread(null);
+		// }
 	}
 
 	@Override
@@ -309,6 +241,13 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return optionMenuManager.onOptionsItemSelected(item);
+	}
+
+	private void createAppsAdapter(Cursor c) {
+		appsAdapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c, ApplicationViewBinder.COLS,
+				ApplicationViewBinder.VIEWS) {
+		};
+		appsAdapter.setViewBinder(new ApplicationViewBinder(dbHelper, this, chooseLabelDialog));
 	}
 
 }

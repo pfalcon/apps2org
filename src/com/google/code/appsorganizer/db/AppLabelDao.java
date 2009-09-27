@@ -94,4 +94,21 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 			}
 		}
 	}
+
+	public String getLabelListString(String packageName, String name) {
+		Cursor c = db.rawQuery("select l.label from labels l inner join apps_labels al "
+				+ "on l._id = al.id_label where al.package = ? and al.app = ? order by upper(l.label)", new String[] { packageName, name });
+		StringBuilder b = new StringBuilder();
+		try {
+			while (c.moveToNext()) {
+				if (b.length() != 0) {
+					b.append(", ");
+				}
+				b.append(c.getString(0));
+			}
+		} finally {
+			c.close();
+		}
+		return b.toString();
+	}
 }

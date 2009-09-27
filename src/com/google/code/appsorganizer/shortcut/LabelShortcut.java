@@ -22,9 +22,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
-import android.database.MatrixCursor;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -55,9 +54,7 @@ import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelperBasic;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
-import com.google.code.appsorganizer.db.ObjectWithIdDao;
 import com.google.code.appsorganizer.dialogs.ActivityWithDialog;
-import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelShortcut extends ActivityWithDialog implements DbChangeListener {
@@ -122,8 +119,6 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 
 	private Cursor cursor;
 
-	private String[] iconsToLoad;
-
 	private Cursor reloadGrid() {
 		if (labelId == ALL_LABELS_ID) {
 			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
@@ -133,34 +128,15 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 		} else {
 			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
-				tmpCursor = dbHelper.getDb()
-						.rawQuery("select label, package, name from apps where starred = 1 order by upper(label)", null);
+				tmpCursor = dbHelper.getDb().rawQuery(
+						"select _id, label, image, package, name from apps where starred = 1 order by upper(label)", null);
 			} else {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
-				tmpCursor = dbHelper.getDb().rawQuery(
-						"select a.label, a.package, a.name from apps a inner join apps_labels al "
-								+ "on a.name = al.app and a.package = al.package where id_label = ? "
-								+ (onlyStarred ? "and a.starred = 1" : "") + " order by " + (starredFirst ? "a.starred desc," : "")
-								+ "upper(a.label)", new String[] { Long.toString(labelId) });
+				tmpCursor = AppCacheDao.getAppsOfLabelCursor(dbHelper.getDb(), labelId, starredFirst, onlyStarred);
 			}
-			int count = tmpCursor.getCount();
-			MatrixCursor m = new MatrixCursor(new String[] { ObjectWithIdDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME,
-					AppCacheDao.PACKAGE_NAME_COL_NAME, AppCacheDao.NAME_COL_NAME }, count);
-			iconsToLoad = new String[count];
-			int i = 0;
-			try {
-				while (tmpCursor.moveToNext()) {
-					String packageName = tmpCursor.getString(1);
-					String name = tmpCursor.getString(2);
-					m.addRow(new Object[] { i, tmpCursor.getString(0), null, packageName, name });
-					iconsToLoad[i++] = packageName + Application.SEPARATOR + name;
-				}
-			} finally {
-				tmpCursor.close();
-			}
-			cursor = m;
+			cursor = tmpCursor;
 			return cursor;
 		}
 	}
@@ -197,22 +173,22 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 			Cursor prevCursor = cursor;
 			Cursor actual = reloadGrid();
 			publishProgress(prevCursor, actual);
-			if (labelId != ALL_LABELS_ID) {
-				int tot = 0;
-				for (int i = 0; i < iconsToLoad.length; i++) {
-					String componentName = iconsToLoad[i];
-					if (Application.getIconFromCache(componentName) == null) {
-						Application.loadIcon(getPackageManager(), componentName);
-						tot++;
-						if (tot % 4 == 0) {
-							publishProgress();
-						}
-					}
-				}
-				if (tot % 4 != 0) {
-					publishProgress();
-				}
-			}
+			// if (labelId != ALL_LABELS_ID) {
+			// int tot = 0;
+			// for (int i = 0; i < iconsToLoad.length; i++) {
+			// String componentName = iconsToLoad[i];
+			// if (Application.getIconFromCache(componentName) == null) {
+			// Application.loadIcon(getPackageManager(), componentName);
+			// tot++;
+			// if (tot % 4 == 0) {
+			// publishProgress();
+			// }
+			// }
+			// }
+			// if (tot % 4 != 0) {
+			// publishProgress();
+			// }
+			// }
 			return null;
 		}
 
@@ -244,17 +220,17 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 	}
 
 	private void createAdapter(Cursor cursor) {
-		cursorAdapter = new SimpleCursorAdapter(this, R.layout.app_cell_with_icon, cursor, new String[] { LabelDao.ICON_COL_NAME,
+		cursorAdapter = new SimpleCursorAdapter(this, R.layout.app_cell_with_icon, cursor, new String[] { LabelDao.ID_COL_NAME,
 				LabelDao.LABEL_COL_NAME }, new int[] { R.id.image, R.id.name });
 		cursorAdapter.setViewBinder(new ViewBinder() {
 			public boolean setViewValue(final View view, Cursor cursor, int columnIndex) {
-				if (columnIndex == 2) {
+				if (view instanceof ImageView) {
 					if (cursor.getColumnCount() == 3) {
 						ImageView icon = (ImageView) view;
-						if (cursor.isNull(columnIndex)) {
+						if (cursor.isNull(2)) {
 							icon.setImageResource(R.drawable.icon_default);
 						} else {
-							int ic = Label.convertToIcon(cursor.getInt(columnIndex));
+							int ic = Label.convertToIcon(cursor.getInt(2));
 							if (ic > 0) {
 								icon.setImageResource(ic);
 							} else {
@@ -262,10 +238,13 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 							}
 						}
 					} else {
-						String appName = cursor.getString(4);
-						String packageName = cursor.getString(3);
-						Drawable drawable = Application.getIconFromCache(packageName, appName);
-						((ImageView) view).setImageDrawable(drawable);
+						byte[] imageBytes = cursor.getBlob(2);
+						((ImageView) view).setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
+						// String appName = cursor.getString(4);
+						// String packageName = cursor.getString(3);
+						// Drawable drawable =
+						// Application.getIconFromCache(packageName, appName);
+						// ((ImageView) view).setImageDrawable(drawable);
 					}
 				} else {
 					((TextView) view).setText(cursor.getString(columnIndex));

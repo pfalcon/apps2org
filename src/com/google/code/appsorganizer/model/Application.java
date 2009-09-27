@@ -26,28 +26,11 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-
-import com.google.code.appsorganizer.ApplicationInfoManager;
-import com.google.code.appsorganizer.ChooseLabelDialogCreator;
-import com.google.code.appsorganizer.R;
-import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 
 public class Application implements Comparable<Application> {
 
@@ -61,15 +44,13 @@ public class Application implements Comparable<Application> {
 
 	private Intent intent;
 
-	private String labelListString;
-
-	private String labelIds;
-
 	private boolean starred;
 
 	public final String name;
 
 	private final String packageName;
+
+	private final String completeName;
 
 	private final int icon;
 
@@ -77,11 +58,20 @@ public class Application implements Comparable<Application> {
 		this.id = id;
 		this.name = activityInfo.name;
 		this.packageName = activityInfo.packageName;
+		this.completeName = packageName + SEPARATOR + name;
 		if (activityInfo.icon > 0) {
 			this.icon = activityInfo.icon;
 		} else {
 			this.icon = activityInfo.applicationInfo.icon;
 		}
+	}
+
+	public Application(String packageName, String name, Long id) {
+		this.id = id;
+		this.name = name;
+		this.packageName = packageName;
+		this.completeName = packageName + SEPARATOR + name;
+		this.icon = 0;
 	}
 
 	public String getLabel() {
@@ -91,7 +81,10 @@ public class Application implements Comparable<Application> {
 	public int compareTo(Application another) {
 		int r = label.compareToIgnoreCase(another.label);
 		if (r == 0) {
-			r = name.compareToIgnoreCase(another.name);
+			r = packageName.compareToIgnoreCase(another.packageName);
+			if (r == 0) {
+				r = name.compareToIgnoreCase(another.name);
+			}
 		}
 		return r;
 	}
@@ -192,14 +185,6 @@ public class Application implements Comparable<Application> {
 		this.label = label;
 	}
 
-	public String getLabelListString() {
-		return labelListString;
-	}
-
-	public void setLabelListString(String labelListString) {
-		this.labelListString = labelListString;
-	}
-
 	public void setIcon(Drawable drawableIcon) {
 		this.drawableIcon = drawableIcon;
 	}
@@ -212,94 +197,30 @@ public class Application implements Comparable<Application> {
 		this.starred = starred;
 	}
 
-	public String getLabelIds() {
-		return labelIds;
-	}
-
-	public void setLabelIds(String labelIds) {
-		this.labelIds = labelIds;
-	}
-
-	public boolean hasLabel(long labelId) {
-		if (labelIds == null) {
-			return false;
-		}
-		return labelIds.indexOf(Application.LABEL_ID_SEPARATOR + Long.toString(labelId) + Application.LABEL_ID_SEPARATOR) != -1;
-	}
-
 	public void startApplication(Context activity) {
-		Intent intent = getIntent();
+		startApplication(activity, packageName, name);
+	}
+
+	public static void startApplication(Context activity, String packageName, String name) {
+		Intent intent = new Intent(Intent.ACTION_MAIN);
+		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		intent.setClassName(packageName, name);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		activity.startActivity(intent);
 	}
 
 	public void uninstallApplication(Activity activity) {
-		Uri packageURI = Uri.parse("package:" + getPackage());
+		uninstallApplication(activity, getPackage());
+	}
+
+	public static void uninstallApplication(Activity activity, String packageName) {
+		Uri packageURI = Uri.parse("package:" + packageName);
 		Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
-		uninstallIntent.putExtra("package", getPackage());
+		uninstallIntent.putExtra("package", packageName);
 		activity.startActivityForResult(uninstallIntent, 1);
 	}
 
-	static class ViewHolder {
-		ImageView image;
-		TextView labels;
-		TextView name;
-		CheckBox starred;
-	}
-
-	public View getAppView(final Activity context, final DatabaseHelper dbHelper, final ApplicationInfoManager applicationInfoManager,
-			View v, final ChooseLabelDialogCreator chooseLabelDialog) {
-		ViewHolder viewHolder;
-		if (v == null) {
-			LayoutInflater factory = LayoutInflater.from(context);
-			v = factory.inflate(R.layout.app_row, null);
-			viewHolder = new ViewHolder();
-			viewHolder.image = (ImageView) v.findViewById(R.id.image);
-			viewHolder.labels = (TextView) v.findViewById(R.id.labels);
-			viewHolder.name = (TextView) v.findViewById(R.id.name);
-			viewHolder.starred = (CheckBox) v.findViewById(R.id.starCheck);
-			v.setTag(viewHolder);
-		} else {
-			viewHolder = (ViewHolder) v.getTag();
-		}
-		OnClickListener onClickListener = new OnClickListener() {
-			public void onClick(View v) {
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-				String defaultAction = prefs.getString("defaultAction", "choose_labels");
-				if (defaultAction.equals("choose_labels")) {
-					chooseLabelDialog.setCurrentApp(Application.this);
-					((GenericDialogManagerActivity) context).showDialog(chooseLabelDialog);
-				} else if (defaultAction.equals("uninstall")) {
-					uninstallApplication(context);
-				} else {
-					startApplication(context);
-				}
-			}
-		};
-		viewHolder.labels.setOnClickListener(onClickListener);
-		viewHolder.image.setOnClickListener(onClickListener);
-		viewHolder.name.setOnClickListener(onClickListener);
-
-		OnLongClickListener onLongClickListener = new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				return false;
-			}
-		};
-		viewHolder.labels.setOnLongClickListener(onLongClickListener);
-		viewHolder.image.setOnLongClickListener(onLongClickListener);
-		viewHolder.name.setOnLongClickListener(onLongClickListener);
-
-		viewHolder.image.setImageDrawable(getIcon());
-		viewHolder.labels.setText(getLabelListString());
-		viewHolder.name.setText(getLabel());
-		viewHolder.starred.setOnCheckedChangeListener(null);
-		viewHolder.starred.setChecked(isStarred());
-		viewHolder.starred.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				setStarred(isChecked);
-				AppLabelSaver.saveStarred(dbHelper, applicationInfoManager, Application.this, isChecked, context);
-			}
-		});
-		return v;
+	public String getCompleteName() {
+		return completeName;
 	}
 }

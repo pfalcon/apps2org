@@ -52,21 +52,20 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 	@Override
 	public void prepareDialog(Dialog dialog) {
 		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(owner);
-		ApplicationInfoManager applicationInfoManager = ApplicationInfoManager.singleton(owner.getPackageManager());
-		applicationInfoManager.getOrReloadAppsMap(dbHelper);
-		Application[] l1 = applicationInfoManager.getApps(currentLabelId, false);
+		Application[] l1 = dbHelper.appCacheDao.getAppsOfLabel(currentLabelId, false, false);
 		checkedApps = createSet(l1);
 		List<Application> allApps = new ArrayList<Application>();
 		for (int i = 0; i < l1.length; i++) {
 			allApps.add(l1[i]);
 		}
-		Application[] tmp = applicationInfoManager.getAppsArray();
-		for (int i = 0; i < tmp.length; i++) {
-			Application application = tmp[i];
-			if (!checkedApps.contains(application.name)) {
-				allApps.add(application);
-			}
-		}
+		// TODO fare una query singola con un join
+		// Application[] tmp = applicationInfoManager.getAppsArray();
+		// for (int i = 0; i < tmp.length; i++) {
+		// Application application = tmp[i];
+		// if (!checkedApps.contains(application.name)) {
+		// allApps.add(application);
+		// }
+		// }
 
 		adapter = new ArrayAdapterSmallRow<Application>(owner, android.R.layout.simple_list_item_multiple_choice, allApps);
 

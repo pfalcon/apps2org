@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.google.code.appsorganizer" android:versionCode="78"
-	android:versionName="1.0.2 beta 1">
+	package="com.google.code.appsorganizer" android:versionCode="79"
+	android:versionName="1.0.2 beta 2">
 	<application android:icon="@drawable/icon" android:label="@string/app_name"
-		android:name="AppsOrganizerApplication">
+		android:name="AppsOrganizerApplication" android:debuggable="true">
 		<uses-library android:name="android.test.runner" />
 		<activity android:name=".SplashScreenActivity" android:label="@string/app_name"
 			android:launchMode="singleTask">
@@ -37,13 +37,6 @@
 
 		</activity>
 
-		<receiver android:name=".service.StartupListener"
-			android:enabled="true" android:exported="false" android:label="StartupListener">
-			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
-			</intent-filter>
-		</receiver>
-
 		<receiver android:name="ApplicationChangeReceiver"
 			android:enabled="true" android:exported="false" android:label="ApplicationChangeReceiver">
 			<intent-filter>
@@ -52,9 +45,6 @@
 				<data android:scheme="package"></data> 
 			</intent-filter>
 		</receiver>
-
-		<service android:name=".service.BackgroundLoader">
-		</service>
 		
         <activity android:name=".preferences.PreferencesFromXml" android:label="@string/Preferences"/>
 
@@ -64,7 +54,7 @@
 	<uses-sdk android:minSdkVersion="3" />
 	<instrumentation android:name="android.test.InstrumentationTestRunner"
 		android:targetPackage="com.google.code.appsorganizer"></instrumentation>
-		
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+<!-- 
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+ -->		
 </manifest> 

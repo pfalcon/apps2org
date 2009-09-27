@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 import com.google.code.appsorganizer.R;
-import com.google.code.appsorganizer.service.StartupListener;
 
 public class PreferencesFromXml extends PreferenceActivity {
 
@@ -38,12 +37,14 @@ public class PreferencesFromXml extends PreferenceActivity {
 		sharedPreferences.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 				if (key.equals("use_service")) {
-					boolean useService = sharedPreferences.getBoolean(key, true);
-					if (useService) {
-						StartupListener.startService(PreferencesFromXml.this);
-					} else {
-						StartupListener.stopService(PreferencesFromXml.this);
-					}
+					// TODO togliere dalle preferenze
+					// boolean useService = sharedPreferences.getBoolean(key,
+					// true);
+					// if (useService) {
+					// StartupListener.startService(PreferencesFromXml.this);
+					// } else {
+					// StartupListener.stopService(PreferencesFromXml.this);
+					// }
 				}
 			}
 		});

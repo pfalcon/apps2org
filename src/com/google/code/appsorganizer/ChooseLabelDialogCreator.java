@@ -18,8 +18,6 @@
  */
 package com.google.code.appsorganizer;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -36,8 +34,6 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.model.AppLabelSaver;
-import com.google.code.appsorganizer.model.Application;
-import com.google.code.appsorganizer.model.Label;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
@@ -46,17 +42,15 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private final DatabaseHelper labelAdapter;
 
-	private final ApplicationInfoManager applicationInfoManager;
+	private String packageName;
 
-	private Application application;
+	private String name;
 
 	private ChooseLabelListAdapter adapter;
 
-	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, DatabaseHelper labelAdapter,
-			ApplicationInfoManager applicationInfoManager) {
+	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, DatabaseHelper labelAdapter) {
 		super(dialogManager);
 		this.labelAdapter = labelAdapter;
-		this.applicationInfoManager = applicationInfoManager;
 	}
 
 	private ListView listView;
@@ -65,7 +59,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		List<AppLabelBinding> allLabels = getAllLabels(application);
+		List<AppLabelBinding> allLabels = labelAdapter.labelDao.getAppsLabelList(packageName, name);
 		adapter = new ChooseLabelListAdapter(owner, allLabels);
 		listView.setAdapter(adapter);
 
@@ -97,21 +91,6 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		});
 	}
 
-	private List<AppLabelBinding> getAllLabels(Application a) {
-		List<AppLabelBinding> ret = new ArrayList<AppLabelBinding>();
-		Label[] all = labelAdapter.labelDao.getLabelsArray();
-		for (int i = 0; i < all.length; i++) {
-			Label label = all[i];
-			long id = label.getId();
-			boolean checked = a.hasLabel(id);
-			AppLabelBinding b = new AppLabelBinding(label.getName(), id, checked);
-			b.checked = checked;
-			ret.add(b);
-		}
-		Collections.sort(ret);
-		return ret;
-	}
-
 	@Override
 	public Dialog createDialog() {
 		View body = getChooseDialogBody();
@@ -130,7 +109,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 					adapter.getItem(i).checked = listView.isItemChecked(i);
 				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				new AppLabelSaver(labelAdapter, applicationInfoManager).save(application, modifiedLabels, this);
+				new AppLabelSaver(labelAdapter).save(packageName, name, modifiedLabels, this);
 			}
 		});
 		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
@@ -148,23 +127,20 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		return body;
 	}
 
-	public void setCurrentApp(Application application) {
-		this.application = application;
+	public void setCurrentApp(String packageName, String name) {
+		this.packageName = packageName;
+		this.name = name;
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		if (application != null) {
-			outState.putString(APPLICATION_BUNDLE_NAME, application.name);
-			outState.putString(PACKAGE_BUNDLE_NAME, application.getPackage());
-		}
+		outState.putString(APPLICATION_BUNDLE_NAME, name);
+		outState.putString(PACKAGE_BUNDLE_NAME, packageName);
 	}
 
 	@Override
 	public void onRestoreInstanceState(Bundle state) {
-		String appName = state.getString(APPLICATION_BUNDLE_NAME);
-		if (appName != null) {
-			application = applicationInfoManager.getApplication(state.getString(PACKAGE_BUNDLE_NAME), appName);
-		}
+		name = state.getString(APPLICATION_BUNDLE_NAME);
+		packageName = state.getString(PACKAGE_BUNDLE_NAME);
 	}
 }
