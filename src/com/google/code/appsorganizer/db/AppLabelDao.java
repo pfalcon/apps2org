@@ -21,6 +21,7 @@ package com.google.code.appsorganizer.db;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppLabel;
 
 public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
@@ -90,7 +91,10 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 	public void removeUninstalledApps(boolean[] installedApps, String[] appNames) {
 		for (int i = 0; i < installedApps.length; i++) {
 			if (!installedApps[i]) {
-				db.delete(name, APP_COL_NAME + " = ?", new String[] { appNames[i] });
+				String a = appNames[i];
+				int ind = a.indexOf(AppCacheMap.SEPARATOR);
+				db.delete(name, APP_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { a.substring(ind + 1),
+						a.substring(0, ind) });
 			}
 		}
 	}

@@ -40,17 +40,14 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	private static final String APPLICATION_BUNDLE_NAME = "application_label_dialog";
 	private static final String PACKAGE_BUNDLE_NAME = "application_package_label_dialog";
 
-	private final DatabaseHelper labelAdapter;
-
 	private String packageName;
 
 	private String name;
 
 	private ChooseLabelListAdapter adapter;
 
-	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, DatabaseHelper labelAdapter) {
+	public ChooseLabelDialogCreator(GenericDialogManager dialogManager) {
 		super(dialogManager);
-		this.labelAdapter = labelAdapter;
 	}
 
 	private ListView listView;
@@ -59,7 +56,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 	public void prepareDialog(Dialog dialog) {
 		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
 		tv.setText("");
-		List<AppLabelBinding> allLabels = labelAdapter.labelDao.getAppsLabelList(packageName, name);
+		List<AppLabelBinding> allLabels = DatabaseHelper.initOrSingleton(owner).labelDao.getAppsLabelList(packageName, name);
 		adapter = new ChooseLabelListAdapter(owner, allLabels);
 		listView.setAdapter(adapter);
 
@@ -109,7 +106,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 					adapter.getItem(i).checked = listView.isItemChecked(i);
 				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				new AppLabelSaver(labelAdapter).save(packageName, name, modifiedLabels, this);
+				new AppLabelSaver(DatabaseHelper.initOrSingleton(owner)).save(packageName, name, modifiedLabels, this);
 			}
 		});
 		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {

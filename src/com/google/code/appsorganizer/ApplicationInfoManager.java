@@ -19,7 +19,6 @@
 package com.google.code.appsorganizer;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Intent;
@@ -35,11 +34,9 @@ import android.os.Handler;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.AppLabelDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
-import com.google.code.appsorganizer.model.Application;
 
 public class ApplicationInfoManager {
 
@@ -64,7 +61,7 @@ public class ApplicationInfoManager {
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
-					String name = a.packageName + Application.SEPARATOR + a.name;
+					String name = a.packageName + AppCacheMap.SEPARATOR + a.name;
 					int appCachePosition = nameCache.getPosition(name);
 					AppCache appCache = nameCache.getAt(appCachePosition);
 					if (appCache != null) {
@@ -77,6 +74,7 @@ public class ApplicationInfoManager {
 				}
 			}
 
+			// TODO nameCache contiene anche il package
 			appCacheDao.removeUninstalledApps(installedApps, nameCache.keys());
 			appsLabelDao.removeUninstalledApps(installedApps, nameCache.keys());
 		}
@@ -122,10 +120,6 @@ public class ApplicationInfoManager {
 		}
 	}
 
-	public void reloadAppsLabel(LabelDao labelDao) {
-		notifyDataSetChanged(this);
-	}
-
 	private List<ResolveInfo> getAllResolveInfo() {
 		Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
 		mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -146,26 +140,6 @@ public class ApplicationInfoManager {
 
 	public static boolean isSingletonNull() {
 		return singleton == null;
-	}
-
-	private static final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
-
-	public static boolean addListener(DbChangeListener object) {
-		return listeners.add(object);
-	}
-
-	public static boolean removeListener(DbChangeListener object) {
-		return listeners.remove(object);
-	}
-
-	public static void notifyDataSetChanged(Object source, short type) {
-		for (DbChangeListener a : listeners) {
-			a.dataSetChanged(source, type);
-		}
-	}
-
-	public static void notifyDataSetChanged(Object source) {
-		notifyDataSetChanged(source, DbChangeListener.CHANGED_ALL);
 	}
 
 }

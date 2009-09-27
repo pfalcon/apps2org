@@ -21,7 +21,7 @@ package com.google.code.appsorganizer.model;
 import java.util.List;
 
 import com.google.code.appsorganizer.AppLabelBinding;
-import com.google.code.appsorganizer.ApplicationInfoManager;
+import com.google.code.appsorganizer.ApplicationChangeListenerManager;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 
@@ -33,15 +33,9 @@ public class AppLabelSaver {
 		this.dbHelper = dbHelper;
 	}
 
-	public static void saveStarred(DatabaseHelper dbHelper, Application application, boolean starred,
-			Object source) {
-		dbHelper.appCacheDao.updateStarred(application.getPackage(), application.name, starred);
-		ApplicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
-	}
-
 	public static void saveStarred(DatabaseHelper dbHelper, String packageName, String name, boolean starred, Object source) {
 		dbHelper.appCacheDao.updateStarred(packageName, name, starred);
-		ApplicationInfoManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
+		ApplicationChangeListenerManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
 	}
 
 	public void save(String packageName, String name, List<AppLabelBinding> modifiedLabels, Object source) {
@@ -57,7 +51,7 @@ public class AppLabelSaver {
 					dbHelper.appsLabelDao.delete(packageName, name, labelId);
 				}
 			}
-			ApplicationInfoManager.notifyDataSetChanged(source);
+			ApplicationChangeListenerManager.notifyDataSetChanged(source);
 		}
 	}
 }

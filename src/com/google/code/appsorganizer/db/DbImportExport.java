@@ -33,7 +33,6 @@ import com.google.code.appsorganizer.FileImporter;
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
 import com.google.code.appsorganizer.model.AppLabel;
-import com.google.code.appsorganizer.model.Application;
 import com.google.code.appsorganizer.model.Label;
 
 /**
@@ -72,7 +71,7 @@ public class DbImportExport {
 		for (int i = 0; i < values.length; i++) {
 			AppCache a = values[i];
 			if (a.starred) {
-				bout.write(a.packageName + Application.SEPARATOR + a.name);
+				bout.write(a.packageName + AppCacheMap.SEPARATOR + a.name);
 				bout.newLine();
 			}
 		}
@@ -136,7 +135,7 @@ public class DbImportExport {
 		appCacheDao.clearStarred();
 		while ((s = in.readLine()) != null) {
 			if (s.length() > 0) {
-				int i = s.indexOf(Application.SEPARATOR);
+				int i = s.indexOf(AppCacheMap.SEPARATOR);
 				String packageName = s.substring(0, i);
 				String name = s.substring(i + 1);
 				appCacheDao.updateStarred(packageName, name, true);
@@ -158,7 +157,7 @@ public class DbImportExport {
 				String labelName = s.substring(labelPrefixLength);
 				if (!appLabelAlreadyExist(appsLabels, curApp, labelName)) {
 					AppLabel appLabel = new AppLabel();
-					int indexOf = curApp.indexOf(Application.SEPARATOR);
+					int indexOf = curApp.indexOf(AppCacheMap.SEPARATOR);
 					if (indexOf == -1) {
 						appLabel.setApp(curApp);
 					} else {

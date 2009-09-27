@@ -18,13 +18,14 @@
  */
 package com.google.code.appsorganizer.db;
 
+import java.util.HashSet;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
-import com.google.code.appsorganizer.model.Application;
 
 public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
@@ -121,7 +122,10 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	public void removeUninstalledApps(boolean[] installedApps, String[] appNames) {
 		for (int i = 0; i < installedApps.length; i++) {
 			if (!installedApps[i]) {
-				db.delete(name, NAME_COL_NAME + " = ?", new String[] { appNames[i] });
+				String a = appNames[i];
+				int ind = a.indexOf(AppCacheMap.SEPARATOR);
+				db.delete(name, NAME_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { a.substring(ind + 1),
+						a.substring(0, ind) });
 			}
 		}
 	}
@@ -132,24 +136,24 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 				+ " order by " + (starredFirst ? "a.starred desc," : "") + "upper(a.label)", new String[] { Long.toString(labelId) });
 	}
 
-	public Application[] getAppsOfLabel(long labelId, boolean starredFirst, boolean onlyStarred) {
-		Cursor c = getAppsOfLabelCursor(db, labelId, starredFirst, onlyStarred);
-		return convertToAppList(c);
+	public Cursor getAppsOfLabel(long labelId) {
+		return db.rawQuery("select a._id, a.label, a.package, a.name, case when al._id is null then 0 else 1 end as checked"
+				+ " from apps a left outer join apps_labels al on a.name = al.app and a.package = al.package and id_label = ? "
+				+ " order by checked desc, upper(a.label)", new String[] { Long.toString(labelId) });
 	}
 
-	private Application[] convertToAppList(Cursor c) {
-		Application[] v = new Application[c.getCount()];
+	public HashSet<Long> getAppsOfLabelSet(long labelId) {
+		HashSet<Long> set = new HashSet<Long>();
+		Cursor c = db.rawQuery("select a._id from apps a inner join apps_labels al "
+				+ "on a.name = al.app and a.package = al.package where id_label = ?", new String[] { Long.toString(labelId) });
 		try {
-			int i = 0;
 			while (c.moveToNext()) {
-				Application a = new Application(c.getString(2), c.getString(3), c.getLong(0));
-				a.setLabel(c.getString(1));
-				v[i++] = a;
+				set.add(c.getLong(0));
 			}
 		} finally {
 			c.close();
 		}
-		return v;
+		return set;
 	}
 
 	public Cursor getAppsCursor(Long label) {

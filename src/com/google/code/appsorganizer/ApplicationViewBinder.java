@@ -37,7 +37,6 @@ import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.model.AppLabelSaver;
-import com.google.code.appsorganizer.model.Application;
 
 /**
  * @author fabio
@@ -52,11 +51,11 @@ public class ApplicationViewBinder implements ViewBinder {
 
 	private static final int APP_LABEL = 1;
 
-	private static final int STARRED = 1;
+	private static final int STARRED = 3;
 
-	private static final int NAME = 2;
+	public static final int NAME = 2;
 
-	private static final int PACKAGE = 5;
+	public static final int PACKAGE = 5;
 
 	private final DatabaseHelper dbHelper;
 
@@ -147,9 +146,9 @@ public class ApplicationViewBinder implements ViewBinder {
 					chooseLabelDialog.setCurrentApp(packageName, name);
 					((GenericDialogManagerActivity) context).showDialog(chooseLabelDialog);
 				} else if (defaultAction.equals("uninstall")) {
-					Application.uninstallApplication(context, packageName);
+					ApplicationContextMenuManager.uninstallApplication(context, packageName);
 				} else {
-					Application.startApplication(context, packageName, name);
+					ApplicationContextMenuManager.startApplication(context, packageName, name);
 				}
 			}
 		};

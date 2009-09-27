@@ -32,7 +32,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -41,7 +40,6 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
-import com.google.code.appsorganizer.model.Application;
 
 public class SplashScreenActivity extends ListActivityWithDialog implements DbChangeListener {
 
@@ -68,17 +66,10 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
 		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper);
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager());
 
 		setContentView(R.layout.main);
 
-		getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-				Application app = (Application) getListAdapter().getItem(position);
-				chooseLabelDialog.setCurrentApp(app.getPackage(), app.name);
-				showDialog(chooseLabelDialog);
-			}
-		});
 		getListView().setClickable(true);
 
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
@@ -184,7 +175,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 				registerForContextMenu(getListView());
 				handler.sendEmptyMessage(-3);
-				ApplicationInfoManager.addListener(SplashScreenActivity.this);
+				ApplicationChangeListenerManager.addListener(SplashScreenActivity.this);
 			}
 		};
 		t.start();
@@ -193,7 +184,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ApplicationInfoManager.removeListener(this);
+		ApplicationChangeListenerManager.removeListener(this);
 	}
 
 	@Override
@@ -207,8 +198,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		SQLiteCursor c = (SQLiteCursor) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.onContextItemSelected(item, c.getString(5), c.getString(2), this, chooseLabelDialog,
-				applicationInfoManager);
+		ApplicationContextMenuManager.onContextItemSelected(item, c.getString(5), c.getString(2), this, chooseLabelDialog);
 		return true;
 	}
 
@@ -220,8 +210,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 	public void dataSetChanged(Object source, short type) {
 		if (appsAdapter != null) {
-			appsAdapter.runQueryOnBackgroundThread(null);
-			appsAdapter.notifyDataSetChanged();
+			appsAdapter.getCursor().requery();
 		}
 		// TODO si puo' gestire meglio
 		// if (type == CHANGED_STARRED) {

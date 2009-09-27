@@ -24,7 +24,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.google.code.appsorganizer.AppLabelBinding;
-import com.google.code.appsorganizer.model.Application;
+import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.Label;
 
 public class LabelDao extends ObjectWithIdDao<Label> {
@@ -37,7 +37,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public static final String IMAGE_COL_NAME = "image";
 
-	private static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME, IMAGE_COL_NAME };
+	public static final String[] COLS_STRING = new String[] { ID_COL_NAME, LABEL_COL_NAME, ICON_COL_NAME, IMAGE_COL_NAME };
 
 	public static final DbColumns LABEL = new DbColumns(LABEL_COL_NAME, "text not null unique");
 
@@ -63,7 +63,7 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		int pos = 0;
 		try {
 			while (c.moveToNext()) {
-				keys[pos] = c.getString(2) + Application.SEPARATOR + c.getString(0);
+				keys[pos] = c.getString(2) + AppCacheMap.SEPARATOR + c.getString(0);
 				values[pos++] = c.getString(1);
 			}
 		} finally {
@@ -132,5 +132,18 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public static String getCreateTableScript() {
 		return getCreateTableScript(TABLE_NAME, DB_COLUMNS);
+	}
+
+	public long updateName(Long id, String name) {
+		ContentValues c = new ContentValues();
+		c.put(LABEL_COL_NAME, name);
+		return db.update(TABLE_NAME, c, "_id = ?", new String[] { id.toString() });
+	}
+
+	public long updateIcon(Long id, Integer icon, byte[] image) {
+		ContentValues c = new ContentValues();
+		c.put(ICON_COL_NAME, icon);
+		c.put(IMAGE_COL_NAME, image);
+		return db.update(TABLE_NAME, c, "_id = ?", new String[] { id.toString() });
 	}
 }

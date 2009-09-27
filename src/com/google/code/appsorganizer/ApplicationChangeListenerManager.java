@@ -16,29 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.google.code.appsorganizer.maps;
+package com.google.code.appsorganizer;
 
-import com.google.code.appsorganizer.model.AppCache;
+import java.util.ArrayList;
+
+import com.google.code.appsorganizer.db.DbChangeListener;
 
 /**
  * @author fabio
  * 
  */
-public class AppCacheMap extends AoMap<String, AppCache> {
+public class ApplicationChangeListenerManager {
 
-	public static final char SEPARATOR = '#';
-
-	public AppCacheMap(AppCache[] data) {
-		super(data);
+	private ApplicationChangeListenerManager() {
 	}
 
-	@Override
-	protected String[] createKeyArray(int length) {
-		return new String[length];
+	private static final ArrayList<DbChangeListener> listeners = new ArrayList<DbChangeListener>();
+
+	public static boolean addListener(DbChangeListener object) {
+		return listeners.add(object);
 	}
 
-	@Override
-	protected String createKey(AppCache v) {
-		return v.packageName + AppCacheMap.SEPARATOR + v.name;
+	public static boolean removeListener(DbChangeListener object) {
+		return listeners.remove(object);
+	}
+
+	public static void notifyDataSetChanged(Object source, short type) {
+		for (DbChangeListener a : listeners) {
+			a.dataSetChanged(source, type);
+		}
+	}
+
+	public static void notifyDataSetChanged(Object source) {
+		notifyDataSetChanged(source, DbChangeListener.CHANGED_ALL);
 	}
 }

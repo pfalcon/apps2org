@@ -19,12 +19,13 @@
 package com.google.code.appsorganizer;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
-import com.google.code.appsorganizer.model.Application;
 
 /**
  * @author fabio
@@ -44,17 +45,17 @@ public class ApplicationContextMenuManager {
 	}
 
 	public static void onContextItemSelected(MenuItem item, String packageName, String name, Activity activity,
-			ChooseLabelDialogCreator chooseLabelDialog, ApplicationInfoManager applicationInfoManager) {
+			ChooseLabelDialogCreator chooseLabelDialog) {
 		switch (item.getItemId()) {
 		case CHOOSE_LABELS:
 			chooseLabelDialog.setCurrentApp(packageName, name);
 			((GenericDialogManagerActivity) activity).showDialog(chooseLabelDialog);
 			break;
 		case LAUNCH:
-			Application.startApplication(activity, packageName, name);
+			startApplication(activity, packageName, name);
 			break;
 		case UNINSTALL:
-			Application.uninstallApplication(activity, packageName);
+			uninstallApplication(activity, packageName);
 			break;
 		}
 	}
@@ -65,4 +66,18 @@ public class ApplicationContextMenuManager {
 		}
 	}
 
+	public static void startApplication(Context activity, String packageName, String name) {
+		Intent intent = new Intent(Intent.ACTION_MAIN);
+		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		intent.setClassName(packageName, name);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		activity.startActivity(intent);
+	}
+
+	public static void uninstallApplication(Activity activity, String packageName) {
+		Uri packageURI = Uri.parse("package:" + packageName);
+		Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
+		uninstallIntent.putExtra("package", packageName);
+		activity.startActivityForResult(uninstallIntent, 1);
+	}
 }

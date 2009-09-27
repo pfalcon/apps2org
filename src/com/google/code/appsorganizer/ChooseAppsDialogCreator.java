@@ -18,28 +18,24 @@
  */
 package com.google.code.appsorganizer;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.widget.ArrayAdapter;
+import android.database.Cursor;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
-import com.google.code.appsorganizer.model.Application;
-import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
 
 public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private long currentLabelId;
 
-	private ArrayAdapter<Application> adapter;
+	private SimpleCursorAdapter adapter;
 
 	public ChooseAppsDialogCreator(GenericDialogManager dialogManager) {
 		super(dialogManager);
@@ -47,31 +43,19 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private ListView listView;
 
-	private Set<String> checkedApps;
+	private HashSet<Long> checkedApps;
 
 	@Override
 	public void prepareDialog(Dialog dialog) {
 		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(owner);
-		Application[] l1 = dbHelper.appCacheDao.getAppsOfLabel(currentLabelId, false, false);
-		checkedApps = createSet(l1);
-		List<Application> allApps = new ArrayList<Application>();
-		for (int i = 0; i < l1.length; i++) {
-			allApps.add(l1[i]);
-		}
-		// TODO fare una query singola con un join
-		// Application[] tmp = applicationInfoManager.getAppsArray();
-		// for (int i = 0; i < tmp.length; i++) {
-		// Application application = tmp[i];
-		// if (!checkedApps.contains(application.name)) {
-		// allApps.add(application);
-		// }
-		// }
+		checkedApps = dbHelper.appCacheDao.getAppsOfLabelSet(currentLabelId);
+		Cursor c = dbHelper.appCacheDao.getAppsOfLabel(currentLabelId);
 
-		adapter = new ArrayAdapterSmallRow<Application>(owner, android.R.layout.simple_list_item_multiple_choice, allApps);
-
+		adapter = new SimpleCursorAdapter(owner, android.R.layout.simple_list_item_multiple_choice, c, new String[] { "label" },
+				new int[] { android.R.id.text1 });
 		listView.setAdapter(adapter);
 
-		int size = l1.length;
+		int size = checkedApps.size();
 		for (int i = 0; i < size; i++) {
 			listView.setItemChecked(i, true);
 		}
@@ -99,35 +83,27 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 		return builder.create();
 	}
 
-	private Set<String> createSet(Application[] checkedApps) {
-		Set<String> s = new HashSet<String>();
-		for (int i = 0; i < checkedApps.length; i++) {
-			s.add(checkedApps[i].name);
-		}
-		return s;
-	}
-
-	private void save(Set<String> checkedSet) {
+	private void save(HashSet<Long> checkedSet) {
 		boolean changed = false;
 		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(owner);
 		int count = adapter.getCount();
 		for (int i = 0; i < count; i++) {
-			Application app = (Application) listView.getItemAtPosition(i);
-			String appName = app.name;
+			Cursor app = (Cursor) listView.getItemAtPosition(i);
+			long appId = app.getLong(0);
 			if (listView.isItemChecked(i)) {
-				if (!checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.insert(app.getPackage(), appName, currentLabelId);
+				if (!checkedSet.contains(appId)) {
+					dbHelper.appsLabelDao.insert(app.getString(2), app.getString(3), currentLabelId);
 					changed = true;
 				}
 			} else {
-				if (checkedSet.contains(appName)) {
-					dbHelper.appsLabelDao.delete(app.getPackage(), appName, currentLabelId);
+				if (checkedSet.contains(appId)) {
+					dbHelper.appsLabelDao.delete(app.getString(2), app.getString(3), currentLabelId);
 					changed = true;
 				}
 			}
 		}
 		if (changed) {
-			ApplicationInfoManager.singleton(owner.getPackageManager()).reloadAppsLabel(dbHelper.labelDao);
+			ApplicationChangeListenerManager.notifyDataSetChanged(this);
 		}
 	}
 

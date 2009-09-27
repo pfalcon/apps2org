@@ -35,19 +35,20 @@ public class ApplicationChangeReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		String packageName = intent.getDataString();
 		Log.i("ApplicationChangeReceiver", intent.getAction());
+		// TODO gestire per bene
 		if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
 			Log.i("ApplicationChangeReceiver", packageName + " added");
 			if (!ApplicationInfoManager.isSingletonNull()) {
 				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
 				ApplicationInfoManager.singleton(null).reloadAll(dbHelper, null, false);
-				ApplicationInfoManager.notifyDataSetChanged(this);
+				ApplicationChangeListenerManager.notifyDataSetChanged(this);
 			}
 		} else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
 			Log.i("ApplicationChangeReceiver", packageName + " removed");
 			if (!ApplicationInfoManager.isSingletonNull()) {
 				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
 				ApplicationInfoManager.singleton(null).reloadAll(dbHelper, null, false);
-				ApplicationInfoManager.notifyDataSetChanged(this);
+				ApplicationChangeListenerManager.notifyDataSetChanged(this);
 			}
 		}
 	}

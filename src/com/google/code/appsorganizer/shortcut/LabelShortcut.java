@@ -22,17 +22,22 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -43,12 +48,15 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
-import com.google.code.appsorganizer.ApplicationInfoManager;
+import com.google.code.appsorganizer.ApplicationChangeListenerManager;
+import com.google.code.appsorganizer.ApplicationContextMenuManager;
 import com.google.code.appsorganizer.BugReportActivity;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
+import com.google.code.appsorganizer.ChooseLabelDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelperBasic;
@@ -78,12 +86,15 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
+	private ChooseLabelDialogCreator chooseLabelDialog;
+
 	public static boolean firstTime = true;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager());
 		// Debug.startMethodTracing("grid1");
 		BugReportActivity.registerExceptionHandler(this);
 
@@ -94,7 +105,7 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 
 		labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_STARRED_ID);
 		allLabelsSelected = labelId == ALL_LABELS_ID;
-		ApplicationInfoManager.addListener(this);
+		ApplicationChangeListenerManager.addListener(this);
 	}
 
 	@Override
@@ -106,9 +117,11 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ApplicationInfoManager.removeListener(this);
+		ApplicationChangeListenerManager.removeListener(this);
 		closeCurrentCursor();
-		dbHelper.close();
+		if (dbHelper != null) {
+			dbHelper.close();
+		}
 	}
 
 	private void closeCurrentCursor() {
@@ -124,6 +137,7 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
 					("upper(" + LabelDao.LABEL_COL_NAME + ")"));
+			// TODO label presa da byte[]
 			return cursor;
 		} else {
 			Cursor tmpCursor;
@@ -282,11 +296,36 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 					}
 				}
 			});
+			grid.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+				public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+					// TODO menu su label
+					AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+					SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
+					ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+				}
+			});
 			if (!firstTime) {
 				setVisible(false);
 			}
 		}
 		return grid;
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		if (grid != null) {
+			SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
+			ApplicationContextMenuManager.onContextItemSelected(item, c.getString(3), c.getString(4), this, chooseLabelDialog);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data);
 	}
 
 	@Override

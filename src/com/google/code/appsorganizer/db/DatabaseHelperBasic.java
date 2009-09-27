@@ -114,10 +114,9 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		if (oldVersion <= 20) {
 			addPackages(db);
 		}
-		if (oldVersion <= 22) {
-			// TODO toglere
-			db.delete(AppCacheDao.TABLE_NAME, null, null);
-		}
+		// if (oldVersion <= 22) {
+		// db.delete(AppCacheDao.TABLE_NAME, null, null);
+		// }
 		if (oldVersion <= 23) {
 			addColumn(db, AppCacheDao.TABLE_NAME, AppCacheDao.IMAGE);
 		}

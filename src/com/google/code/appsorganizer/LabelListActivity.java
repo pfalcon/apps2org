@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -71,8 +73,6 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	private TextEntryDialog textEntryDialog;
 
-	private ApplicationInfoManager applicationInfoManager;
-
 	private ToggleButton labelButton;
 
 	private ToggleButton appButton;
@@ -87,12 +87,14 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		BugReportActivity.registerExceptionHandler(this);
 		setContentView(R.layout.main_labels);
 		dbHelper = DatabaseHelper.initOrSingleton(this);
-		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), dbHelper);
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager());
 
 		final ApplicationViewBinder applicationViewBinder = new ApplicationViewBinder(dbHelper, this, chooseLabelDialog);
 		Cursor c = dbHelper.labelDao.getLabelCursor();
-		mAdapter = new SimpleCursorTreeAdapter(this, c, R.layout.label_row_with_icon, new String[] { LabelDao.LABEL_COL_NAME,
+		MatrixCursor otherAppsCursor = new MatrixCursor(LabelDao.COLS_STRING, 1);
+		otherAppsCursor.addRow(new Object[] { AppCacheDao.OTHER_LABEL_ID, getText(R.string.other_label).toString(), 0, null });
+		MergeCursor m = new MergeCursor(new Cursor[] { c, otherAppsCursor });
+		mAdapter = new SimpleCursorTreeAdapter(this, m, R.layout.label_row_with_icon, new String[] { LabelDao.LABEL_COL_NAME,
 				LabelDao.ICON_COL_NAME }, new int[] {}, R.layout.app_row, ApplicationViewBinder.COLS, ApplicationViewBinder.VIEWS) {
 
 			@Override
@@ -107,15 +109,15 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 				ImageView image = (ImageView) cv.findViewById(R.id.image);
 
 				v.setText(cursor.getString(1));
-				byte[] imageBytes = cursor.getBlob(3);
-				if (imageBytes != null) {
+				if (!cursor.isNull(3)) {
+					byte[] imageBytes = cursor.getBlob(3);
 					image.setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
 				} else {
-					Integer icon = cursor.getInt(2);
-					if (icon != null) {
+					int icon = cursor.getInt(2);
+					if (icon != 0) {
 						image.setImageResource(Label.convertToIcon(icon));
 					} else {
-						image.setImageDrawable(null);
+						image.setImageResource(R.drawable.icon_default);
 					}
 				}
 			}
@@ -126,7 +128,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 			}
 		};
 
-		ApplicationInfoManager.addListener(this);
+		ApplicationChangeListenerManager.addListener(this);
 
 		setListAdapter(mAdapter);
 
@@ -172,7 +174,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 					DatabaseHelper dbHelper = DatabaseHelper.singleton();
 					dbHelper.appsLabelDao.deleteAppsOfLabel(labelId);
 					dbHelper.labelDao.delete(labelId);
-					ApplicationInfoManager.singleton(null).reloadAppsLabel(dbHelper.labelDao);
+					ApplicationChangeListenerManager.notifyDataSetChanged(this);
 				}
 			};
 		}
@@ -203,14 +205,14 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	public void dataSetChanged(Object source, short type) {
 		if (type != CHANGED_STARRED) {
-			mAdapter.runQueryOnBackgroundThread(null);
+			mAdapter.getCursor().requery();
 		}
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ApplicationInfoManager.removeListener(this);
+		ApplicationChangeListenerManager.removeListener(this);
 	}
 
 	@Override
@@ -225,16 +227,16 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Cursor c = mAdapter.getGroup(groupPos);
 			menu.setHeaderTitle(c.getString(1));
-			byte[] imageBytes = c.getBlob(3);
-			if (imageBytes != null) {
+			if (!c.isNull(3)) {
+				byte[] imageBytes = c.getBlob(3);
 				Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
 				menu.setHeaderIcon(new BitmapDrawable(bitmap));
 			} else {
-				Integer icon = c.getInt(2);
-				if (icon != null) {
-					menu.setHeaderIcon(icon);
+				int icon = c.getInt(2);
+				if (icon != 0) {
+					menu.setHeaderIcon(Label.convertToIcon(icon));
 				} else {
-					menu.setHeaderIcon(null);
+					menu.setHeaderIcon(R.drawable.icon_default);
 				}
 			}
 			MenuItem renameItem = menu.add(0, MENU_ITEM_RENAME, 0, R.string.rename);
@@ -259,13 +261,13 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
 			Cursor c = mAdapter.getChild(groupPos, childPos);
-			ApplicationContextMenuManager.onContextItemSelected(item, c.getString(3), c.getString(4), this, chooseLabelDialog,
-					applicationInfoManager);
+			ApplicationContextMenuManager.onContextItemSelected(item, c.getString(ApplicationViewBinder.PACKAGE), c
+					.getString(ApplicationViewBinder.NAME), this, chooseLabelDialog);
 			return true;
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			final Cursor c = mAdapter.getGroup(groupPos);
 			String labelName = c.getString(1);
-			long labelId = c.getLong(0);
+			final long labelId = c.getLong(0);
 			switch (item.getItemId()) {
 			case MENU_ITEM_RENAME:
 				textEntryDialog.setDefaultValue(labelName);
@@ -273,11 +275,9 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 					private static final long serialVersionUID = 1L;
 
 					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-						// TODO salvataggio rename e controllare con cambio
-						// orientation
-						// label.setName(charSequence.toString());
-						// dbHelper.labelDao.update(label);
-						// applicationInfoManager.reloadAppsLabel(dbHelper.labelDao);
+						// TODO controllare con cambio orientation
+						dbHelper.labelDao.updateName(labelId, charSequence.toString());
+						ApplicationChangeListenerManager.notifyDataSetChanged(this);
 					}
 				});
 				showDialog(textEntryDialog);
@@ -312,17 +312,15 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data);
 		if (resultCode == RESULT_OK && requestCode == 2) {
 			byte[] image = data.getByteArrayExtra("image");
-			// TODO
-			// Cursor c = mAdapter.getGroup(data.getIntExtra("group", -1));
-			// if (image != null) {
-			// label.setImageBytes(image);
-			// } else {
-			// int icon = data.getIntExtra("icon", -1);
-			// label.setIcon(icon);
-			// label.setImageBytes(null);
-			// }
-			// dbHelper.labelDao.update(label);
-			// mAdapter.notifyDataSetChanged();
+			Cursor c = mAdapter.getGroup(data.getIntExtra("group", -1));
+			long labelId = c.getLong(0);
+			if (image != null) {
+				dbHelper.labelDao.updateIcon(labelId, null, image);
+			} else {
+				int icon = data.getIntExtra("icon", -1);
+				dbHelper.labelDao.updateIcon(labelId, Label.convertToIconDb(icon), null);
+			}
+			ApplicationChangeListenerManager.notifyDataSetChanged(this);
 		}
 	}
 
