@@ -32,31 +32,21 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
-import com.google.code.appsorganizer.db.AppLabelDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
 
 public class ApplicationInfoManager {
 
-	private final PackageManager pm;
-
-	private static ApplicationInfoManager singleton;
-
-	private ApplicationInfoManager(PackageManager pm) {
-		this.pm = pm;
+	private ApplicationInfoManager() {
 	}
 
-	public void reloadAll(DatabaseHelper dbHelper, Handler handler, boolean discardCache) {
-		loadAppsMap(dbHelper.appCacheDao, dbHelper.labelDao, dbHelper.appsLabelDao, handler, discardCache);
-	}
-
-	private void loadAppsMap(AppCacheDao appCacheDao, LabelDao labelDao, AppLabelDao appsLabelDao, Handler handler, boolean discardCache) {
-		synchronized (this) {
+	public static void reloadAll(PackageManager pm, DatabaseHelper dbHelper, Handler handler, boolean discardCache) {
+		AppCacheDao appCacheDao = dbHelper.appCacheDao;
+		synchronized (ApplicationInfoManager.class) {
 			AppCacheMap nameCache = appCacheDao.queryForCacheMap();
 			boolean[] installedApps = new boolean[nameCache.size()];
-			List<ResolveInfo> installedApplications = getAllResolveInfo();
+			List<ResolveInfo> installedApplications = getAllResolveInfo(pm);
 			int arrayPos = 0;
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
@@ -67,20 +57,19 @@ public class ApplicationInfoManager {
 					if (appCache != null) {
 						installedApps[appCachePosition] = true;
 					}
-					loadAppLabel(a, discardCache, appCacheDao, appCache);
+					loadAppLabel(pm, a, discardCache, appCacheDao, appCache);
 					if (handler != null) {
 						handler.sendEmptyMessage(arrayPos++);
 					}
 				}
 			}
 
-			// TODO nameCache contiene anche il package
 			appCacheDao.removeUninstalledApps(installedApps, nameCache.keys());
-			appsLabelDao.removeUninstalledApps(installedApps, nameCache.keys());
+			dbHelper.appsLabelDao.removeUninstalledApps(installedApps, nameCache.keys());
 		}
 	}
 
-	private void loadAppLabel(ComponentInfo a, boolean discardCache, AppCacheDao appCacheDao, AppCache loadedObj) {
+	private static void loadAppLabel(PackageManager pm, ComponentInfo a, boolean discardCache, AppCacheDao appCacheDao, AppCache loadedObj) {
 		boolean changed = false;
 		String label = null;
 		byte[] image = null;
@@ -101,8 +90,9 @@ public class ApplicationInfoManager {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			boolean compressed = bitmap.compress(CompressFormat.PNG, 100, os);
 			if (!compressed) {
+				bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
 				os = new ByteArrayOutputStream();
-				compressed = bitmap.compress(CompressFormat.JPEG, 100, os);
+				compressed = bitmap.compress(CompressFormat.PNG, 100, os);
 			}
 			image = os.toByteArray();
 			changed = true;
@@ -120,26 +110,11 @@ public class ApplicationInfoManager {
 		}
 	}
 
-	private List<ResolveInfo> getAllResolveInfo() {
+	private static List<ResolveInfo> getAllResolveInfo(PackageManager pm) {
 		Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
 		mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
 		return pm.queryIntentActivities(mainIntent, 0);
-	}
-
-	public static ApplicationInfoManager singleton(PackageManager pm) {
-		if (singleton == null) {
-			synchronized (ApplicationInfoManager.class) {
-				if (singleton == null) {
-					singleton = new ApplicationInfoManager(pm);
-				}
-			}
-		}
-		return singleton;
-	}
-
-	public static boolean isSingletonNull() {
-		return singleton == null;
 	}
 
 }

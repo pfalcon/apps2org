@@ -71,7 +71,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	private ChooseAppsDialogCreator chooseAppsDialogCreator;
 
-	private TextEntryDialog textEntryDialog;
+	private RenameLabelDialog textEntryDialog;
 
 	private ToggleButton labelButton;
 
@@ -133,7 +133,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		setListAdapter(mAdapter);
 
 		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
-		textEntryDialog = new TextEntryDialog(getGenericDialogManager(), getString(R.string.rename_label), getString(R.string.label_name));
+		textEntryDialog = new RenameLabelDialog(getGenericDialogManager());
 
 		confirmDeleteDialog = new ConfirmDeleteDialog(getGenericDialogManager());
 
@@ -157,6 +157,37 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		});
 
 		registerForContextMenu(getExpandableListView());
+	}
+
+	private class RenameLabelDialog extends TextEntryDialog {
+
+		private static final String RENAME_LABEL_ID = "Rename_label_id";
+		long labelId;
+
+		public RenameLabelDialog(GenericDialogManager dialogManager) {
+			super(dialogManager, getString(R.string.rename_label), getString(R.string.label_name));
+
+			setOnOkListener(new OnOkClickListener() {
+				private static final long serialVersionUID = 1L;
+
+				public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+					dbHelper.labelDao.updateName(labelId, charSequence.toString());
+					ApplicationChangeListenerManager.notifyDataSetChanged(this);
+				}
+			});
+		}
+
+		@Override
+		public void onSaveInstanceState(Bundle outState) {
+			super.onSaveInstanceState(outState);
+			outState.putLong(RENAME_LABEL_ID, labelId);
+		}
+
+		@Override
+		public void onRestoreInstanceState(Bundle state) {
+			super.onRestoreInstanceState(state);
+			labelId = state.getLong(RENAME_LABEL_ID);
+		}
 	}
 
 	private static final class ConfirmDeleteDialog extends SimpleDialog {
@@ -271,15 +302,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 			switch (item.getItemId()) {
 			case MENU_ITEM_RENAME:
 				textEntryDialog.setDefaultValue(labelName);
-				textEntryDialog.setOnOkListener(new OnOkClickListener() {
-					private static final long serialVersionUID = 1L;
-
-					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-						// TODO controllare con cambio orientation
-						dbHelper.labelDao.updateName(labelId, charSequence.toString());
-						ApplicationChangeListenerManager.notifyDataSetChanged(this);
-					}
-				});
+				textEntryDialog.labelId = labelId;
 				showDialog(textEntryDialog);
 				break;
 			case MENU_ITEM_DELETE:

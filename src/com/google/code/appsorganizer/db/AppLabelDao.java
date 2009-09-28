@@ -93,10 +93,14 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 			if (!installedApps[i]) {
 				String a = appNames[i];
 				int ind = a.indexOf(AppCacheMap.SEPARATOR);
-				db.delete(name, APP_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { a.substring(ind + 1),
+				db.delete(TABLE_NAME, APP_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { a.substring(ind + 1),
 						a.substring(0, ind) });
 			}
 		}
+	}
+
+	public void removePackage(String packageName) {
+		db.delete(TABLE_NAME, PACKAGE_NAME_COL_NAME + "=?", new String[] { packageName });
 	}
 
 	public String getLabelListString(String packageName, String name) {

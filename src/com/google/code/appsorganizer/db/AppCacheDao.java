@@ -124,10 +124,14 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 			if (!installedApps[i]) {
 				String a = appNames[i];
 				int ind = a.indexOf(AppCacheMap.SEPARATOR);
-				db.delete(name, NAME_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { a.substring(ind + 1),
+				db.delete(TABLE_NAME, NAME_COL_NAME + " = ? and " + PACKAGE_NAME_COL_NAME + "=?", new String[] { a.substring(ind + 1),
 						a.substring(0, ind) });
 			}
 		}
+	}
+
+	public void removePackage(String packageName) {
+		db.delete(TABLE_NAME, PACKAGE_NAME_COL_NAME + "=?", new String[] { packageName });
 	}
 
 	public static Cursor getAppsOfLabelCursor(SQLiteDatabase db, long labelId, boolean starredFirst, boolean onlyStarred) {

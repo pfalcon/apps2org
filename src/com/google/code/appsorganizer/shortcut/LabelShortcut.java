@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -135,9 +136,8 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 	private Cursor reloadGrid() {
 		if (labelId == ALL_LABELS_ID) {
 			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
-					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, null, null, null, null,
-					("upper(" + LabelDao.LABEL_COL_NAME + ")"));
-			// TODO label presa da byte[]
+					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME, LabelDao.IMAGE_COL_NAME }, null,
+					null, null, null, ("upper(" + LabelDao.LABEL_COL_NAME + ")"));
 			return cursor;
 		} else {
 			Cursor tmpCursor;
@@ -239,13 +239,14 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 		cursorAdapter.setViewBinder(new ViewBinder() {
 			public boolean setViewValue(final View view, Cursor cursor, int columnIndex) {
 				if (view instanceof ImageView) {
-					if (cursor.getColumnCount() == 3) {
-						ImageView icon = (ImageView) view;
-						if (cursor.isNull(2)) {
-							icon.setImageResource(R.drawable.icon_default);
+					ImageView icon = (ImageView) view;
+					if (cursor.getColumnCount() == 4) {
+						if (!cursor.isNull(3)) {
+							byte[] imageBytes = cursor.getBlob(3);
+							icon.setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
 						} else {
-							int ic = Label.convertToIcon(cursor.getInt(2));
-							if (ic > 0) {
+							if (!cursor.isNull(2)) {
+								int ic = Label.convertToIcon(cursor.getInt(2));
 								icon.setImageResource(ic);
 							} else {
 								icon.setImageResource(R.drawable.icon_default);
@@ -253,12 +254,16 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 						}
 					} else {
 						byte[] imageBytes = cursor.getBlob(2);
-						((ImageView) view).setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
-						// String appName = cursor.getString(4);
-						// String packageName = cursor.getString(3);
-						// Drawable drawable =
-						// Application.getIconFromCache(packageName, appName);
-						// ((ImageView) view).setImageDrawable(drawable);
+						if (imageBytes != null) {
+							Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+							if (bitmap != null) {
+								icon.setImageBitmap(bitmap);
+							} else {
+								icon.setImageResource(R.drawable.icon_default);
+							}
+						} else {
+							icon.setImageResource(R.drawable.icon_default);
+						}
 					}
 				} else {
 					((TextView) view).setText(cursor.getString(columnIndex));
@@ -298,10 +303,11 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 			});
 			grid.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 				public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-					// TODO menu su label
 					AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 					SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
-					ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+					if (c.getColumnCount() != 4) {
+						ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+					}
 				}
 			});
 			if (!firstTime) {

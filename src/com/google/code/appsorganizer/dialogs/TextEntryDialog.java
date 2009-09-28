@@ -22,6 +22,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -30,6 +31,7 @@ import com.google.code.appsorganizer.R;
 
 public class TextEntryDialog extends GenericDialogCreator {
 
+	private static final String DEFAULT_VALUE = "TextEntry_default";
 	private String title;
 	private String label;
 	private String defaultValue;
@@ -112,5 +114,17 @@ public class TextEntryDialog extends GenericDialogCreator {
 
 	public void setOnOkListener(OnOkClickListener onOkListener) {
 		this.onOkListener = onOkListener;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString(DEFAULT_VALUE, defaultValue);
+	}
+
+	@Override
+	public void onRestoreInstanceState(Bundle state) {
+		super.onRestoreInstanceState(state);
+		defaultValue = state.getString(DEFAULT_VALUE);
 	}
 }

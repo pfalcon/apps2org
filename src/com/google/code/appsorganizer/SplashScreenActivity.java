@@ -47,8 +47,6 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
-	private ApplicationInfoManager applicationInfoManager;
-
 	private ToggleButton labelButton;
 
 	private ToggleButton appButton;
@@ -62,7 +60,6 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 		// provaDownload();
 		// Debug.startMethodTracing("splash");
 
-		applicationInfoManager = ApplicationInfoManager.singleton(getPackageManager());
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
 		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 
@@ -170,7 +167,7 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 				}
-				applicationInfoManager.reloadAll(dbHelper, handler, false);
+				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, false);
 				handler.sendEmptyMessage(-1);
 
 				registerForContextMenu(getListView());

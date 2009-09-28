@@ -33,23 +33,19 @@ public class ApplicationChangeReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		String packageName = intent.getDataString();
 		Log.i("ApplicationChangeReceiver", intent.getAction());
-		// TODO gestire per bene
 		if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
+			String packageName = intent.getDataString().substring(8);
 			Log.i("ApplicationChangeReceiver", packageName + " added");
-			if (!ApplicationInfoManager.isSingletonNull()) {
-				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
-				ApplicationInfoManager.singleton(null).reloadAll(dbHelper, null, false);
-				ApplicationChangeListenerManager.notifyDataSetChanged(this);
-			}
+			DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
+			ApplicationInfoManager.reloadAll(context.getPackageManager(), dbHelper, null, false);
+			ApplicationChangeListenerManager.notifyDataSetChanged(this);
 		} else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+			String packageName = intent.getDataString().substring(8);
 			Log.i("ApplicationChangeReceiver", packageName + " removed");
-			if (!ApplicationInfoManager.isSingletonNull()) {
-				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
-				ApplicationInfoManager.singleton(null).reloadAll(dbHelper, null, false);
-				ApplicationChangeListenerManager.notifyDataSetChanged(this);
-			}
+			DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
+			dbHelper.appCacheDao.removePackage(packageName);
+			dbHelper.appsLabelDao.removePackage(packageName);
 		}
 	}
 }

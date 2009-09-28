@@ -31,12 +31,9 @@ public class AppsReloader {
 
 	private final boolean discardCache;
 
-	private final ApplicationInfoManager singleton;
-
 	public AppsReloader(Context context, boolean discardCache) {
 		this.context = context;
 		this.discardCache = discardCache;
-		singleton = ApplicationInfoManager.singleton(context.getPackageManager());
 	}
 
 	private final Handler handler = new Handler() {
@@ -61,7 +58,7 @@ public class AppsReloader {
 			@Override
 			public void run() {
 				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
-				singleton.reloadAll(dbHelper, handler, discardCache);
+				ApplicationInfoManager.reloadAll(context.getPackageManager(), dbHelper, handler, discardCache);
 				handler.sendEmptyMessage(-1);
 			}
 		};
