@@ -39,6 +39,7 @@ public class BugReportActivity extends Activity {
 
 	private static final String EXCEPTION = "exception";
 	private static final String LAST_EXCEPTION = "lastException";
+	private static final String LAST_EXCEPTION_VERSION = "lastExceptionVersion";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +60,13 @@ public class BugReportActivity extends Activity {
 	}
 
 	private String getExceptionString() {
-		return "Version: " + AboutDialogCreator.getVersionName(this) + "\n" + getIntent().getStringExtra(EXCEPTION);
+		return "Version: " + getIntent().getStringExtra(LAST_EXCEPTION_VERSION) + "\n" + getIntent().getStringExtra(EXCEPTION);
 	}
 
-	private static void startBugreportActivity(final Context context, String exceptionString) {
+	private static void startBugreportActivity(final Context context, String exceptionString, String version) {
 		Intent intent = new Intent(context, BugReportActivity.class);
 		intent.putExtra(EXCEPTION, exceptionString);
+		intent.putExtra(LAST_EXCEPTION_VERSION, version);
 		context.startActivity(intent);
 	}
 
@@ -73,15 +75,11 @@ public class BugReportActivity extends Activity {
 		Editor edit = settings.edit();
 		if (ex != null) {
 			edit.putString(LAST_EXCEPTION, convertToString(ex));
+			edit.putString(LAST_EXCEPTION_VERSION, AboutDialogCreator.getVersionName(context));
 		} else {
 			edit.remove(LAST_EXCEPTION);
 		}
 		edit.commit();
-	}
-
-	public static String getLastException(Context context) {
-		SharedPreferences settings = context.getSharedPreferences("appsOrganizer_pref", 0);
-		return settings.getString(LAST_EXCEPTION, null);
 	}
 
 	private static String convertToString(final Throwable t) {
@@ -103,9 +101,10 @@ public class BugReportActivity extends Activity {
 	}
 
 	public static void showLastException(Context context) {
-		String lastException = getLastException(context);
+		SharedPreferences settings = context.getSharedPreferences("appsOrganizer_pref", 0);
+		String lastException = settings.getString(LAST_EXCEPTION, null);
 		if (lastException != null) {
-			startBugreportActivity(context, lastException);
+			startBugreportActivity(context, lastException, settings.getString(LAST_EXCEPTION_VERSION, "Version not specified"));
 		}
 	}
 }
