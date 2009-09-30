@@ -43,6 +43,8 @@ import com.google.code.appsorganizer.dialogs.SimpleDialog;
 
 public class SplashScreenActivity extends ListActivityWithDialog implements DbChangeListener {
 
+	private static final String SHOW_START_HOW_TO = "showStartHowTo";
+
 	private DatabaseHelper dbHelper;
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
@@ -109,18 +111,18 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 	private void showStartHowTo() {
 		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
-		boolean showStartHowTo = settings.getBoolean("showStartHowTo", true);
+		boolean showStartHowTo = settings.getBoolean(SHOW_START_HOW_TO, true);
+		String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
+
+		SimpleDialog howToDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg);
+		howToDialog.setIcon(R.drawable.icon);
+		howToDialog.setShowNegativeButton(false);
+
 		if (showStartHowTo) {
-			String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
-
-			SimpleDialog howToDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg);
-			howToDialog.setIcon(R.drawable.icon);
-			howToDialog.setShowNegativeButton(false);
-
 			showDialog(howToDialog);
 
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putBoolean("showStartHowTo", false);
+			editor.putBoolean(SHOW_START_HOW_TO, false);
 			editor.commit();
 		}
 	}

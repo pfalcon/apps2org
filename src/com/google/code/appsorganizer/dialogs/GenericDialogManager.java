@@ -58,8 +58,9 @@ public class GenericDialogManager {
 			Dialog dialog = d.createDialog();
 			d.setDialog(dialog);
 			return dialog;
+		} else {
+			throw new RuntimeException(owner.getClass().getName() + ": unable to create dialog " + id + " (" + dialogs + ")");
 		}
-		return null;
 	}
 
 	private SimpleDialog simpleDialog;
