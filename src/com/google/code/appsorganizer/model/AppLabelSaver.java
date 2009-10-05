@@ -21,24 +21,11 @@ package com.google.code.appsorganizer.model;
 import java.util.List;
 
 import com.google.code.appsorganizer.AppLabelBinding;
-import com.google.code.appsorganizer.ApplicationChangeListenerManager;
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.db.DbChangeListener;
 
 public class AppLabelSaver {
 
-	private final DatabaseHelper dbHelper;
-
-	public AppLabelSaver(DatabaseHelper dbHelper) {
-		this.dbHelper = dbHelper;
-	}
-
-	public static void saveStarred(DatabaseHelper dbHelper, String packageName, String name, boolean starred, Object source) {
-		dbHelper.appCacheDao.updateStarred(packageName, name, starred);
-		ApplicationChangeListenerManager.notifyDataSetChanged(source, DbChangeListener.CHANGED_STARRED);
-	}
-
-	public void save(String packageName, String name, List<AppLabelBinding> modifiedLabels, Object source) {
+	public static void save(DatabaseHelper dbHelper, String packageName, String name, List<AppLabelBinding> modifiedLabels) {
 		if (!modifiedLabels.isEmpty()) {
 			for (AppLabelBinding b : modifiedLabels) {
 				Long labelId = b.labelId;
@@ -51,7 +38,6 @@ public class AppLabelSaver {
 					dbHelper.appsLabelDao.delete(packageName, name, labelId);
 				}
 			}
-			ApplicationChangeListenerManager.notifyDataSetChanged(source);
 		}
 	}
 }

@@ -60,10 +60,8 @@ public class ApplicationContextMenuManager {
 		}
 	}
 
-	public static void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-		if (requestCode == 1) {
-			new AppsReloader(activity, false).reload();
-		}
+	public static boolean onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+		return requestCode == 1;
 	}
 
 	public static void startApplication(Context activity, String packageName, String name) {

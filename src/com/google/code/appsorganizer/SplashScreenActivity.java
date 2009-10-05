@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -37,11 +38,11 @@ import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
 
-public class SplashScreenActivity extends ListActivityWithDialog implements DbChangeListener {
+public class SplashScreenActivity extends ListActivityWithDialog {
 
 	private static final String SHOW_START_HOW_TO = "showStartHowTo";
 
@@ -65,7 +66,13 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
 		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
 
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager());
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				requeryCursor();
+			}
+		});
 
 		setContentView(R.layout.main);
 
@@ -145,9 +152,10 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 			if (msg.what == -1) {
 				pd.setMessage(getText(R.string.preparing_apps_list));
 				Cursor c = dbHelper.appCacheDao.getAllApps(ApplicationViewBinder.COLS);
-				createAppsAdapter(c);
+				startManagingCursor(c);
+				SimpleCursorAdapter adapter = createAppsAdapter(c);
 				// } else if (msg.what == -2) {
-				setListAdapter(appsAdapter);
+				setListAdapter(adapter);
 			} else if (msg.what == -3) {
 				pd.hide();
 			} else {
@@ -158,7 +166,10 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 	private ProgressDialog pd;
 
-	private SimpleCursorAdapter appsAdapter;
+	@Override
+	public SimpleCursorAdapter getListAdapter() {
+		return (SimpleCursorAdapter) super.getListAdapter();
+	}
 
 	public void reload() {
 		pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list), getText(R.string.please_wait_loading), true, false);
@@ -174,7 +185,6 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 				registerForContextMenu(getListView());
 				handler.sendEmptyMessage(-3);
-				ApplicationChangeListenerManager.addListener(SplashScreenActivity.this);
 			}
 		};
 		t.start();
@@ -183,7 +193,6 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ApplicationChangeListenerManager.removeListener(this);
 	}
 
 	@Override
@@ -204,21 +213,9 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data);
-	}
-
-	public void dataSetChanged(Object source, short type) {
-		if (appsAdapter != null) {
-			appsAdapter.getCursor().requery();
+		if (ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data)) {
+			requeryCursor();
 		}
-		// TODO si puo' gestire meglio
-		// if (type == CHANGED_STARRED) {
-		// if (source != this) {
-		// appsAdapter.notifyDataSetChanged();
-		// }
-		// } else {
-		// appsAdapter.runQueryOnBackgroundThread(null);
-		// }
 	}
 
 	@Override
@@ -228,14 +225,25 @@ public class SplashScreenActivity extends ListActivityWithDialog implements DbCh
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return optionMenuManager.onOptionsItemSelected(item);
+		return optionMenuManager.onOptionsItemSelected(item, new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				requeryCursor();
+			}
+		});
 	}
 
-	private void createAppsAdapter(Cursor c) {
-		appsAdapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c, ApplicationViewBinder.COLS,
-				ApplicationViewBinder.VIEWS) {
+	private SimpleCursorAdapter createAppsAdapter(Cursor c) {
+		SimpleCursorAdapter appsAdapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c,
+				ApplicationViewBinder.COLS, ApplicationViewBinder.VIEWS) {
 		};
 		appsAdapter.setViewBinder(new ApplicationViewBinder(dbHelper, this, chooseLabelDialog));
+		return appsAdapter;
+	}
+
+	private void requeryCursor() {
+		getListAdapter().getCursor().requery();
 	}
 
 }

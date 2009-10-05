@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
@@ -46,8 +47,11 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private ChooseLabelListAdapter adapter;
 
-	public ChooseLabelDialogCreator(GenericDialogManager dialogManager) {
+	private final OnOkClickListener onOkClickListener;
+
+	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, OnOkClickListener onOkClickListener) {
 		super(dialogManager);
+		this.onOkClickListener = onOkClickListener;
 	}
 
 	private ListView listView;
@@ -106,7 +110,10 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 					adapter.getItem(i).checked = listView.isItemChecked(i);
 				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				new AppLabelSaver(DatabaseHelper.initOrSingleton(owner)).save(packageName, name, modifiedLabels, this);
+				AppLabelSaver.save(DatabaseHelper.initOrSingleton(owner), packageName, name, modifiedLabels);
+				if (onOkClickListener != null) {
+					onOkClickListener.onClick(null, dialog, whichButton);
+				}
 			}
 		});
 		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {

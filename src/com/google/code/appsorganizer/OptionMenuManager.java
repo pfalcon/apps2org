@@ -56,6 +56,8 @@ public class OptionMenuManager {
 
 		textEntryDialog = new TextEntryDialog(genericDialogManager, context.getString(R.string.export_menu), context
 				.getString(R.string.file_name), new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
 			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
 				String fileName = FileImporter.EXPORT_DIR + charSequence;
 				if (!fileName.endsWith("." + FileImporter.FILE_EXTENSION)) {
@@ -90,10 +92,11 @@ public class OptionMenuManager {
 		return true;
 	}
 
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(MenuItem item, OnOkClickListener onOkClickListener) {
 		switch (item.getItemId()) {
 		case R.id.reload_apps:
 			new AppsReloader(context, true).reload();
+			onOkClickListener.onClick(null, null, 0);
 			return true;
 		case R.id.export_menu:
 			((GenericDialogManagerActivity) context).showDialog(textEntryDialog);

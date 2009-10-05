@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer.shortcut;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -53,7 +54,6 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
-import com.google.code.appsorganizer.ApplicationChangeListenerManager;
 import com.google.code.appsorganizer.ApplicationContextMenuManager;
 import com.google.code.appsorganizer.BugReportActivity;
 import com.google.code.appsorganizer.ChooseAppsDialogCreator;
@@ -61,12 +61,12 @@ import com.google.code.appsorganizer.ChooseLabelDialogCreator;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelperBasic;
-import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.dialogs.ActivityWithDialog;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.model.Label;
 
-public class LabelShortcut extends ActivityWithDialog implements DbChangeListener {
+public class LabelShortcut extends ActivityWithDialog {
 
 	private static final String ONLY_STARRED_PREF = "onlyStarred";
 	public static final long ALL_LABELS_ID = -2l;
@@ -94,8 +94,15 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager());
+		OnOkClickListener onOkClickListener = new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				requeryCursor();
+			}
+		};
+		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager(), onOkClickListener);
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), onOkClickListener);
 		// Debug.startMethodTracing("grid1");
 		BugReportActivity.registerExceptionHandler(this);
 
@@ -106,7 +113,6 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 
 		labelId = intent.getLongExtra(LABEL_ID, 2);// ALL_STARRED_ID);
 		allLabelsSelected = labelId == ALL_LABELS_ID;
-		ApplicationChangeListenerManager.addListener(this);
 	}
 
 	@Override
@@ -118,7 +124,6 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ApplicationChangeListenerManager.removeListener(this);
 		closeCurrentCursor();
 		if (dbHelper != null) {
 			dbHelper.close();
@@ -332,7 +337,9 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data);
+		if (ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data)) {
+			requeryCursor();
+		}
 	}
 
 	@Override
@@ -436,5 +443,9 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 		if (starCheck.getVisibility() != v) {
 			starCheck.setVisibility(v);
 		}
+	}
+
+	private void requeryCursor() {
+		((SimpleCursorAdapter) grid.getAdapter()).getCursor().requery();
 	}
 }

@@ -44,7 +44,6 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.db.DbChangeListener;
 import com.google.code.appsorganizer.db.LabelDao;
 import com.google.code.appsorganizer.dialogs.ExpandableListActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
@@ -54,7 +53,7 @@ import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.Label;
 
-public class LabelListActivity extends ExpandableListActivityWithDialog implements DbChangeListener, GenericDialogManagerActivity {
+public class LabelListActivity extends ExpandableListActivityWithDialog implements GenericDialogManagerActivity {
 	private static final int MENU_ITEM_SELECT_APPS = 2;
 
 	private static final int MENU_ITEM_CHANGE_ICON = 1;
@@ -62,8 +61,6 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	private static final int MENU_ITEM_RENAME = 0;
 
 	private static final int MENU_ITEM_DELETE = 3;
-
-	private SimpleCursorTreeAdapter mAdapter;
 
 	private DatabaseHelper dbHelper;
 
@@ -87,15 +84,46 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		BugReportActivity.registerExceptionHandler(this);
 		setContentView(R.layout.main_labels);
 		dbHelper = DatabaseHelper.initOrSingleton(this);
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager());
+		OnOkClickListener onOkClickListener = new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
 
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				requeryCursor();
+			}
+		};
+		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), onOkClickListener);
+
+		setListAdapter(createAdapter());
+
+		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager(), onOkClickListener);
+		textEntryDialog = new RenameLabelDialog(getGenericDialogManager());
+
+		confirmDeleteDialog = new ConfirmDeleteDialog(getGenericDialogManager());
+
+		optionMenuManager = new OptionMenuManager(this, dbHelper);
+
+		labelButton = (ToggleButton) findViewById(R.id.labelButton);
+		appButton = (ToggleButton) findViewById(R.id.appButton);
+		appButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				startActivity(new Intent(LabelListActivity.this, SplashScreenActivity.class));
+			}
+		});
+
+		registerForContextMenu(getExpandableListView());
+	}
+
+	private SimpleCursorTreeAdapter createAdapter() {
 		final ApplicationViewBinder applicationViewBinder = new ApplicationViewBinder(dbHelper, this, chooseLabelDialog);
 		Cursor c = dbHelper.labelDao.getLabelCursor();
 		MatrixCursor otherAppsCursor = new MatrixCursor(LabelDao.COLS_STRING, 1);
 		otherAppsCursor.addRow(new Object[] { AppCacheDao.OTHER_LABEL_ID, getText(R.string.other_label).toString(), 0, null });
 		MergeCursor m = new MergeCursor(new Cursor[] { c, otherAppsCursor });
-		mAdapter = new SimpleCursorTreeAdapter(this, m, R.layout.label_row_with_icon, new String[] { LabelDao.LABEL_COL_NAME,
-				LabelDao.ICON_COL_NAME }, new int[] {}, R.layout.app_row, ApplicationViewBinder.COLS, ApplicationViewBinder.VIEWS) {
+		startManagingCursor(m);
+
+		SimpleCursorTreeAdapter mAdapter = new SimpleCursorTreeAdapter(this, m, R.layout.label_row_with_icon, new String[] {
+				LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, new int[] {}, R.layout.app_row, ApplicationViewBinder.COLS,
+				ApplicationViewBinder.VIEWS) {
 
 			@Override
 			protected Cursor getChildrenCursor(Cursor groupCursor) {
@@ -127,27 +155,12 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 				applicationViewBinder.bindView(view, cursor);
 			}
 		};
+		return mAdapter;
+	}
 
-		ApplicationChangeListenerManager.addListener(this);
-
-		setListAdapter(mAdapter);
-
-		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager());
-		textEntryDialog = new RenameLabelDialog(getGenericDialogManager());
-
-		confirmDeleteDialog = new ConfirmDeleteDialog(getGenericDialogManager());
-
-		optionMenuManager = new OptionMenuManager(this, dbHelper);
-
-		labelButton = (ToggleButton) findViewById(R.id.labelButton);
-		appButton = (ToggleButton) findViewById(R.id.appButton);
-		appButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				startActivity(new Intent(LabelListActivity.this, SplashScreenActivity.class));
-			}
-		});
-
-		registerForContextMenu(getExpandableListView());
+	@Override
+	public SimpleCursorTreeAdapter getExpandableListAdapter() {
+		return (SimpleCursorTreeAdapter) super.getExpandableListAdapter();
 	}
 
 	private class RenameLabelDialog extends TextEntryDialog {
@@ -163,7 +176,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 				public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
 					dbHelper.labelDao.updateName(labelId, charSequence.toString());
-					ApplicationChangeListenerManager.notifyDataSetChanged(this);
+					requeryCursor();
 				}
 			});
 		}
@@ -181,7 +194,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		}
 	}
 
-	private static final class ConfirmDeleteDialog extends SimpleDialog {
+	private final class ConfirmDeleteDialog extends SimpleDialog {
 
 		private static final long serialVersionUID = 1L;
 
@@ -196,7 +209,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 					DatabaseHelper dbHelper = DatabaseHelper.singleton();
 					dbHelper.appsLabelDao.deleteAppsOfLabel(labelId);
 					dbHelper.labelDao.delete(labelId);
-					ApplicationChangeListenerManager.notifyDataSetChanged(this);
+					requeryCursor();
 				}
 			};
 		}
@@ -226,15 +239,14 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	}
 
 	public void dataSetChanged(Object source, short type) {
-		if (type != CHANGED_STARRED) {
-			mAdapter.getCursor().requery();
-		}
+		// if (type != CHANGED_STARRED) {
+		// getExpandableListAdapter().getCursor().requery();
+		// }
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ApplicationChangeListenerManager.removeListener(this);
 	}
 
 	@Override
@@ -244,10 +256,10 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-			Cursor c = mAdapter.getChild(groupPos, childPos);
+			Cursor c = getExpandableListAdapter().getChild(groupPos, childPos);
 			ApplicationContextMenuManager.createMenu(menu, c.getString(1));
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
-			Cursor c = mAdapter.getGroup(groupPos);
+			Cursor c = getExpandableListAdapter().getGroup(groupPos);
 			menu.setHeaderTitle(c.getString(1));
 			if (!c.isNull(3)) {
 				byte[] imageBytes = c.getBlob(3);
@@ -282,12 +294,12 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-			Cursor c = mAdapter.getChild(groupPos, childPos);
+			Cursor c = getExpandableListAdapter().getChild(groupPos, childPos);
 			ApplicationContextMenuManager.onContextItemSelected(item, c.getString(ApplicationViewBinder.PACKAGE), c
 					.getString(ApplicationViewBinder.NAME), this, chooseLabelDialog);
 			return true;
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
-			final Cursor c = mAdapter.getGroup(groupPos);
+			final Cursor c = getExpandableListAdapter().getGroup(groupPos);
 			String labelName = c.getString(1);
 			final long labelId = c.getLong(0);
 			switch (item.getItemId()) {
@@ -323,10 +335,12 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data);
+		if (ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data)) {
+			requeryCursor();
+		}
 		if (resultCode == RESULT_OK && requestCode == 2) {
 			byte[] image = data.getByteArrayExtra("image");
-			Cursor c = mAdapter.getGroup(data.getIntExtra("group", -1));
+			Cursor c = getExpandableListAdapter().getGroup(data.getIntExtra("group", -1));
 			long labelId = c.getLong(0);
 			if (image != null) {
 				dbHelper.labelDao.updateIcon(labelId, null, image);
@@ -334,7 +348,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 				int icon = data.getIntExtra("icon", -1);
 				dbHelper.labelDao.updateIcon(labelId, Label.convertToIconDb(icon), null);
 			}
-			ApplicationChangeListenerManager.notifyDataSetChanged(this);
+			requeryCursor();
 		}
 	}
 
@@ -345,6 +359,16 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return optionMenuManager.onOptionsItemSelected(item);
+		return optionMenuManager.onOptionsItemSelected(item, new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				requeryCursor();
+			}
+		});
+	}
+
+	private void requeryCursor() {
+		getExpandableListAdapter().getCursor().requery();
 	}
 }

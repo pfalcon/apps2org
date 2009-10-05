@@ -30,6 +30,7 @@ import android.widget.SimpleCursorAdapter;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
+import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 
 public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
@@ -37,8 +38,11 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 
 	private SimpleCursorAdapter adapter;
 
-	public ChooseAppsDialogCreator(GenericDialogManager dialogManager) {
+	private final OnOkClickListener onOkClickListener;
+
+	public ChooseAppsDialogCreator(GenericDialogManager dialogManager, OnOkClickListener onOkClickListener) {
 		super(dialogManager);
+		this.onOkClickListener = onOkClickListener;
 	}
 
 	private ListView listView;
@@ -103,7 +107,7 @@ public class ChooseAppsDialogCreator extends GenericDialogCreator {
 			}
 		}
 		if (changed) {
-			ApplicationChangeListenerManager.notifyDataSetChanged(this);
+			onOkClickListener.onClick(null, null, 0);
 		}
 	}
 

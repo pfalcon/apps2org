@@ -41,7 +41,6 @@ public class AppsReloader {
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
 				pd.setMessage(context.getText(R.string.preparing_apps_list));
-				ApplicationChangeListenerManager.notifyDataSetChanged(this);
 				pd.hide();
 			} else {
 				pd.setMessage(context.getString(R.string.total_apps) + ": " + msg.what);

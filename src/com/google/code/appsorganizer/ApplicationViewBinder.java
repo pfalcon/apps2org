@@ -36,7 +36,6 @@ import android.widget.SimpleCursorAdapter.ViewBinder;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
-import com.google.code.appsorganizer.model.AppLabelSaver;
 
 /**
  * @author fabio
@@ -163,7 +162,7 @@ public class ApplicationViewBinder implements ViewBinder {
 		final String name = cursor.getString(NAME);
 		checkbox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				AppLabelSaver.saveStarred(dbHelper, packageName, name, isChecked, context);
+				dbHelper.appCacheDao.updateStarred(packageName, name, isChecked);
 			}
 		});
 	}
