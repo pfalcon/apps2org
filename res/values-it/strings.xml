@@ -63,4 +63,5 @@
 	<string name="Open_market">Apri market</string>
 	<string name="select_jpg_bmp_title">Errore tipo file</string>
 	<string name="select_jpg_bmp">E' possibile selezionare solo un file png o jpg</string>
+	<string name="Donate">Dona</string>  
 </resources>

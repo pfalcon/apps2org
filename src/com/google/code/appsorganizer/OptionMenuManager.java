@@ -21,6 +21,7 @@ package com.google.code.appsorganizer;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -86,8 +87,9 @@ public class OptionMenuManager {
 		menu.getItem(1).setIcon(R.drawable.fileexport);
 		menu.getItem(2).setIcon(R.drawable.reload);
 
-		menu.getItem(3).setIcon(R.drawable.advancedsettings);
-		menu.getItem(4).setIcon(R.drawable.info);
+		menu.getItem(3).setIcon(R.drawable.package_favorite);
+		menu.getItem(4).setIcon(R.drawable.advancedsettings);
+		menu.getItem(5).setIcon(R.drawable.info);
 
 		return true;
 	}
@@ -109,6 +111,9 @@ public class OptionMenuManager {
 			return true;
 		case R.id.about:
 			((GenericDialogManagerActivity) context).showDialog(aboutDialogCreator);
+			return true;
+		case R.id.donate:
+			context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://sites.google.com/site/appsorganizer/donate")));
 			return true;
 		}
 		return false;

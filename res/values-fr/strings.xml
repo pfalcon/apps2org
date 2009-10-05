@@ -63,4 +63,5 @@
 	<string name="Open_market">Aller sur l'android market</string>
 	<string name="select_jpg_bmp_title">format fichier non supporté</string>
 	<string name="select_jpg_bmp">Vous devez sélectionner un fichier png ou jpg</string>    
+	<string name="Donate">Faire un don</string>    
 </resources>
