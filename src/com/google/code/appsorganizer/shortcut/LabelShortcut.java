@@ -122,6 +122,7 @@ public class LabelShortcut extends ActivityWithDialog implements DbChangeListene
 		closeCurrentCursor();
 		if (dbHelper != null) {
 			dbHelper.close();
+			dbHelper = null;
 		}
 	}
 

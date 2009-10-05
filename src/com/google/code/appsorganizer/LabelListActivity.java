@@ -147,15 +147,6 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 			}
 		});
 
-		getExpandableListView().setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-				Cursor c = mAdapter.getChild(groupPosition, childPosition);
-				chooseLabelDialog.setCurrentApp(c.getString(3), c.getString(4));
-				showDialog(chooseLabelDialog);
-				return false;
-			}
-		});
-
 		registerForContextMenu(getExpandableListView());
 	}
 

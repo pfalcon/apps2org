@@ -33,7 +33,7 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 
 	private static final String TAG = "DatabaseHelper";
 
-	private static final int DATABASE_VERSION = 24;
+	private static final int DATABASE_VERSION = 25;
 
 	protected final SQLiteDatabase db;
 
@@ -119,6 +119,9 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		// }
 		if (oldVersion <= 23) {
 			addColumn(db, AppCacheDao.TABLE_NAME, AppCacheDao.IMAGE);
+		}
+		if (oldVersion <= 24) {
+			addColumn(db, AppCacheDao.TABLE_NAME, AppCacheDao.DISABLED);
 		}
 		// db.execSQL(appsLabelDao.getDropTableScript());
 		// db.execSQL(labelDao.getDropTableScript());

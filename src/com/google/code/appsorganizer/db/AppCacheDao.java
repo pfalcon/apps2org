@@ -39,8 +39,10 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public static final String IMAGE_COL_NAME = "image";
 
+	public static final String DISABLED_COL_NAME = "disabled";
+
 	private static final String[] ALL_COLUMNS = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME,
-			IMAGE_COL_NAME };
+			IMAGE_COL_NAME, DISABLED_COL_NAME };
 
 	public static final String TABLE_NAME = "apps";
 
@@ -49,8 +51,9 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	public static final DbColumns STARRED = new DbColumns(STARRED_COL_NAME, "integer not null default 0");
 	public static final DbColumns PACKAGE_NAME = new DbColumns(PACKAGE_NAME_COL_NAME, "text");
 	public static final DbColumns IMAGE = new DbColumns(IMAGE_COL_NAME, "blob");
+	public static final DbColumns DISABLED = new DbColumns(DISABLED_COL_NAME, "integer not null default 0");
 
-	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME, IMAGE };
+	private static final DbColumns[] DB_COLUMNS = new DbColumns[] { ID, NAME, LABEL, STARRED, PACKAGE_NAME, IMAGE, DISABLED };
 
 	public static final long OTHER_LABEL_ID = -1l;
 
@@ -59,8 +62,9 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		columns = DB_COLUMNS;
 	}
 
-	public AppCacheMap queryForCacheMap() {
-		Cursor c = db.query(name, ALL_COLUMNS, null, null, null, null, PACKAGE_NAME_COL_NAME + "," + NAME_COL_NAME);
+	public AppCacheMap queryForCacheMap(boolean hideDisabled) {
+		Cursor c = db.query(name, ALL_COLUMNS, hideDisabled ? "disabled = 0" : null, null, null, null, PACKAGE_NAME_COL_NAME + ","
+				+ NAME_COL_NAME);
 		AppCache[] v = new AppCache[c.getCount()];
 		try {
 			int i = 0;
@@ -93,6 +97,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		AppCache t = new AppCache(c.getString(5), c.getString(1), c.getString(2));
 		t.setId(c.getLong(0));
 		t.starred = c.getInt(3) == 1;
+		t.disabled = c.getInt(6) == 1;
 		return t;
 	}
 
@@ -105,6 +110,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		v.put(STARRED_COL_NAME, obj.starred ? 1 : 0);
 		v.put(PACKAGE_NAME_COL_NAME, obj.packageName);
 		v.put(IMAGE_COL_NAME, obj.image);
+		v.put(DISABLED_COL_NAME, obj.disabled ? 1 : 0);
 		return v;
 	}
 
@@ -130,26 +136,30 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		}
 	}
 
-	public void removePackage(String packageName) {
-		db.delete(TABLE_NAME, PACKAGE_NAME_COL_NAME + "=?", new String[] { packageName });
+	public int disablePackage(String packageName, boolean d) {
+		ContentValues c = new ContentValues(1);
+		c.put(DISABLED_COL_NAME, d);
+		return db.update(TABLE_NAME, c, PACKAGE_NAME_COL_NAME + "=?", new String[] { packageName });
 	}
 
 	public static Cursor getAppsOfLabelCursor(SQLiteDatabase db, long labelId, boolean starredFirst, boolean onlyStarred) {
 		return db.rawQuery("select a._id, a.label, a.image, a.package, a.name from apps a inner join apps_labels al "
-				+ "on a.name = al.app and a.package = al.package where id_label = ? " + (onlyStarred ? "and a.starred = 1" : "")
-				+ " order by " + (starredFirst ? "a.starred desc," : "") + "upper(a.label)", new String[] { Long.toString(labelId) });
+				+ "on a.name = al.app and a.package = al.package where a.disabled = 0 and id_label = ? "
+				+ (onlyStarred ? "and a.starred = 1" : "") + " order by " + (starredFirst ? "a.starred desc," : "") + "upper(a.label)",
+				new String[] { Long.toString(labelId) });
 	}
 
 	public Cursor getAppsOfLabel(long labelId) {
 		return db.rawQuery("select a._id, a.label, a.package, a.name, case when al._id is null then 0 else 1 end as checked"
 				+ " from apps a left outer join apps_labels al on a.name = al.app and a.package = al.package and id_label = ? "
-				+ " order by checked desc, upper(a.label)", new String[] { Long.toString(labelId) });
+				+ " where a.disabled = 0 order by checked desc, upper(a.label)", new String[] { Long.toString(labelId) });
 	}
 
 	public HashSet<Long> getAppsOfLabelSet(long labelId) {
 		HashSet<Long> set = new HashSet<Long>();
 		Cursor c = db.rawQuery("select a._id from apps a inner join apps_labels al "
-				+ "on a.name = al.app and a.package = al.package where id_label = ?", new String[] { Long.toString(labelId) });
+				+ "on a.name = al.app and a.package = al.package where id_label = ? and a.disabled = 0", new String[] { Long
+				.toString(labelId) });
 		try {
 			while (c.moveToNext()) {
 				set.add(c.getLong(0));
@@ -162,16 +172,16 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public Cursor getAppsCursor(Long label) {
 		String select = "select a._id, a.label, a.name, a.starred, a.image, a.package from apps a left outer join apps_labels al "
-				+ "on a.name = al.app and a.package = al.package where ";
+				+ "on a.name = al.app and a.package = al.package where a.disabled = 0 ";
 		String orderBy = " order by upper(a.label)";
 		if (label == OTHER_LABEL_ID) {
-			return db.rawQuery(select + "id_label is null" + orderBy, null);
+			return db.rawQuery(select + "and id_label is null" + orderBy, null);
 		} else {
-			return db.rawQuery(select + "id_label=?" + orderBy, new String[] { label.toString() });
+			return db.rawQuery(select + "and id_label=?" + orderBy, new String[] { label.toString() });
 		}
 	}
 
 	public Cursor getAllApps(String[] cols) {
-		return db.query(TABLE_NAME, cols, null, null, null, null, "upper(label)");
+		return db.query(TABLE_NAME, cols, "disabled=0", null, null, null, "upper(label)");
 	}
 }
