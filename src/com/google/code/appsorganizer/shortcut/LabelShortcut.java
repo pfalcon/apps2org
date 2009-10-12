@@ -141,20 +141,20 @@ public class LabelShortcut extends ActivityWithDialog {
 
 	private Cursor reloadGrid() {
 		if (labelId == ALL_LABELS_ID) {
-			cursor = dbHelper.getDb().query(LabelDao.TABLE_NAME,
+			cursor = getDbHelper().getDb().query(LabelDao.TABLE_NAME,
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME, LabelDao.IMAGE_COL_NAME }, null,
 					null, null, null, ("upper(" + LabelDao.LABEL_COL_NAME + ")"));
 			return cursor;
 		} else {
 			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
-				tmpCursor = dbHelper.getDb().rawQuery(
+				tmpCursor = getDbHelper().getDb().rawQuery(
 						"select _id, label, image, package, name from apps where starred = 1 order by upper(label)", null);
 			} else {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
-				tmpCursor = AppCacheDao.getAppsOfLabelCursor(dbHelper.getDb(), labelId, starredFirst, onlyStarred);
+				tmpCursor = AppCacheDao.getAppsOfLabelCursor(getDbHelper().getDb(), labelId, starredFirst, onlyStarred);
 			}
 			cursor = tmpCursor;
 			return cursor;
@@ -168,8 +168,8 @@ public class LabelShortcut extends ActivityWithDialog {
 		} else if (labelId == ALL_STARRED_ID) {
 			title = getString(R.string.Starred_apps);
 		} else {
-			Cursor c = dbHelper.getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME }, LabelDao.ID_COL_NAME + "=?",
-					new String[] { Long.toString(labelId) }, null, null, null);
+			Cursor c = getDbHelper().getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME },
+					LabelDao.ID_COL_NAME + "=?", new String[] { Long.toString(labelId) }, null, null, null);
 			try {
 				if (c.moveToNext()) {
 					title = c.getString(0);
@@ -181,34 +181,22 @@ public class LabelShortcut extends ActivityWithDialog {
 		return title;
 	}
 
+	public DatabaseHelperBasic getDbHelper() {
+		if (dbHelper == null) {
+			dbHelper = new DatabaseHelperBasic(LabelShortcut.this);
+		}
+		return dbHelper;
+	}
+
 	private class LoadIconTask extends AsyncTask<String, Object, Object> {
 
 		@Override
 		protected Object doInBackground(String... ss) {
-			if (dbHelper == null) {
-				dbHelper = new DatabaseHelperBasic(LabelShortcut.this);
-			}
 			publishProgress(retrieveTitle());
 
 			Cursor prevCursor = cursor;
 			Cursor actual = reloadGrid();
 			publishProgress(prevCursor, actual);
-			// if (labelId != ALL_LABELS_ID) {
-			// int tot = 0;
-			// for (int i = 0; i < iconsToLoad.length; i++) {
-			// String componentName = iconsToLoad[i];
-			// if (Application.getIconFromCache(componentName) == null) {
-			// Application.loadIcon(getPackageManager(), componentName);
-			// tot++;
-			// if (tot % 4 == 0) {
-			// publishProgress();
-			// }
-			// }
-			// }
-			// if (tot % 4 != 0) {
-			// publishProgress();
-			// }
-			// }
 			return null;
 		}
 
@@ -446,6 +434,12 @@ public class LabelShortcut extends ActivityWithDialog {
 	}
 
 	private void requeryCursor() {
-		((SimpleCursorAdapter) grid.getAdapter()).getCursor().requery();
+		SimpleCursorAdapter adapter = (SimpleCursorAdapter) grid.getAdapter();
+		if (adapter != null) {
+			Cursor c = adapter.getCursor();
+			if (c != null) {
+				c.requery();
+			}
+		}
 	}
 }

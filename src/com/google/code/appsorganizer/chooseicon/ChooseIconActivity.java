@@ -19,18 +19,15 @@
 package com.google.code.appsorganizer.chooseicon;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.net.URI;
+import java.io.IOException;
 
-import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore.Images.Media;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -41,14 +38,11 @@ import android.widget.ImageView;
 
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.dialogs.ActivityWithDialog;
-import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.model.Label;
 
 public class ChooseIconActivity extends ActivityWithDialog {
 	private GridView mGrid;
-
-	private SimpleDialog applicationNotFoundDialog;
 
 	private SimpleDialog selectImageDialog;
 
@@ -56,7 +50,6 @@ public class ChooseIconActivity extends ActivityWithDialog {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		applicationNotFoundDialog = createApplicationNotFoundDialog();
 		selectImageDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.select_jpg_bmp_title),
 				getString(R.string.select_jpg_bmp));
 		selectImageDialog.setShowNegativeButton(false);
@@ -80,11 +73,14 @@ public class ChooseIconActivity extends ActivityWithDialog {
 
 		findViewById(R.id.loadButton).setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				try {
-					openFileDialog();
-				} catch (ActivityNotFoundException e) {
-					getGenericDialogManager().showDialog(applicationNotFoundDialog);
-				}
+				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				intent.setType("image/*");
+				startActivityForResult(intent, 0);
+				// try {
+				// openFileDialog();
+				// } catch (ActivityNotFoundException e) {
+				// getGenericDialogManager().showDialog(applicationNotFoundDialog);
+				// }
 			}
 		});
 	}
@@ -93,17 +89,22 @@ public class ChooseIconActivity extends ActivityWithDialog {
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if (resultCode == RESULT_OK) {
 			Uri uri = intent.getData();
-			String type = intent.getType();
 			if (uri != null) {
 				final int group = getIntent().getIntExtra("group", -1);
-				String path = uri.toString().toLowerCase();
+				// String type = intent.getType();
+				// String path = uri.toString().toLowerCase();
 				// genericDialogManager.showSimpleDialog(path + " " + type,
 				// false, null);
-				if (type == null || (!type.equals("image/jpeg") && !type.equals("image/png"))) {
-					getGenericDialogManager().showDialog(selectImageDialog);
-				} else if (path.startsWith("file://")) {
-					File file = new File(URI.create(path));
-					Bitmap bitmap = getScaledImage(file);
+				// if (type == null || (!type.equals("image/jpeg") &&
+				// !type.equals("image/png"))) {
+				// getGenericDialogManager().showDialog(selectImageDialog);
+				// } else if (path.startsWith("file://")) {
+				// File file = new File(URI.create(path));
+				// Bitmap bitmap = getScaledImage(file);
+
+				try {
+					Bitmap bm = Media.getBitmap(getContentResolver(), uri);
+					Bitmap bitmap = getScaledImage(bm);
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					bitmap.compress(CompressFormat.PNG, 100, os);
 
@@ -112,14 +113,15 @@ public class ChooseIconActivity extends ActivityWithDialog {
 					res.putExtra("group", group);
 					setResult(RESULT_OK, res);
 					finish();
+				} catch (IOException e) {
+					getGenericDialogManager().showDialog(selectImageDialog);
 				}
+				// }
 			}
 		}
 	}
 
-	private Bitmap getScaledImage(File file) {
-		Bitmap bitmapOrg = BitmapFactory.decodeFile(file.getAbsolutePath());
-
+	private Bitmap getScaledImage(Bitmap bitmapOrg) {
 		int width = bitmapOrg.getWidth();
 		int height = bitmapOrg.getHeight();
 		int newWidth = 48;
@@ -175,43 +177,6 @@ public class ChooseIconActivity extends ActivityWithDialog {
 		// android.R.drawable.ic_menu_zoom
 		// };
 		mIcons = Label.getIconsList();
-	}
-
-	private void openFileDialog() {
-		Intent intent = new Intent();
-		intent.setAction(Intent.ACTION_PICK);
-		Uri startDir = Uri.fromFile(new File("/sdcard"));
-		intent.setDataAndType(startDir, "vnd.android.cursor.dir/lysesoft.andexplorer.file");
-		// Title
-		intent.putExtra("explorer_title", "Select a file");
-		// Optional colors
-		intent.putExtra("browser_title_background_color", "440000AA");
-		intent.putExtra("browser_title_foreground_color", "FFFFFFFF");
-		intent.putExtra("browser_list_background_color", "66000000");
-		// Optional font scale
-		intent.putExtra("browser_list_fontscale", "140%");
-		// Optional 0=simple list, 1 = list with filename and size, 2 =
-		// list with filename, size and date.
-		intent.putExtra("browser_list_layout", "2");
-		startActivityForResult(intent, 0);
-	}
-
-	private SimpleDialog createApplicationNotFoundDialog() {
-		String title = getString(R.string.Application_not_found);
-		SimpleDialog applicationNotFoundDialog = new SimpleDialog(getGenericDialogManager(), title,
-				getString(R.string.Application_not_found_message), new OnOkClickListener() {
-					private static final long serialVersionUID = 1L;
-
-					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-						Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
-								.parse("market://search?q=pname:lysesoft.andexplorer"));
-						startActivity(emailIntent);
-					}
-				});
-
-		applicationNotFoundDialog.setOkMessageText(getString(R.string.Open_market));
-		applicationNotFoundDialog.setShowNegativeButton(true);
-		return applicationNotFoundDialog;
 	}
 
 	public class AppsAdapter extends BaseAdapter {

@@ -340,7 +340,9 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		}
 		if (resultCode == RESULT_OK && requestCode == 2) {
 			byte[] image = data.getByteArrayExtra("image");
-			Cursor c = getExpandableListAdapter().getGroup(data.getIntExtra("group", -1));
+			int group = data.getIntExtra("group", -1);
+			requeryCursor();
+			Cursor c = getExpandableListAdapter().getGroup(group);
 			long labelId = c.getLong(0);
 			if (image != null) {
 				dbHelper.labelDao.updateIcon(labelId, null, image);

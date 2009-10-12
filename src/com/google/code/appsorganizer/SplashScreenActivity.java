@@ -243,7 +243,13 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	}
 
 	private void requeryCursor() {
-		getListAdapter().getCursor().requery();
+		SimpleCursorAdapter listAdapter = getListAdapter();
+		if (listAdapter != null) {
+			Cursor cursor = listAdapter.getCursor();
+			if (cursor != null) {
+				cursor.requery();
+			}
+		}
 	}
 
 }
