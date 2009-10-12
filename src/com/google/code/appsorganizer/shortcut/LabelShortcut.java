@@ -149,7 +149,7 @@ public class LabelShortcut extends ActivityWithDialog {
 			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
 				tmpCursor = getDbHelper().getDb().rawQuery(
-						"select _id, label, image, package, name from apps where starred = 1 order by upper(label)", null);
+						"select _id, label, image, package, name from apps where starred = 1 and disabled = 0 order by upper(label)", null);
 			} else {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
