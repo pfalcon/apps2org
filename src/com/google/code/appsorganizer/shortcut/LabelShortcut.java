@@ -401,20 +401,19 @@ public class LabelShortcut extends ActivityWithDialog {
 			titleLayout.setBackgroundColor(Color.GRAY);
 			titleView = (TextView) titleLayout.findViewById(R.id.title);
 			starCheck = (CheckBox) titleLayout.findViewById(R.id.starCheck);
+			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this);
 			starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this);
 					Editor edit = prefs.edit();
 					edit.putBoolean(ONLY_STARRED_PREF, isChecked);
 					edit.commit();
 					new LoadIconTask().execute();
 				}
 			});
-			starCheck.setChecked(PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this).getBoolean(ONLY_STARRED_PREF, false));
+			starCheck.setChecked(prefs.getBoolean(ONLY_STARRED_PREF, false));
 			LinearLayout layout = (LinearLayout) findViewById(R.id.shortcutLayout);
 
-			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-			boolean showCloseButton = pref.getBoolean("show_close_button_in_folder", true);
+			boolean showCloseButton = prefs.getBoolean("show_close_button_in_folder", true);
 			View closeButton = titleLayout.findViewById(R.id.closeButton);
 			closeButton.setVisibility(showCloseButton ? View.VISIBLE : View.INVISIBLE);
 			if (showCloseButton) {

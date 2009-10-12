@@ -39,12 +39,9 @@ import java.io.ObjectOutput;
  *          Exp $
  */
 
-class SerializationProcedure implements TIntDoubleProcedure, TIntFloatProcedure, TIntIntProcedure, TIntLongProcedure, TIntShortProcedure,
-		TIntByteProcedure, TIntObjectProcedure, TIntProcedure, TLongDoubleProcedure, TLongFloatProcedure, TLongIntProcedure,
-		TLongLongProcedure, TLongShortProcedure, TLongByteProcedure, TLongObjectProcedure, TLongProcedure, TShortDoubleProcedure,
-		TShortFloatProcedure, TShortIntProcedure, TShortLongProcedure, TShortShortProcedure, TShortByteProcedure, TShortObjectProcedure,
-		TShortProcedure, TObjectDoubleProcedure, TObjectFloatProcedure, TObjectIntProcedure, TObjectLongProcedure, TObjectShortProcedure,
-		TObjectByteProcedure, TObjectObjectProcedure, TObjectProcedure {
+class SerializationProcedure implements TIntIntProcedure, TIntLongProcedure, TIntByteProcedure, TIntObjectProcedure, TIntProcedure,
+		TLongIntProcedure, TLongLongProcedure, TLongByteProcedure, TLongObjectProcedure, TLongProcedure, TObjectIntProcedure,
+		TObjectLongProcedure, TObjectByteProcedure, TObjectObjectProcedure, TObjectProcedure {
 
 	private final ObjectOutput stream;
 	IOException exception;
