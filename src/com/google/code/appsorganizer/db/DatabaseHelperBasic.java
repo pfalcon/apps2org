@@ -51,7 +51,7 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		long internetId = insertLabel(db, null, "Internet", Label.convertToIconDb(R.drawable.globe));
 		long androidId = insertLabel(db, null, "Android", Label.convertToIconDb(R.drawable.pda_black));
 		long multimediaId = insertLabel(db, null, "Multimedia", Label.convertToIconDb(R.drawable.multimedia));
-		long utilityId = insertLabel(db, null, "Utility", Label.convertToIconDb(R.drawable.service_manager));
+		long utilityId = insertLabel(db, null, "Tools", Label.convertToIconDb(R.drawable.service_manager));
 		insertLabel(db, null, "Games", Label.convertToIconDb(R.drawable.joystick));
 
 		insertInterneApps(db, internetId);

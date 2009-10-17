@@ -117,6 +117,13 @@ public class Label extends ObjectWithId implements Comparable<Label> {
 			iconsMap.put(i++, R.drawable.thumbnail);
 			iconsMap.put(i++, R.drawable.wifi);
 
+			iconsMap.put(i++, R.drawable.package_games_kids);
+			iconsMap.put(i++, R.drawable.ksmiletris);
+			iconsMap.put(i++, R.drawable.kchart);
+			iconsMap.put(i++, R.drawable.kwallet);
+			iconsMap.put(i++, R.drawable.demo);
+			iconsMap.put(i++, R.drawable.blockdevice);
+
 			iconsMapInv = new TIntIntHashMap(iconsMap.size());
 			iconsList = new int[iconsMap.size()];
 			int[] keys = iconsMap.keys();

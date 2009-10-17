@@ -30,6 +30,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Message;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
@@ -47,7 +48,9 @@ public class ApplicationInfoManager {
 			AppCacheMap nameCache = appCacheDao.queryForCacheMap(true);
 			boolean[] installedApps = new boolean[nameCache.size()];
 			List<ResolveInfo> installedApplications = getAllResolveInfo(pm);
-			int arrayPos = 0;
+
+			sendSizeMessage(handler, installedApplications.size());
+
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
@@ -57,9 +60,11 @@ public class ApplicationInfoManager {
 					if (appCache != null) {
 						installedApps[appCachePosition] = true;
 					}
-					loadAppLabel(pm, a, discardCache, appCacheDao, appCache);
+					String label = loadAppLabel(pm, a, discardCache, appCacheDao, appCache);
 					if (handler != null) {
-						handler.sendEmptyMessage(arrayPos++);
+						Message message = new Message();
+						message.obj = label;
+						handler.sendMessage(message);
 					}
 				}
 			}
@@ -69,7 +74,13 @@ public class ApplicationInfoManager {
 		}
 	}
 
-	private static void loadAppLabel(PackageManager pm, ComponentInfo a, boolean discardCache, AppCacheDao appCacheDao, AppCache loadedObj) {
+	private static void sendSizeMessage(Handler handler, int size) {
+		Message message = new Message();
+		message.arg1 = size;
+		handler.sendMessage(message);
+	}
+
+	private static String loadAppLabel(PackageManager pm, ComponentInfo a, boolean discardCache, AppCacheDao appCacheDao, AppCache loadedObj) {
 		boolean changed = false;
 		String label = null;
 		byte[] image = null;
@@ -108,6 +119,7 @@ public class ApplicationInfoManager {
 				appCacheDao.updateLabel(a.packageName, a.name, label, image);
 			}
 		}
+		return label;
 	}
 
 	private static List<ResolveInfo> getAllResolveInfo(PackageManager pm) {

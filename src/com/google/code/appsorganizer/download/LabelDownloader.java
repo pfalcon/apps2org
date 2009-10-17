@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import android.app.Activity;
@@ -40,6 +41,7 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.model.Label;
 
 /**
  * @author fabio
@@ -152,7 +154,7 @@ public class LabelDownloader {
 					if (category.startsWith("<div>")) {
 						category = category.substring(5, category.length() - 6);
 					}
-					return category;
+					return category.replace("&amp;", "&");
 				}
 			}
 		} catch (IOException e) {
@@ -166,6 +168,8 @@ public class LabelDownloader {
 		}
 		return null;
 	}
+
+	private static Map<String, Integer> defaultIcons = createDefaultIconsMap();
 
 	private void startDownloadExternalThread() {
 		Map<String, Long> labelsMap = dbHelper.labelDao.getLabelsMap();
@@ -192,7 +196,8 @@ public class LabelDownloader {
 				if (label != null) {
 					Long labelId = labelsMap.get(label);
 					if (labelId == null) {
-						labelId = dbHelper.labelDao.insert(label);
+						int iconDb = Label.convertToIconDb(defaultIcons.get(label));
+						labelId = dbHelper.labelDao.insert(label, iconDb);
 						labelsMap.put(label, labelId);
 					}
 					dbHelper.appsLabelDao.merge(packageName, c.getString(0), labelId);
@@ -204,4 +209,32 @@ public class LabelDownloader {
 		}
 	}
 
+	private static Map<String, Integer> createDefaultIconsMap() {
+		HashMap<String, Integer> m = new HashMap<String, Integer>();
+
+		m.put("Arcade & Action", R.drawable.package_games_arcade);
+		m.put("Cards & Casino", R.drawable.kpat);
+		m.put("Brain & Puzzle", R.drawable.package_games_board);
+		m.put("Casual", R.drawable.package_games_kids);
+
+		m.put("Comics", R.drawable.kpaint);
+		m.put("Communication", R.drawable.kmail);
+		m.put("Entertainment", R.drawable.ksmiletris);
+		m.put("Finance", R.drawable.kchart);
+		m.put("Health", R.drawable.kstars);
+		m.put("Lifestyle", R.drawable.kfm_home);
+		m.put("Multimedia", R.drawable.multimedia);
+		m.put("News & Weather", R.drawable.kweather);
+		m.put("Productivity", R.drawable.kspread_ksp);
+		m.put("Reference", R.drawable.globe);
+		m.put("Shopping", R.drawable.kwallet);
+		m.put("Social", R.drawable.kopete);
+		m.put("Sports", R.drawable.agt_member);
+		m.put("Themes", R.drawable.thumbnail);
+		m.put("Tools", R.drawable.service_manager);
+		m.put("Travel", R.drawable.image2);
+		m.put("Demo", R.drawable.demo);
+		m.put("Software libraries", R.drawable.blockdevice);
+		return m;
+	}
 }

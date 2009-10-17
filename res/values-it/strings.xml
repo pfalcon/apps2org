@@ -64,4 +64,13 @@
 	<string name="select_jpg_bmp_title">Errore tipo file</string>
 	<string name="select_jpg_bmp">E' possibile selezionare solo un file png o jpg</string>
 	<string name="Donate">Dona</string>  
+	<string name="Download">Download</string>
+	<string name="Downloading">Download in corso</string>
+	<string name="Starting_download">Inizio download</string>
+	<string name="All_apps">Tutte le applicazioni</string>
+	<string name="Apps_with_no_label">Applicazioni senza etichetta</string>
+	<string name="Download_labels">Scarica etichette</string>
+	<string name="Download_labels_from_Cyrket">Download delle etichette da Cyrket</string>
+	<string name="First_time_download_message_1">Dalla versione 1.3 puoi scaricare le etichette dell'Android Market da cyrket</string>
+	<string name="First_time_download_message_2">Vuoi scaricare le etichette adesso?</string>	
 </resources>

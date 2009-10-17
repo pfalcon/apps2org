@@ -71,4 +71,6 @@
 	<string name="Apps_with_no_label">Apps with no label</string>
 	<string name="Download_labels">Download labels</string>
 	<string name="Download_labels_from_Cyrket">Download labels from Cyrket</string>
+	<string name="First_time_download_message_1">Since version 1.3 you can download Android Market labels from cyrket</string>
+	<string name="First_time_download_message_2">Do you want to download labels now?</string>
 </resources>

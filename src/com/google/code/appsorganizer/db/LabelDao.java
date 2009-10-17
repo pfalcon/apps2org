@@ -125,6 +125,13 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		return db.insert(name, null, v);
 	}
 
+	public long insert(String label, int icon) {
+		ContentValues v = new ContentValues();
+		v.put(LABEL_COL_NAME, label);
+		v.put(ICON_COL_NAME, icon);
+		return db.insert(name, null, v);
+	}
+
 	@Override
 	protected Label createObject(Cursor c) {
 		Label t = new Label();

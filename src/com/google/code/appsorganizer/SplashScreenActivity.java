@@ -86,6 +86,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 
 		getListView().setClickable(true);
 
+		registerForContextMenu(getListView());
+
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
 		appButton = (ToggleButton) findViewById(R.id.appButton);
 		labelButton.setOnClickListener(new OnClickListener() {
@@ -117,7 +119,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	}
 
 	private void createFirstTimeDownloadDialog() {
-		String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
+		String msg = getString(R.string.First_time_download_message_1) + "\n" + getString(R.string.First_time_download_message_2);
 
 		firstTimeDownloadDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg, new OnOkClickListener() {
 			private static final long serialVersionUID = 1L;
@@ -159,6 +161,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		howToDialog.setShowNegativeButton(false);
 	}
 
+	private static boolean firstTime = true;
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -168,26 +172,28 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		if (!appButton.isChecked()) {
 			appButton.setChecked(true);
 		}
-		reload();
+		if (firstTime) {
+			reload();
+			firstTime = false;
+		} else {
+			initAdapter();
+		}
 		BugReportActivity.showLastException(this);
 	}
 
 	private final Handler handler = new Handler() {
-		// TODO progress bar non indeterminata
-		// TODO mettere la progress bar solo al primo caricamento
 		@Override
 		public void handleMessage(Message msg) {
-			if (msg.what == -1) {
-				pd.setMessage(getText(R.string.preparing_apps_list));
-				Cursor c = dbHelper.appCacheDao.getAllApps(ApplicationViewBinder.COLS);
-				startManagingCursor(c);
-				SimpleCursorAdapter adapter = createAppsAdapter(c);
-				setListAdapter(adapter);
+			if (msg.arg1 != 0) {
+				pd.setMax(msg.arg1);
 			} else if (msg.what == -3) {
+				pd.setMessage(getText(R.string.preparing_apps_list));
+				initAdapter();
 				pd.hide();
 				showFirstTimeDownloadDialog();
 			} else {
-				pd.setMessage(getString(R.string.total_apps) + ": " + msg.what);
+				pd.incrementProgressBy(1);
+				pd.setMessage(msg.obj.toString());
 			}
 		}
 	};
@@ -199,19 +205,18 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		return (SimpleCursorAdapter) super.getListAdapter();
 	}
 
-	public void reload() {
-		pd = ProgressDialog.show(this, getText(R.string.preparing_apps_list), getText(R.string.please_wait_loading), true, false);
+	private void reload() {
+		pd = new ProgressDialog(this);
+		pd.setTitle(getText(R.string.preparing_apps_list));
+		pd.setMessage(getText(R.string.please_wait_loading));
+		pd.setIndeterminate(false);
+		pd.setCancelable(false);
+		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		pd.show();
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-				}
 				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, true);
-				handler.sendEmptyMessage(-1);
-
-				registerForContextMenu(getListView());
 				handler.sendEmptyMessage(-3);
 			}
 		};
@@ -256,14 +261,6 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		return optionMenuManager.onOptionsItemSelected(item);
 	}
 
-	private SimpleCursorAdapter createAppsAdapter(Cursor c) {
-		SimpleCursorAdapter appsAdapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c,
-				ApplicationViewBinder.COLS, ApplicationViewBinder.VIEWS) {
-		};
-		appsAdapter.setViewBinder(new ApplicationViewBinder(dbHelper, this, chooseLabelDialog));
-		return appsAdapter;
-	}
-
 	private void requeryCursor() {
 		SimpleCursorAdapter listAdapter = getListAdapter();
 		if (listAdapter != null) {
@@ -272,6 +269,16 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 				cursor.requery();
 			}
 		}
+	}
+
+	private void initAdapter() {
+		Cursor c = dbHelper.appCacheDao.getAllApps(ApplicationViewBinder.COLS);
+		startManagingCursor(c);
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c, ApplicationViewBinder.COLS,
+				ApplicationViewBinder.VIEWS) {
+		};
+		adapter.setViewBinder(new ApplicationViewBinder(dbHelper, this, chooseLabelDialog));
+		setListAdapter(adapter);
 	}
 
 }
