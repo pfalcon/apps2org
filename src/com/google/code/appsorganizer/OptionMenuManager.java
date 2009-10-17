@@ -134,6 +134,6 @@ public class OptionMenuManager {
 	}
 
 	public void startDownload() {
-		labelDownloader.startDownload();
+		labelDownloader.startDownload(true);
 	}
 }

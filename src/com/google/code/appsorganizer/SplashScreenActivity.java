@@ -216,7 +216,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, true);
+				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, false);
 				handler.sendEmptyMessage(-3);
 			}
 		};

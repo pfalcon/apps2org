@@ -73,4 +73,6 @@
 	<string name="Download_labels_from_Cyrket">Download labels from Cyrket</string>
 	<string name="First_time_download_message_1">Since version 1.3 you can download Android Market labels from cyrket</string>
 	<string name="First_time_download_message_2">Do you want to download labels now?</string>
+	<string name="choose_app">Choose app</string>
+	<string name="Android_Image_Gallery">Android Image Gallery</string>
 </resources>

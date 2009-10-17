@@ -30,7 +30,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.Message;
@@ -41,6 +40,7 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.SingleSelectDialog;
 import com.google.code.appsorganizer.model.Label;
 
 /**
@@ -53,9 +53,7 @@ public class LabelDownloader {
 
 	private final DatabaseHelper dbHelper;
 
-	private final ConfirmLabelDownloadDialog confirmLabelDownloadDialog;
-
-	private boolean downloadAll = true;
+	private final SingleSelectDialog confirmLabelDownloadDialog;
 
 	private boolean operationCancelled = false;
 
@@ -66,21 +64,16 @@ public class LabelDownloader {
 		this.dbHelper = dbHelper;
 		this.onOkClickListener = onOkClickListener;
 		GenericDialogManager genericDialogManager = ((GenericDialogManagerActivity) activity).getGenericDialogManager();
-		confirmLabelDownloadDialog = new ConfirmLabelDownloadDialog(genericDialogManager, new OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				switch (which) {
-				case 0:
-					downloadAll = true;
-					break;
-				case 1:
-					downloadAll = false;
-					break;
-				default:
-					startDownload();
-					break;
-				}
+		confirmLabelDownloadDialog = new SingleSelectDialog(genericDialogManager, activity.getString(R.string.Download_labels_from_Cyrket),
+				activity.getString(R.string.Download), new CharSequence[] { activity.getString(R.string.All_apps),
+						activity.getString(R.string.Apps_with_no_label) }, 0) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onOkClick(DialogInterface dialog, int selectedItem) {
+				startDownload(selectedItem == 0);
 			}
-		});
+		};
 	}
 
 	private ProgressDialog pd;
@@ -110,12 +103,12 @@ public class LabelDownloader {
 		confirmLabelDownloadDialog.showDialog();
 	}
 
-	public void startDownload() {
+	public void startDownload(final boolean downloadAll) {
 		createAndShowProgresDialog();
 		new Thread() {
 			@Override
 			public void run() {
-				startDownloadExternalThread();
+				startDownloadExternalThread(downloadAll);
 			}
 		}.start();
 	}
@@ -171,7 +164,7 @@ public class LabelDownloader {
 
 	private static Map<String, Integer> defaultIcons = createDefaultIconsMap();
 
-	private void startDownloadExternalThread() {
+	private void startDownloadExternalThread(boolean downloadAll) {
 		Map<String, Long> labelsMap = dbHelper.labelDao.getLabelsMap();
 		Cursor c;
 		if (downloadAll) {
