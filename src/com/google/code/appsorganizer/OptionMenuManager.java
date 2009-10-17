@@ -52,10 +52,13 @@ public class OptionMenuManager {
 
 	private final LabelDownloader labelDownloader;
 
-	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper) {
-		this.context = context;
+	private final OnOkClickListener onOkClickListener;
 
-		labelDownloader = new LabelDownloader(context, dbHelper);
+	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper, OnOkClickListener onOkClickListener) {
+		this.context = context;
+		this.onOkClickListener = onOkClickListener;
+
+		labelDownloader = new LabelDownloader(context, dbHelper, onOkClickListener);
 
 		final GenericDialogManager genericDialogManager = ((GenericDialogManagerActivity) context).getGenericDialogManager();
 		exportErrorDialog = new SimpleDialog(genericDialogManager, context.getString(R.string.export_error));
@@ -90,20 +93,19 @@ public class OptionMenuManager {
 
 		int i = 0;
 
-		menu.getItem(i++).setIcon(R.drawable.fileimport);
-		// TODO icona
-		menu.getItem(i++).setIcon(R.drawable.fileexport);
 		menu.getItem(i++).setIcon(R.drawable.reload);
-		menu.getItem(i++).setIcon(R.drawable.reload);
+		menu.getItem(i++).setIcon(R.drawable.down);
 
 		menu.getItem(i++).setIcon(R.drawable.package_favorite);
 		menu.getItem(i++).setIcon(R.drawable.advancedsettings);
 		menu.getItem(i++).setIcon(R.drawable.info);
+		menu.getItem(i++).setIcon(R.drawable.fileimport);
+		menu.getItem(i++).setIcon(R.drawable.fileexport);
 
 		return true;
 	}
 
-	public boolean onOptionsItemSelected(MenuItem item, OnOkClickListener onOkClickListener) {
+	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.reload_apps:
 			new AppsReloader(context, true).reload();
@@ -113,7 +115,7 @@ public class OptionMenuManager {
 			textEntryDialog.showDialog();
 			return true;
 		case R.id.download_labels:
-			labelDownloader.download(onOkClickListener);
+			labelDownloader.download();
 			return true;
 		case R.id.import_menu:
 			context.startActivity(new Intent(context, FileImporter.class));
@@ -129,5 +131,9 @@ public class OptionMenuManager {
 			return true;
 		}
 		return false;
+	}
+
+	public void startDownload() {
+		labelDownloader.startDownload();
 	}
 }

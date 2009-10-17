@@ -45,6 +45,7 @@ import com.google.code.appsorganizer.dialogs.SimpleDialog;
 public class SplashScreenActivity extends ListActivityWithDialog {
 
 	private static final String SHOW_START_HOW_TO = "showStartHowTo";
+	private static final String SHOW_FIRST_TIME_DOWNLOAD = "showFirstTimeDownload";
 
 	private DatabaseHelper dbHelper;
 
@@ -63,7 +64,15 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		// Debug.startMethodTracing("splash");
 
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
-		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper);
+		optionMenuManager = new OptionMenuManager(SplashScreenActivity.this, dbHelper, new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				// after downloading labels show start howto
+				showStartHowTo();
+				requeryCursor();
+			}
+		});
 
 		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), new OnOkClickListener() {
 			private static final long serialVersionUID = 1L;
@@ -85,25 +94,69 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			}
 		});
 
-		showStartHowTo();
+		createHowToDialog();
+		createFirstTimeDownloadDialog();
 	}
 
-	private void showStartHowTo() {
+	private SimpleDialog howToDialog;
+
+	private SimpleDialog firstTimeDownloadDialog;
+
+	private boolean showFirstTimeDownloadDialog() {
 		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
-		boolean showStartHowTo = settings.getBoolean(SHOW_START_HOW_TO, true);
+		boolean firstTime = settings.getBoolean(SHOW_FIRST_TIME_DOWNLOAD, true);
+
+		if (firstTime) {
+			firstTimeDownloadDialog.showDialog();
+
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putBoolean(SHOW_FIRST_TIME_DOWNLOAD, false);
+			editor.commit();
+		}
+		return firstTime;
+	}
+
+	private void createFirstTimeDownloadDialog() {
 		String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
 
-		SimpleDialog howToDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg);
-		howToDialog.setIcon(R.drawable.icon);
-		howToDialog.setShowNegativeButton(false);
+		firstTimeDownloadDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg, new OnOkClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				optionMenuManager.startDownload();
+			}
+		});
+		firstTimeDownloadDialog.setIcon(R.drawable.icon);
+		firstTimeDownloadDialog.setShowNegativeButton(true);
+		firstTimeDownloadDialog.setOnCancelListener(new OnOkClickListener() {
+			private static final long serialVersionUID = -373881128345110798L;
+
+			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+				showStartHowTo();
+			}
+		});
+	}
+
+	private boolean showStartHowTo() {
+		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
+		boolean showStartHowTo = settings.getBoolean(SHOW_START_HOW_TO, true);
 
 		if (showStartHowTo) {
-			showDialog(howToDialog);
+			howToDialog.showDialog();
 
 			SharedPreferences.Editor editor = settings.edit();
 			editor.putBoolean(SHOW_START_HOW_TO, false);
 			editor.commit();
 		}
+		return showStartHowTo;
+	}
+
+	private void createHowToDialog() {
+		String msg = getString(R.string.how_to_message) + "\n" + getString(R.string.how_to_message_2);
+
+		howToDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.app_name), msg);
+		howToDialog.setIcon(R.drawable.icon);
+		howToDialog.setShowNegativeButton(false);
 	}
 
 	@Override
@@ -132,6 +185,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 				setListAdapter(adapter);
 			} else if (msg.what == -3) {
 				pd.hide();
+				showFirstTimeDownloadDialog();
 			} else {
 				pd.setMessage(getString(R.string.total_apps) + ": " + msg.what);
 			}
@@ -154,7 +208,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 				}
-				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, false);
+				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, true);
 				handler.sendEmptyMessage(-1);
 
 				registerForContextMenu(getListView());
@@ -199,13 +253,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return optionMenuManager.onOptionsItemSelected(item, new OnOkClickListener() {
-			private static final long serialVersionUID = 1L;
-
-			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				requeryCursor();
-			}
-		});
+		return optionMenuManager.onOptionsItemSelected(item);
 	}
 
 	private SimpleCursorAdapter createAppsAdapter(Cursor c) {

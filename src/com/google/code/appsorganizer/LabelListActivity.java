@@ -98,7 +98,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 		confirmDeleteDialog = new ConfirmDeleteDialog(getGenericDialogManager());
 
-		optionMenuManager = new OptionMenuManager(this, dbHelper);
+		optionMenuManager = new OptionMenuManager(this, dbHelper, onOkClickListener);
 
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
 		appButton = (ToggleButton) findViewById(R.id.appButton);
@@ -354,13 +354,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return optionMenuManager.onOptionsItemSelected(item, new OnOkClickListener() {
-			private static final long serialVersionUID = 1L;
-
-			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				requeryCursor();
-			}
-		});
+		return optionMenuManager.onOptionsItemSelected(item);
 	}
 
 	private void requeryCursor() {

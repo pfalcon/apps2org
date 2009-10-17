@@ -65,6 +65,8 @@
 	<string name="select_jpg_bmp">You must choose a png or jpg file</string>
 	<string name="Donate">Donate</string>
 	<string name="Download">Download</string>
+	<string name="Downloading">Downloading</string>
+	<string name="Starting_download">Starting download</string>
 	<string name="All_apps">All apps</string>
 	<string name="Apps_with_no_label">Apps with no label</string>
 	<string name="Download_labels">Download labels</string>

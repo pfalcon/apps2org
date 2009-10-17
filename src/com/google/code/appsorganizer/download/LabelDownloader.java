@@ -34,6 +34,7 @@ import android.database.Cursor;
 import android.os.Handler;
 import android.os.Message;
 
+import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
@@ -56,11 +57,12 @@ public class LabelDownloader {
 
 	private boolean operationCancelled = false;
 
-	private OnOkClickListener onOkClickListener;
+	private final OnOkClickListener onOkClickListener;
 
-	public LabelDownloader(Activity activity, DatabaseHelper dbHelper) {
+	public LabelDownloader(Activity activity, DatabaseHelper dbHelper, OnOkClickListener onOkClickListener) {
 		this.activity = activity;
 		this.dbHelper = dbHelper;
+		this.onOkClickListener = onOkClickListener;
 		GenericDialogManager genericDialogManager = ((GenericDialogManagerActivity) activity).getGenericDialogManager();
 		confirmLabelDownloadDialog = new ConfirmLabelDownloadDialog(genericDialogManager, new OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
@@ -101,13 +103,12 @@ public class LabelDownloader {
 		}
 	};
 
-	public void download(OnOkClickListener onOkClickListener) {
+	public void download() {
 		operationCancelled = false;
-		this.onOkClickListener = onOkClickListener;
 		confirmLabelDownloadDialog.showDialog();
 	}
 
-	private void startDownload() {
+	public void startDownload() {
 		createAndShowProgresDialog();
 		new Thread() {
 			@Override
@@ -119,8 +120,8 @@ public class LabelDownloader {
 
 	private void createAndShowProgresDialog() {
 		pd = new ProgressDialog(activity);
-		pd.setTitle("Downloading");
-		pd.setMessage("Starting download");
+		pd.setTitle(R.string.Downloading);
+		pd.setMessage(activity.getString(R.string.Starting_download));
 		pd.setIndeterminate(true);
 		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		pd.setCancelable(true);

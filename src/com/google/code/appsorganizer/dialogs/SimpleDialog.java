@@ -36,6 +36,7 @@ public class SimpleDialog extends GenericDialogCreator implements Serializable {
 	private String okMessageText;
 	private boolean showNegativeButton = true;
 	protected OnOkClickListener onOkListener;
+	protected OnOkClickListener onCancelListener;
 	private int icon = R.drawable.alert_dialog_icon;
 
 	public SimpleDialog(GenericDialogManager dialogManager) {
@@ -110,7 +111,10 @@ public class SimpleDialog extends GenericDialogCreator implements Serializable {
 		}
 		if (showNegativeButton) {
 			d = d.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
+				public void onClick(DialogInterface dialog, int which) {
+					if (onCancelListener != null) {
+						onCancelListener.onClick(null, dialog, which);
+					}
 				}
 			});
 		}
@@ -182,5 +186,13 @@ public class SimpleDialog extends GenericDialogCreator implements Serializable {
 		// onOkListener = (OnOkClickListener)
 		// state.getSerializable("onOkListener__" + getDialogId());
 		icon = state.getInt("icon__" + getDialogId());
+	}
+
+	public OnOkClickListener getOnCancelListener() {
+		return onCancelListener;
+	}
+
+	public void setOnCancelListener(OnOkClickListener onCancelListener) {
+		this.onCancelListener = onCancelListener;
 	}
 }
