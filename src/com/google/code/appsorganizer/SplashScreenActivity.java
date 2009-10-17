@@ -60,7 +60,6 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		BugReportActivity.registerExceptionHandler(this);
-		// provaDownload();
 		// Debug.startMethodTracing("splash");
 
 		dbHelper = DatabaseHelper.initOrSingleton(SplashScreenActivity.this);
@@ -86,35 +85,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			}
 		});
 
-		reload();
 		showStartHowTo();
 	}
-
-	// private void provaDownload() {
-	// try {
-	// URL u = new
-	// URL("http://www.cyrket.com/package/com.google.code.appsorganizer");
-	// HttpURLConnection c = (HttpURLConnection) u.openConnection();
-	// c.setRequestMethod("GET");
-	// c.setDoOutput(true);
-	// c.connect();
-	//
-	// BufferedReader in = new BufferedReader(new
-	// InputStreamReader(c.getInputStream()));
-	//
-	// String s = null;
-	// while ((s = in.readLine()) != null) {
-	// int indexOf = s.indexOf("<label>Category</label>");
-	// if (indexOf != -1) {
-	// String category = in.readLine().trim();
-	// System.out.println(category);
-	// break;
-	// }
-	// }
-	// in.close();
-	// } catch (IOException e) {
-	// }
-	// }
 
 	private void showStartHowTo() {
 		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
@@ -143,10 +115,13 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		if (!appButton.isChecked()) {
 			appButton.setChecked(true);
 		}
+		reload();
 		BugReportActivity.showLastException(this);
 	}
 
 	private final Handler handler = new Handler() {
+		// TODO progress bar non indeterminata
+		// TODO mettere la progress bar solo al primo caricamento
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.what == -1) {
@@ -154,7 +129,6 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 				Cursor c = dbHelper.appCacheDao.getAllApps(ApplicationViewBinder.COLS);
 				startManagingCursor(c);
 				SimpleCursorAdapter adapter = createAppsAdapter(c);
-				// } else if (msg.what == -2) {
 				setListAdapter(adapter);
 			} else if (msg.what == -3) {
 				pd.hide();

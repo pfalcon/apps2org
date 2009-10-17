@@ -181,6 +181,11 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		}
 	}
 
+	public Cursor getAppsNoLabelCursor() {
+		return db.rawQuery("select a.name, a.package, a.label from apps a left outer join apps_labels al "
+				+ "on a.name = al.app and a.package = al.package where a.disabled = 0 and id_label is null order by upper(a.label)", null);
+	}
+
 	public Cursor getAllApps(String[] cols) {
 		return db.query(TABLE_NAME, cols, "disabled=0", null, null, null, "upper(label)");
 	}

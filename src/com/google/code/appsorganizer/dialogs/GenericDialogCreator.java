@@ -30,8 +30,11 @@ public abstract class GenericDialogCreator {
 
 	private Dialog dialog;
 
+	private final GenericDialogManager dialogManager;
+
 	public GenericDialogCreator(GenericDialogManager dialogManager) {
 		dialogManager.addDialog(this);
+		this.dialogManager = dialogManager;
 	}
 
 	int getDialogId() {
@@ -68,5 +71,9 @@ public abstract class GenericDialogCreator {
 	}
 
 	public void onRestoreInstanceState(Bundle state) {
+	}
+
+	public void showDialog() {
+		dialogManager.showDialog(this);
 	}
 }

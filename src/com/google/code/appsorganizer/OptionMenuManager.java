@@ -33,6 +33,7 @@ import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
+import com.google.code.appsorganizer.download.LabelDownloader;
 import com.google.code.appsorganizer.preferences.PreferencesFromXml;
 
 /**
@@ -49,8 +50,12 @@ public class OptionMenuManager {
 
 	private final SimpleDialog exportErrorDialog;
 
+	private final LabelDownloader labelDownloader;
+
 	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper) {
 		this.context = context;
+
+		labelDownloader = new LabelDownloader(context, dbHelper);
 
 		final GenericDialogManager genericDialogManager = ((GenericDialogManagerActivity) context).getGenericDialogManager();
 		exportErrorDialog = new SimpleDialog(genericDialogManager, context.getString(R.string.export_error));
@@ -83,13 +88,17 @@ public class OptionMenuManager {
 		MenuInflater inflater = context.getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
 
-		menu.getItem(0).setIcon(R.drawable.fileimport);
-		menu.getItem(1).setIcon(R.drawable.fileexport);
-		menu.getItem(2).setIcon(R.drawable.reload);
+		int i = 0;
 
-		menu.getItem(3).setIcon(R.drawable.package_favorite);
-		menu.getItem(4).setIcon(R.drawable.advancedsettings);
-		menu.getItem(5).setIcon(R.drawable.info);
+		menu.getItem(i++).setIcon(R.drawable.fileimport);
+		// TODO icona
+		menu.getItem(i++).setIcon(R.drawable.fileexport);
+		menu.getItem(i++).setIcon(R.drawable.reload);
+		menu.getItem(i++).setIcon(R.drawable.reload);
+
+		menu.getItem(i++).setIcon(R.drawable.package_favorite);
+		menu.getItem(i++).setIcon(R.drawable.advancedsettings);
+		menu.getItem(i++).setIcon(R.drawable.info);
 
 		return true;
 	}
@@ -101,7 +110,10 @@ public class OptionMenuManager {
 			onOkClickListener.onClick(null, null, 0);
 			return true;
 		case R.id.export_menu:
-			((GenericDialogManagerActivity) context).showDialog(textEntryDialog);
+			textEntryDialog.showDialog();
+			return true;
+		case R.id.download_labels:
+			labelDownloader.download(onOkClickListener);
 			return true;
 		case R.id.import_menu:
 			context.startActivity(new Intent(context, FileImporter.class));
@@ -110,7 +122,7 @@ public class OptionMenuManager {
 			context.startActivity(new Intent(context, PreferencesFromXml.class));
 			return true;
 		case R.id.about:
-			((GenericDialogManagerActivity) context).showDialog(aboutDialogCreator);
+			aboutDialogCreator.showDialog();
 			return true;
 		case R.id.donate:
 			context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://sites.google.com/site/appsorganizer/donate")));

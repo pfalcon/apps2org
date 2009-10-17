@@ -47,6 +47,20 @@ public class AppLabelDao extends ObjectWithIdDao<AppLabel> {
 		columns = DB_COLUMNS;
 	}
 
+	public long merge(String packageName, String app, long labelId) {
+		Cursor c = db.query(TABLE_NAME, new String[] { ID_COL_NAME }, APP_COL_NAME + "=? and " + PACKAGE_NAME_COL_NAME + "=? and "
+				+ LABEL_ID_COL_NAME + "=?", new String[] { app, packageName, Long.toString(labelId) }, null, null, null);
+		try {
+			if (!c.moveToNext()) {
+				return insert(packageName, app, labelId);
+			} else {
+				return -1;
+			}
+		} finally {
+			c.close();
+		}
+	}
+
 	public long insert(String packageName, String app, long labelId) {
 		ContentValues v = new ContentValues();
 		v.put(APP_COL_NAME, app);

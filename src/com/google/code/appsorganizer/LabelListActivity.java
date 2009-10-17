@@ -93,8 +93,6 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		};
 		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), onOkClickListener);
 
-		setListAdapter(createAdapter());
-
 		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager(), onOkClickListener);
 		textEntryDialog = new RenameLabelDialog(getGenericDialogManager());
 
@@ -236,12 +234,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		if (appButton.isChecked()) {
 			appButton.setChecked(false);
 		}
-	}
-
-	public void dataSetChanged(Object source, short type) {
-		// if (type != CHANGED_STARRED) {
-		// getExpandableListAdapter().getCursor().requery();
-		// }
+		setListAdapter(createAdapter());
 	}
 
 	@Override

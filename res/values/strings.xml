@@ -64,4 +64,9 @@
 	<string name="select_jpg_bmp_title">File type error</string>
 	<string name="select_jpg_bmp">You must choose a png or jpg file</string>
 	<string name="Donate">Donate</string>
+	<string name="Download">Download</string>
+	<string name="All_apps">All apps</string>
+	<string name="Apps_with_no_label">Apps with no label</string>
+	<string name="Download_labels">Download labels</string>
+	<string name="Download_labels_from_Cyrket">Download labels from Cyrket</string>
 </resources>

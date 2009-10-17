@@ -19,6 +19,8 @@
 package com.google.code.appsorganizer.db;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -80,6 +82,19 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 	public Label[] getLabelsArray() {
 		Cursor c = getLabelCursor();
 		return convertCursorToArray(c, new Label[c.getCount()]);
+	}
+
+	public Map<String, Long> getLabelsMap() {
+		Cursor c = db.query(TABLE_NAME, new String[] { ID_COL_NAME, LABEL_COL_NAME }, null, null, null, null, null);
+		Map<String, Long> map = new HashMap<String, Long>(c.getCount());
+		try {
+			while (c.moveToNext()) {
+				map.put(c.getString(1), c.getLong(0));
+			}
+		} finally {
+			c.close();
+		}
+		return map;
 	}
 
 	public Cursor getLabelCursor() {

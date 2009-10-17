@@ -7,6 +7,9 @@
     <item android:id="@+id/export_menu"
         android:title="@string/export_menu" />
 
+    <item android:id="@+id/download_labels"
+        android:title="@string/Download_labels" />
+
     <item android:id="@+id/reload_apps"
         android:title="@string/reload_apps" />
 
