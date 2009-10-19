@@ -68,8 +68,6 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			private static final long serialVersionUID = 1L;
 
 			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				// after downloading labels show start howto
-				showStartHowTo();
 				requeryCursor();
 			}
 		});
@@ -130,13 +128,6 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		});
 		firstTimeDownloadDialog.setIcon(R.drawable.icon);
 		firstTimeDownloadDialog.setShowNegativeButton(true);
-		firstTimeDownloadDialog.setOnCancelListener(new OnOkClickListener() {
-			private static final long serialVersionUID = -373881128345110798L;
-
-			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				showStartHowTo();
-			}
-		});
 	}
 
 	private boolean showStartHowTo() {
@@ -190,7 +181,9 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 				pd.setMessage(getText(R.string.preparing_apps_list));
 				initAdapter();
 				pd.hide();
-				showFirstTimeDownloadDialog();
+				if (!showFirstTimeDownloadDialog()) {
+					showStartHowTo();
+				}
 			} else {
 				pd.incrementProgressBy(1);
 				pd.setMessage(msg.obj.toString());
