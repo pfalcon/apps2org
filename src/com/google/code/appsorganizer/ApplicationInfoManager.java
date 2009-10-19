@@ -49,7 +49,9 @@ public class ApplicationInfoManager {
 			boolean[] installedApps = new boolean[nameCache.size()];
 			List<ResolveInfo> installedApplications = getAllResolveInfo(pm);
 
-			sendSizeMessage(handler, installedApplications.size());
+			if (handler != null) {
+				sendSizeMessage(handler, installedApplications.size());
+			}
 
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
