@@ -358,6 +358,12 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	}
 
 	private void requeryCursor() {
-		getExpandableListAdapter().getCursor().requery();
+		SimpleCursorTreeAdapter expandableListAdapter = getExpandableListAdapter();
+		if (expandableListAdapter != null) {
+			Cursor cursor = expandableListAdapter.getCursor();
+			if (cursor != null) {
+				cursor.requery();
+			}
+		}
 	}
 }

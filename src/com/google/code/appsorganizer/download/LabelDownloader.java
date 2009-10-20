@@ -143,11 +143,16 @@ public class LabelDownloader {
 			while ((s = in.readLine()) != null) {
 				int indexOf = s.indexOf("<label>Category</label>");
 				if (indexOf != -1) {
-					String category = in.readLine().trim();
-					if (category.startsWith("<div>")) {
-						category = category.substring(5, category.length() - 6);
+					s = in.readLine();
+					if (s != null) {
+						String category = s.trim();
+						if (category.startsWith("<div>")) {
+							category = category.substring(5, category.length() - 6);
+						}
+						return category.replace("&amp;", "&");
+					} else {
+						return null;
 					}
-					return category.replace("&amp;", "&");
 				}
 			}
 		} catch (IOException e) {
@@ -189,8 +194,13 @@ public class LabelDownloader {
 				if (label != null) {
 					Long labelId = labelsMap.get(label);
 					if (labelId == null) {
-						int iconDb = Label.convertToIconDb(defaultIcons.get(label));
-						labelId = dbHelper.labelDao.insert(label, iconDb);
+						Integer icon = defaultIcons.get(label);
+						if (icon != null) {
+							int iconDb = Label.convertToIconDb(icon);
+							labelId = dbHelper.labelDao.insert(label, iconDb);
+						} else {
+							labelId = dbHelper.labelDao.insert(label);
+						}
 						labelsMap.put(label, labelId);
 					}
 					dbHelper.appsLabelDao.merge(packageName, c.getString(0), labelId);
