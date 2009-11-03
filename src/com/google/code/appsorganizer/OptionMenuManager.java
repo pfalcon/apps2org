@@ -63,23 +63,23 @@ public class OptionMenuManager {
 		final GenericDialogManager genericDialogManager = ((GenericDialogManagerActivity) context).getGenericDialogManager();
 		exportErrorDialog = new SimpleDialog(genericDialogManager, context.getString(R.string.export_error));
 
-		textEntryDialog = new TextEntryDialog(genericDialogManager, context.getString(R.string.export_menu), context
-				.getString(R.string.file_name), new OnOkClickListener() {
-			private static final long serialVersionUID = 1L;
+		textEntryDialog = new TextEntryDialog(genericDialogManager, context.getString(R.string.export_menu), context.getString(R.string.file_name),
+				new OnOkClickListener() {
+					private static final long serialVersionUID = 1L;
 
-			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				String fileName = FileImporter.EXPORT_DIR + charSequence;
-				if (!fileName.endsWith("." + FileImporter.FILE_EXTENSION)) {
-					fileName += "." + FileImporter.FILE_EXTENSION;
-				}
-				try {
-					DbImportExport.export(dbHelper, fileName);
-				} catch (Throwable e) {
-					exportErrorDialog.setTitle(context.getString(R.string.export_error) + ": " + e.getMessage());
-					genericDialogManager.showDialog(exportErrorDialog);
-				}
-			}
-		});
+					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
+						String fileName = FileImporter.EXPORT_DIR + charSequence;
+						if (!fileName.endsWith("." + FileImporter.FILE_EXTENSION)) {
+							fileName += "." + FileImporter.FILE_EXTENSION;
+						}
+						try {
+							DbImportExport.export(dbHelper, fileName);
+						} catch (Throwable e) {
+							exportErrorDialog.setTitle(context.getString(R.string.export_error) + ": " + e.getMessage());
+							genericDialogManager.showDialog(exportErrorDialog);
+						}
+					}
+				});
 		aboutDialogCreator = new AboutDialogCreator(genericDialogManager);
 	}
 
@@ -94,7 +94,9 @@ public class OptionMenuManager {
 		int i = 0;
 
 		menu.getItem(i++).setIcon(R.drawable.reload);
-		menu.getItem(i++).setIcon(R.drawable.down);
+		MenuItem cyrketItem = menu.getItem(i++);
+		cyrketItem.setIcon(R.drawable.down);
+		cyrketItem.setVisible(false);
 
 		menu.getItem(i++).setIcon(R.drawable.package_favorite);
 		menu.getItem(i++).setIcon(R.drawable.advancedsettings);

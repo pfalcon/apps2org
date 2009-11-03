@@ -64,13 +64,13 @@ public class ChooseIconActivity extends ActivityWithDialog {
 		super.onCreate(savedInstanceState);
 
 		applicationNotFoundDialog = createApplicationNotFoundDialog();
-		selectImageDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.select_jpg_bmp_title),
-				getString(R.string.select_jpg_bmp));
+		selectImageDialog = new SimpleDialog(getGenericDialogManager(), getString(R.string.select_jpg_bmp_title), getString(R.string.select_jpg_bmp));
 		selectImageDialog.setShowNegativeButton(false);
 
 		loadIcons();
 
 		final int group = getIntent().getIntExtra("group", -1);
+		final long groupId = getIntent().getLongExtra("groupId", -1);
 		setContentView(com.google.code.appsorganizer.R.layout.icon_grid);
 		mGrid = (GridView) findViewById(com.google.code.appsorganizer.R.id.iconGrid);
 		mGrid.setAdapter(new AppsAdapter());
@@ -80,13 +80,14 @@ public class ChooseIconActivity extends ActivityWithDialog {
 				Intent res = new Intent();
 				res.putExtra("icon", mIcons[pos]);
 				res.putExtra("group", group);
+				res.putExtra("groupId", groupId);
 				setResult(RESULT_OK, res);
 				finish();
 			}
 		});
 
-		selectAppDialog = new SingleSelectDialog(getGenericDialogManager(), getString(R.string.choose_app),
-				getString(R.string.alert_dialog_ok), new CharSequence[] { getString(R.string.Android_Image_Gallery), "AndExplorer" }, 0) {
+		selectAppDialog = new SingleSelectDialog(getGenericDialogManager(), getString(R.string.choose_app), getString(R.string.alert_dialog_ok),
+				new CharSequence[] { getString(R.string.Android_Image_Gallery), "AndExplorer" }, 0) {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -249,8 +250,7 @@ public class ChooseIconActivity extends ActivityWithDialog {
 					private static final long serialVersionUID = 1L;
 
 					public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-						Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri
-								.parse("market://search?q=pname:lysesoft.andexplorer"));
+						Intent emailIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("market://search?q=pname:lysesoft.andexplorer"));
 						startActivity(emailIntent);
 					}
 				});

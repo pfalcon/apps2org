@@ -119,9 +119,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		MergeCursor m = new MergeCursor(new Cursor[] { c, otherAppsCursor });
 		startManagingCursor(m);
 
-		SimpleCursorTreeAdapter mAdapter = new SimpleCursorTreeAdapter(this, m, R.layout.label_row_with_icon, new String[] {
-				LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME }, new int[] {}, R.layout.app_row, ApplicationViewBinder.COLS,
-				ApplicationViewBinder.VIEWS) {
+		SimpleCursorTreeAdapter mAdapter = new SimpleCursorTreeAdapter(this, m, R.layout.label_row_with_icon, new String[] { LabelDao.LABEL_COL_NAME,
+				LabelDao.ICON_COL_NAME }, new int[] {}, R.layout.app_row, ApplicationViewBinder.COLS, ApplicationViewBinder.VIEWS) {
 
 			@Override
 			protected Cursor getChildrenCursor(Cursor groupCursor) {
@@ -322,6 +321,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	private void showChooseIconActivity(int groupPos) {
 		Intent intent = new Intent(this, ChooseIconActivity.class);
 		intent.putExtra("group", groupPos);
+		Cursor cursor = getExpandableListAdapter().getGroup(groupPos);
+		intent.putExtra("groupId", cursor.getLong(0));
 		startActivityForResult(intent, 2);
 	}
 
@@ -333,10 +334,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		}
 		if (resultCode == RESULT_OK && requestCode == 2) {
 			byte[] image = data.getByteArrayExtra("image");
-			int group = data.getIntExtra("group", -1);
-			requeryCursor();
-			Cursor c = getExpandableListAdapter().getGroup(group);
-			long labelId = c.getLong(0);
+			long labelId = data.getLongExtra("groupId", -1);
 			if (image != null) {
 				dbHelper.labelDao.updateIcon(labelId, null, image);
 			} else {

@@ -103,17 +103,20 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	private SimpleDialog firstTimeDownloadDialog;
 
 	private boolean showFirstTimeDownloadDialog() {
-		SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
-		boolean firstTime = settings.getBoolean(SHOW_FIRST_TIME_DOWNLOAD, true);
-
-		if (firstTime) {
-			firstTimeDownloadDialog.showDialog();
-
-			SharedPreferences.Editor editor = settings.edit();
-			editor.putBoolean(SHOW_FIRST_TIME_DOWNLOAD, false);
-			editor.commit();
-		}
-		return firstTime;
+		return false;
+		// SharedPreferences settings =
+		// getSharedPreferences("appsOrganizer_pref", 0);
+		// boolean firstTime = settings.getBoolean(SHOW_FIRST_TIME_DOWNLOAD,
+		// true);
+		//
+		// if (firstTime) {
+		// firstTimeDownloadDialog.showDialog();
+		//
+		// SharedPreferences.Editor editor = settings.edit();
+		// editor.putBoolean(SHOW_FIRST_TIME_DOWNLOAD, false);
+		// editor.commit();
+		// }
+		// return firstTime;
 	}
 
 	private void createFirstTimeDownloadDialog() {
