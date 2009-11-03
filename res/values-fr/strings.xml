@@ -64,4 +64,15 @@
 	<string name="select_jpg_bmp_title">format fichier non supporté</string>
 	<string name="select_jpg_bmp">Vous devez sélectionner un fichier png ou jpg</string>    
 	<string name="Donate">Faire un don</string>    
+ 	<string name="Download">Télécharger</string>
+    <string name="Downloading">En cours...</string>
+    <string name="Starting_download">Début du téléchargement</string>
+    <string name="All_apps">Toutes les applis</string>
+    <string name="Apps_with_no_label">Applis sans étiquette</string>
+    <string name="Download_labels">Télécharger les étiquettes</string>
+    <string name="Download_labels_from_Cyrket">Télécharger les étiquettes depuis Cyrket</string>
+    <string name="First_time_download_message_1">Depuis la version 1.3 pouvez télécharger les étiquettes de l'Android Market depuis Cyrket</string>
+    <string name="First_time_download_message_2">Télécharger les étiquettes maintenant?</string>
+    <string name="choose_app">Choisir l'appli</string>
+    <string name="Android_Image_Gallery">Galerie Android</string>
 </resources>
