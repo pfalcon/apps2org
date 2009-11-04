@@ -114,11 +114,12 @@ public class ChooseIconActivity extends ActivityWithDialog {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		int group = getIntent().getIntExtra("group", -1);
+		long groupId = getIntent().getLongExtra("groupId", -1);
 		if (requestCode == IMAGE_GALLERY) {
 			if (resultCode == RESULT_OK) {
 				Uri uri = intent.getData();
 				if (uri != null) {
-					final int group = getIntent().getIntExtra("group", -1);
 
 					try {
 						Bitmap bm = Media.getBitmap(getContentResolver(), uri);
@@ -129,6 +130,7 @@ public class ChooseIconActivity extends ActivityWithDialog {
 						Intent res = new Intent();
 						res.putExtra("image", os.toByteArray());
 						res.putExtra("group", group);
+						res.putExtra("groupId", groupId);
 						setResult(RESULT_OK, res);
 						finish();
 					} catch (IOException e) {
@@ -140,7 +142,6 @@ public class ChooseIconActivity extends ActivityWithDialog {
 			Uri uri = intent.getData();
 			String type = intent.getType();
 			if (uri != null) {
-				final int group = getIntent().getIntExtra("group", -1);
 				String path = uri.toString().toLowerCase();
 				if (type == null || (!type.equals("image/jpeg") && !type.equals("image/png"))) {
 					getGenericDialogManager().showDialog(selectImageDialog);
@@ -153,6 +154,7 @@ public class ChooseIconActivity extends ActivityWithDialog {
 					Intent res = new Intent();
 					res.putExtra("image", os.toByteArray());
 					res.putExtra("group", group);
+					res.putExtra("groupId", groupId);
 					setResult(RESULT_OK, res);
 					finish();
 				}
