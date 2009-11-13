@@ -99,16 +99,18 @@ public class ApplicationInfoManager {
 		}
 		if (image == null || discardCache) {
 			Drawable drawable = a.loadIcon(pm);
-			Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			boolean compressed = bitmap.compress(CompressFormat.PNG, 100, os);
-			if (!compressed) {
-				bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
-				os = new ByteArrayOutputStream();
-				compressed = bitmap.compress(CompressFormat.PNG, 100, os);
+			if (drawable instanceof BitmapDrawable) {
+				Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				boolean compressed = bitmap.compress(CompressFormat.PNG, 100, os);
+				if (!compressed) {
+					bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
+					os = new ByteArrayOutputStream();
+					compressed = bitmap.compress(CompressFormat.PNG, 100, os);
+				}
+				image = os.toByteArray();
+				changed = true;
 			}
-			image = os.toByteArray();
-			changed = true;
 		}
 		if (changed) {
 			// if label is not in cache table

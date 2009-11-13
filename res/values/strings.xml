@@ -75,4 +75,9 @@
 	<string name="First_time_download_message_2">Do you want to download labels now?</string>
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
+	<string name="Change_log">Change log</string>
+	<string name="Change_log_text">1.3.2\n
+	Fixed droid resolution bug\n
+1.3.1\n
+	Android 2.0 support</string>
 </resources>

@@ -130,7 +130,11 @@ public class ApplicationViewBinder implements ViewBinder {
 	private void bindImage(ImageView view, final Cursor cursor) {
 		view.setOnLongClickListener(onLongClickListener);
 		byte[] imageBytes = cursor.getBlob(4);
-		view.setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
+		if (imageBytes != null) {
+			view.setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
+		} else {
+			view.setImageResource(R.drawable.icon_default);
+		}
 		addOnClickListener(view, cursor);
 	}
 

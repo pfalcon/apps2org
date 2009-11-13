@@ -118,4 +118,8 @@ public class GenericDialogManager {
 	public void showDialog(GenericDialogCreator d) {
 		owner.showDialog(d.getDialogId());
 	}
+
+	public String getString(int resId) {
+		return owner.getString(resId);
+	}
 }

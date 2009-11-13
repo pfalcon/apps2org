@@ -38,6 +38,8 @@ import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
+import com.google.code.appsorganizer.dialogs.ChangeLogDialog;
+import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
@@ -50,6 +52,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	private DatabaseHelper dbHelper;
 
 	private ChooseLabelDialogCreator chooseLabelDialog;
+
+	private ChangeLogDialog changeLogDialog;
 
 	private ToggleButton labelButton;
 
@@ -72,13 +76,16 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			}
 		});
 
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), new OnOkClickListener() {
+		GenericDialogManager genericDialogManager = getGenericDialogManager();
+		chooseLabelDialog = new ChooseLabelDialogCreator(genericDialogManager, new OnOkClickListener() {
 			private static final long serialVersionUID = 1L;
 
 			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
 				requeryCursor();
 			}
 		});
+
+		changeLogDialog = new ChangeLogDialog(genericDialogManager);
 
 		setContentView(R.layout.main);
 
@@ -185,7 +192,11 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 				initAdapter();
 				pd.hide();
 				if (!showFirstTimeDownloadDialog()) {
-					showStartHowTo();
+					if (!showStartHowTo()) {
+						changeLogDialog.showDialogIfVersionChanged();
+					} else {
+						changeLogDialog.saveVersion();
+					}
 				}
 			} else {
 				pd.incrementProgressBy(1);
