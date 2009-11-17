@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" android:layout_height="wrap_content"
-	android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="wrap_content">
 
-	<LinearLayout android:layout_height="wrap_content"
-		android:layout_width="fill_parent">
-		<TextView android:id="@+id/username_view"
-			android:layout_height="wrap_content" android:layout_width="wrap_content"
-			android:layout_marginRight="20dip"
-			android:text="@string/alert_dialog_new" android:gravity="left"
-			android:textAppearance="?android:attr/textAppearanceMedium" />
+	<LinearLayout android:layout_height="48px" android:id="@+id/buttonPanel"
+		android:layout_width="fill_parent" android:gravity="center" android:layout_alignParentBottom="true">
+		<Button android:text="@string/alert_dialog_ok" android:id="@+id/okButton"
+			android:layout_height="wrap_content" android:layout_width="110px"/>
 
-		<EditText android:id="@+id/labelEdit"
-			android:layout_height="wrap_content" android:layout_width="wrap_content"
-			android:autoText="false"
-			android:capitalize="none" android:gravity="fill_horizontal"
-			android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="1"/>
-		<ImageButton android:text="@string/alert_dialog_new" android:id="@+id/newLabelButton"
-			android:layout_height="wrap_content" android:layout_width="wrap_content"
-			android:src="@android:drawable/ic_input_add" 
-			/>
+		<Button android:text="@string/alert_dialog_cancel" android:id="@+id/cancelButton"
+			android:layout_height="wrap_content" android:layout_width="110px"/>
+
+		<ImageButton android:text="@string/alert_dialog_new"
+			android:id="@+id/newLabelButton" android:layout_height="wrap_content"
+			android:layout_width="wrap_content" android:src="@android:drawable/ic_input_add" />
 	</LinearLayout>
 
-	<ListView android:id="@+id/labelList" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:choiceMode="multipleChoice"></ListView>
+	<ListView android:id="@+id/labelList" android:layout_width="fill_parent" android:layout_above="@id/buttonPanel"
+		android:choiceMode="multipleChoice" android:layout_height="wrap_content" android:layout_alignParentTop="true" />
 
-</LinearLayout>
-
-
+</RelativeLayout>

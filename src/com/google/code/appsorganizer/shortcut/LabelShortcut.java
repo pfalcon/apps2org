@@ -132,18 +132,19 @@ public class LabelShortcut extends ActivityWithDialog {
 	}
 
 	private void closeCurrentCursor() {
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
+		if (cursorAdapter != null) {
+			Cursor cursor = cursorAdapter.getCursor();
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
 	}
 
-	private Cursor cursor;
-
 	private Cursor reloadGrid() {
 		if (labelId == ALL_LABELS_ID) {
-			cursor = getDbHelper().getDb().query(LabelDao.TABLE_NAME,
-					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME, LabelDao.IMAGE_COL_NAME }, null,
-					null, null, null, ("upper(" + LabelDao.LABEL_COL_NAME + ")"));
+			Cursor cursor = getDbHelper().getDb().query(LabelDao.TABLE_NAME,
+					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME, LabelDao.IMAGE_COL_NAME }, null, null,
+					null, null, ("upper(" + LabelDao.LABEL_COL_NAME + ")"));
 			return cursor;
 		} else {
 			Cursor tmpCursor;
@@ -156,8 +157,7 @@ public class LabelShortcut extends ActivityWithDialog {
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
 				tmpCursor = AppCacheDao.getAppsOfLabelCursor(getDbHelper().getDb(), labelId, starredFirst, onlyStarred);
 			}
-			cursor = tmpCursor;
-			return cursor;
+			return tmpCursor;
 		}
 	}
 
@@ -168,8 +168,8 @@ public class LabelShortcut extends ActivityWithDialog {
 		} else if (labelId == ALL_STARRED_ID) {
 			title = getString(R.string.Starred_apps);
 		} else {
-			Cursor c = getDbHelper().getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME },
-					LabelDao.ID_COL_NAME + "=?", new String[] { Long.toString(labelId) }, null, null, null);
+			Cursor c = getDbHelper().getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME }, LabelDao.ID_COL_NAME + "=?",
+					new String[] { Long.toString(labelId) }, null, null, null);
 			try {
 				if (c.moveToNext()) {
 					title = c.getString(0);
@@ -194,7 +194,10 @@ public class LabelShortcut extends ActivityWithDialog {
 		protected Object doInBackground(String... ss) {
 			publishProgress(retrieveTitle());
 
-			Cursor prevCursor = cursor;
+			Cursor prevCursor = null;
+			if (cursorAdapter != null) {
+				prevCursor = cursorAdapter.getCursor();
+			}
 			Cursor actual = reloadGrid();
 			publishProgress(prevCursor, actual);
 			return null;
@@ -351,10 +354,6 @@ public class LabelShortcut extends ActivityWithDialog {
 		return false;
 	}
 
-	public void dataSetChanged(Object source, short type) {
-		new LoadIconTask().execute();
-	}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		return true;
@@ -367,27 +366,6 @@ public class LabelShortcut extends ActivityWithDialog {
 		}
 		return false;
 	}
-
-	// @Override
-	// public boolean onCreateOptionsMenu(Menu menu) {
-	// menu.add(0, 0, 0, R.string.select_apps);
-	// return true;
-	// }
-	//
-	// @Override
-	// public boolean onPrepareOptionsMenu(Menu menu) {
-	// return label != null && labelId != ALL_LABELS_ID;
-	// }
-	//
-	// @Override
-	// public boolean onOptionsItemSelected(MenuItem item) {
-	// switch (item.getItemId()) {
-	// case 0:
-	// showChooseAppsDialog();
-	// return true;
-	// }
-	// return false;
-	// }
 
 	private void showChooseAppsDialog() {
 		chooseAppsDialogCreator.setCurrentLabelId(labelId);

@@ -26,14 +26,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
+import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
@@ -49,33 +48,16 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private final OnOkClickListener onOkClickListener;
 
+	private final TextEntryDialog newLabelDialog;
+
 	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, OnOkClickListener onOkClickListener) {
 		super(dialogManager);
 		this.onOkClickListener = onOkClickListener;
-	}
+		newLabelDialog = new TextEntryDialog(dialogManager, dialogManager.getString(R.string.label_name), null, new OnOkClickListener() {
 
-	private ListView listView;
+			private static final long serialVersionUID = -8770995174749083484L;
 
-	@Override
-	public void prepareDialog(Dialog dialog) {
-		final TextView tv = (TextView) dialog.findViewById(R.id.labelEdit);
-		tv.setText("");
-		List<AppLabelBinding> allLabels = DatabaseHelper.initOrSingleton(owner).labelDao.getAppsLabelList(packageName, name);
-		adapter = new ChooseLabelListAdapter(owner, allLabels);
-		listView.setAdapter(adapter);
-
-		int pos = 0;
-		for (AppLabelBinding appLabelBinding : allLabels) {
-			if (appLabelBinding.checked) {
-				listView.setItemChecked(pos, true);
-			}
-			pos++;
-		}
-
-		ImageButton btn = (ImageButton) dialog.findViewById(R.id.newLabelButton);
-		btn.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				CharSequence t = tv.getText();
+			public void onClick(CharSequence t, DialogInterface dialog, int which) {
 				if (t != null && t.length() > 0) {
 					int count = adapter.getCount();
 					boolean[] checked = new boolean[count];
@@ -92,6 +74,49 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		});
 	}
 
+	private ListView listView;
+
+	@Override
+	public void prepareDialog(final Dialog dialog) {
+		List<AppLabelBinding> allLabels = DatabaseHelper.initOrSingleton(owner).labelDao.getAppsLabelList(packageName, name);
+		adapter = new ChooseLabelListAdapter(owner, allLabels);
+		listView.setAdapter(adapter);
+
+		int pos = 0;
+		for (AppLabelBinding appLabelBinding : allLabels) {
+			if (appLabelBinding.checked) {
+				listView.setItemChecked(pos, true);
+			}
+			pos++;
+		}
+
+		dialog.findViewById(R.id.newLabelButton).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				newLabelDialog.showDialog();
+			}
+		});
+
+		dialog.findViewById(R.id.okButton).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				int count = adapter.getCount();
+				for (int i = 0; i < count; i++) {
+					adapter.getItem(i).checked = listView.isItemChecked(i);
+				}
+				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
+				AppLabelSaver.save(DatabaseHelper.initOrSingleton(owner), packageName, name, modifiedLabels);
+				if (onOkClickListener != null) {
+					onOkClickListener.onClick(null, dialog, Dialog.BUTTON_POSITIVE);
+				}
+			}
+		});
+
+		dialog.findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				dialog.hide();
+			}
+		});
+	}
+
 	@Override
 	public Dialog createDialog() {
 		View body = getChooseDialogBody();
@@ -103,25 +128,6 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 		AlertDialog.Builder builder = new AlertDialog.Builder(owner);
 		builder = builder.setTitle(R.string.choose_labels_header);
 		builder = builder.setView(body);
-		builder = builder.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				int count = adapter.getCount();
-				for (int i = 0; i < count; i++) {
-					adapter.getItem(i).checked = listView.isItemChecked(i);
-				}
-				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
-				AppLabelSaver.save(DatabaseHelper.initOrSingleton(owner), packageName, name, modifiedLabels);
-				if (onOkClickListener != null) {
-					onOkClickListener.onClick(null, dialog, whichButton);
-				}
-			}
-		});
-		builder = builder.setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-
-				/* User clicked No so do some stuff */
-			}
-		});
 		return builder.create();
 	}
 

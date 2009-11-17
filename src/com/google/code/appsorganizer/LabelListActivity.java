@@ -78,6 +78,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	private ConfirmDeleteDialog confirmDeleteDialog;
 
+	private SimpleDialog labelAlreadExistsDialog;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -91,13 +93,16 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 				requeryCursor();
 			}
 		};
-		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), onOkClickListener);
+		GenericDialogManager dialogManager = getGenericDialogManager();
+		chooseLabelDialog = new ChooseLabelDialogCreator(dialogManager, onOkClickListener);
 
-		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager(), onOkClickListener);
-		textEntryDialog = new RenameLabelDialog(getGenericDialogManager());
+		chooseAppsDialogCreator = new ChooseAppsDialogCreator(dialogManager, onOkClickListener);
+		textEntryDialog = new RenameLabelDialog(dialogManager);
 
-		confirmDeleteDialog = new ConfirmDeleteDialog(getGenericDialogManager());
+		confirmDeleteDialog = new ConfirmDeleteDialog(dialogManager);
 
+		labelAlreadExistsDialog = new SimpleDialog(dialogManager, getString(R.string.label_already_exists));
+		labelAlreadExistsDialog.setShowNegativeButton(false);
 		optionMenuManager = new OptionMenuManager(this, dbHelper, onOkClickListener);
 
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
@@ -172,8 +177,13 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 				private static final long serialVersionUID = 1L;
 
 				public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-					dbHelper.labelDao.updateName(labelId, charSequence.toString());
-					requeryCursor();
+					String labelName = charSequence.toString();
+					if (dbHelper.labelDao.labelAlreadyExists(labelName)) {
+						labelAlreadExistsDialog.showDialog();
+					} else {
+						dbHelper.labelDao.updateName(labelId, labelName);
+						requeryCursor();
+					}
 				}
 			});
 		}

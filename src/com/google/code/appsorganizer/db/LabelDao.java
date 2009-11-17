@@ -103,8 +103,8 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 
 	public ArrayList<AppLabelBinding> getAppsLabelList(String packageName, String name) {
 		Cursor c = db.rawQuery("select l._ID, l.label, case when b._id is null then 0 else 1 end as checked from labels l"
-				+ " left outer join apps_labels b on l._id = b.id_label and b.package = ? and b.app = ? "
-				+ "order by checked desc, upper(l.label)", new String[] { packageName, name });
+				+ " left outer join apps_labels b on l._id = b.id_label and b.package = ? and b.app = ? " + "order by checked desc, upper(l.label)",
+				new String[] { packageName, name });
 		ArrayList<AppLabelBinding> l = new ArrayList<AppLabelBinding>(c.getCount());
 		try {
 			while (c.moveToNext()) {
@@ -167,5 +167,14 @@ public class LabelDao extends ObjectWithIdDao<Label> {
 		c.put(ICON_COL_NAME, icon);
 		c.put(IMAGE_COL_NAME, image);
 		return db.update(TABLE_NAME, c, "_id = ?", new String[] { id.toString() });
+	}
+
+	public boolean labelAlreadyExists(String name) {
+		Cursor c = db.query(TABLE_NAME, new String[] { ID_COL_NAME }, LABEL_COL_NAME + "=?", new String[] { name }, null, null, null);
+		try {
+			return c.moveToNext();
+		} finally {
+			c.close();
+		}
 	}
 }
