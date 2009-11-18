@@ -76,7 +76,9 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.3.3\n
+	<string name="Change_log_text">1.3.4\n
+	Fixed choose dialog bug\n
+	1.3.3\n
 	Chinese translation\n
 	New choose label dialog\n
 1.3.2\n
