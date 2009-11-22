@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="app_name">Apps Organizer</string>
+    <string name="choose_labels_header">Vælg etiketter</string>
+    <string name="alert_dialog_ok">OK</string>
+    <string name="alert_dialog_hide">Skjul</string>
+    <string name="alert_dialog_cancel">Fortryd</string>
+    <string name="alert_dialog_new">Ny</string>
+    <string name="tab_apps">Applikationer</string>
+    <string name="tab_labels">Etiketter</string>
+    <string name="preparing_apps_list">Forbereder applikations-listen</string>
+    <string name="total_apps">Applikationer ialt</string>
+    <string name="please_wait_loading">Vent venligst mens der indlæses...</string>
+    <string name="rename">Omdøb</string>
+    <string name="change_icon">Skift ikon</string>
+    <string name="launch">Start</string>
+    <string name="rename_label">Omdøb etiket</string>
+    <string name="label_name">Etiket navn</string>
+    <string name="other_label">Andre applikationer</string>
+    <string name="uninstall">Afinstallér</string>
+    <string name="reload_apps">Genindlæs</string>
+    <string name="about">Om</string>
+    <string name="Apps_organizer_label">Applikations etiket</string>
+    <string name="alert_0_4">Siden version 0.4 er understøttelsen af Live Folders ophørt. Du bør udskifte de eksisterende Live Folders med genveje.</string>
+    <string name="choose_labels_for_shortcut">Vælg etiketter</string>
+    <string name="all_labels">Alle etiketter</string>
+    <string name="select_apps">Vælg applikationer</string>
+    <string name="loading_shortcut_grid">Indlæser...</string>
+    <string name="delete">Slet</string>
+    <string name="delete_confirm">Vil du virkelig slette etiketten %s?</string>
+    <string name="export_menu">Eksporter</string>
+    <string name="import_menu">Importer</string>
+    <string name="export_error">Eksporterings fejl</string>
+    <string name="import_error">Importerings fejl</string>
+    <string name="sdcard_error">SD-Kort fejl</string>
+    <string name="directory_error">Mappe fejl</string>
+    <string name="file_name">Filnavn</string>
+    <string name="no_files_error">Der blev ikke fundet nogen filer i mappen AppsOrganizer på SD-Kortet</string>
+    <string name="Author">Udgiver</string>
+    <string name="Any_suggestion_or_bug_to">Forslag eller bug-rapport til</string>
+    <string name="Follow_me_on">Følg mig på</string>
+    <string name="Help">Hjælp</string>
+    <string name="How_to">Sådan bruges Apps Organizer</string>
+    <string name="Starred_apps">Stjerne applikationer</string>
+    <string name="how_to_message">Du kan lave etiketter med et langt tryk på din Android hjemme-skærm</string>
+    <string name="how_to_message_2">Du finder oplysninger om online-manualen i 'Om'-dialogen).</string>
+    <string name="Preferences">Indstillinger</string>
+    <string name="Shortcut_folder">Genvejs mappe</string>
+    <string name="show_close_button_in_folder">Vi Luk knappen</string>
+    <string name="close_folder_after_launch">Luk efter start</string>
+    <string name="starred_first">Stjerne-markerede først</string>
+    <string name="Bug_report">Fejl rapport</string>
+    <string name="Bug_report_1">Apps Organizer ser ud til at være gået død</string>
+    <string name="Bug_report_2">Hvis du vil hjælpe os med at rette fejlen, så send venligst en fejl rapport</string>
+    <string name="Bug_report_button">Send email</string>
+    <string name="Bug_report_3">Tak!</string>
+    <string name="Load_from_sd">Indlæs fra SD-Kort</string>
+    <string name="list_default_action">Enkelt-klik handling</string>
+    <string name="list_default_action_summary">Forudbestemt handling ved Enkelt-klik på en applikation</string>
+    <string name="choose_action">Vælg handling</string>
+    <string name="Application_not_found">Applikationen blev ikke fundet</string>
+    <string name="Application_not_found_message">Du skal bruge AndExplorer for at vælge en fil. Download AndExplorer gratis fra Market</string>
+    <string name="Open_market">Åbn Market</string>
+    <string name="select_jpg_bmp_title">Filtype fejl</string>
+    <string name="select_jpg_bmp">Du skal vælge en .png eller .jpg fil</string>
+    <string name="Donate">Donere</string>
+    <string name="Download">Hent</string>
+    <string name="Downloading">Henter</string>
+    <string name="Starting_download">Starter med at hente</string>
+    <string name="All_apps">Alle applikationer</string>
+    <string name="Apps_with_no_label">Applikationer uden etiket</string>
+    <string name="Download_labels">Hent etiketter</string>
+    <string name="Download_labels_from_Cyrket">Hent etiketter fra Cyrket</string>
+    <string name="First_time_download_message_1">Fra og med version 1.3 er det blevet muligt at hente Android Market etiketter fra cyrket</string>
+    <string name="First_time_download_message_2">Vil du hente etiketter nu?</string>
+    <string name="choose_app">Vælg applikation</string>
+    <string name="Android_Image_Gallery">Android Billede Galleri</string>
+    <string name="Change_log">Log over ændringer</string>
+    <string name="Change_log_text">1.3.4\n
+    Rettet fejl vedr. vælg-etiket-dialogen\n
+    1.3.3\n
+    Kinesisk oversættelse\n
+    Ny vælg-etiket-dialog\n
+1.3.2\n
+    Rettet fejl vedr. droid opløsning\n
+1.3.1\n
+    Android 2.0 support</string>
+    <string name="label_already_exists">Etiketten eksisterer allerede</string>
+</resources>
