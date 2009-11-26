@@ -4,10 +4,6 @@
 	android:orientation="vertical" android:layout_width="fill_parent"
 		android:layout_height="fill_parent">
 
-	<Button android:text="@string/Load_from_sd"
-		android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:id="@+id/loadButton" android:layout_gravity="center_horizontal"/>
-
 	<GridView android:id="@+id/iconGrid" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:verticalSpacing="10dp"
 

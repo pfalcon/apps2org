@@ -21,7 +21,6 @@
 	<string name="reload_apps">Recharger</string>
 	<string name="about">A propos</string>
 	<string name="Apps_organizer_label">Libellé applis</string>
-	<string name="alert_0_4">Depuis la version 0.4 live folders n'est plus supporté. Remplacez les live folders existants par des raccourcis svp</string>
 	<string name="choose_labels_for_shortcut">Sélectionner un libellé</string>
 	<string name="all_labels">Tous les libellés</string>
 	<string name="select_apps">Sélectionner applis</string>

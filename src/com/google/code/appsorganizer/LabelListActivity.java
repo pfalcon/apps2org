@@ -41,7 +41,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 
-import com.google.code.appsorganizer.chooseicon.ChooseIconActivity;
+import com.google.code.appsorganizer.chooseicon.SelectAppDialog;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.LabelDao;
@@ -80,6 +80,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	private SimpleDialog labelAlreadExistsDialog;
 
+	private SelectAppDialog selectAppDialog;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -100,6 +102,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		textEntryDialog = new RenameLabelDialog(dialogManager);
 
 		confirmDeleteDialog = new ConfirmDeleteDialog(dialogManager);
+
+		selectAppDialog = new SelectAppDialog(dialogManager, dbHelper);
 
 		labelAlreadExistsDialog = new SimpleDialog(dialogManager, getString(R.string.label_already_exists));
 		labelAlreadExistsDialog.setShowNegativeButton(false);
@@ -329,11 +333,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	}
 
 	private void showChooseIconActivity(int groupPos) {
-		Intent intent = new Intent(this, ChooseIconActivity.class);
-		intent.putExtra("group", groupPos);
 		Cursor cursor = getExpandableListAdapter().getGroup(groupPos);
-		intent.putExtra("groupId", cursor.getLong(0));
-		startActivityForResult(intent, 2);
+		selectAppDialog.showDialog(cursor.getLong(0));
 	}
 
 	@Override
@@ -342,15 +343,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		if (ApplicationContextMenuManager.onActivityResult(this, requestCode, resultCode, data)) {
 			requeryCursor();
 		}
-		if (resultCode == RESULT_OK && requestCode == 2) {
-			byte[] image = data.getByteArrayExtra("image");
-			long labelId = data.getLongExtra("groupId", -1);
-			if (image != null) {
-				dbHelper.labelDao.updateIcon(labelId, null, image);
-			} else {
-				int icon = data.getIntExtra("icon", -1);
-				dbHelper.labelDao.updateIcon(labelId, Label.convertToIconDb(icon), null);
-			}
+		if (selectAppDialog.onActivityResult(requestCode, resultCode, data)) {
 			requeryCursor();
 		}
 	}

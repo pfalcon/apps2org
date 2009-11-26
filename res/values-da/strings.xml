@@ -21,7 +21,6 @@
     <string name="reload_apps">Genindlæs</string>
     <string name="about">Om</string>
     <string name="Apps_organizer_label">Applikations etiket</string>
-    <string name="alert_0_4">Siden version 0.4 er understøttelsen af Live Folders ophørt. Du bør udskifte de eksisterende Live Folders med genveje.</string>
     <string name="choose_labels_for_shortcut">Vælg etiketter</string>
     <string name="all_labels">Alle etiketter</string>
     <string name="select_apps">Vælg applikationer</string>
@@ -43,7 +42,7 @@
     <string name="How_to">Sådan bruges Apps Organizer</string>
     <string name="Starred_apps">Stjerne applikationer</string>
     <string name="how_to_message">Du kan lave etiketter med et langt tryk på din Android hjemme-skærm</string>
-    <string name="how_to_message_2">Du finder oplysninger om online-manualen i 'Om'-dialogen).</string>
+    <string name="how_to_message_2">Du finder oplysninger om online-manualen i \'Om\'-dialogen).</string>
     <string name="Preferences">Indstillinger</string>
     <string name="Shortcut_folder">Genvejs mappe</string>
     <string name="show_close_button_in_folder">Vi Luk knappen</string>

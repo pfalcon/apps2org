@@ -21,7 +21,6 @@
 	<string name="reload_apps">Reload</string>
 	<string name="about">關於</string>
 	<string name="Apps_organizer_label">Apps label</string>
-	<string name="alert_0_4">Since version 0.4 live folders are no longer supported. Pleace replace existing live folders with shortcuts</string>
 	<string name="choose_labels_for_shortcut">選擇標籤</string>
 	<string name="all_labels">所有標籤</string>
 	<string name="select_apps">選擇程式</string>
