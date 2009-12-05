@@ -78,4 +78,5 @@
 	<string name="label_already_exists">Etichetta esistente</string>
 	<string name="looking_for_icons">Cerco le icone...</string>
 	<string name="loading_icons">Caricamento icone...</string>	
+	<string name="error_while_launching_activity">Errore lancio applicazione</string>	
 </resources>

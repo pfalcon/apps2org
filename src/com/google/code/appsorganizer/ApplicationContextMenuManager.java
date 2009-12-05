@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 
@@ -65,11 +66,16 @@ public class ApplicationContextMenuManager {
 	}
 
 	public static void startApplication(Context activity, String packageName, String name) {
-		Intent intent = new Intent(Intent.ACTION_MAIN);
-		intent.addCategory(Intent.CATEGORY_LAUNCHER);
-		intent.setClassName(packageName, name);
-		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		activity.startActivity(intent);
+		try {
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.addCategory(Intent.CATEGORY_LAUNCHER);
+			intent.setClassName(packageName, name);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			activity.startActivity(intent);
+		} catch (Throwable t) {
+			Toast.makeText(activity, R.string.error_while_launching_activity, Toast.LENGTH_SHORT).show();
+		}
+
 	}
 
 	public static void uninstallApplication(Activity activity, String packageName) {

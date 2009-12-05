@@ -75,7 +75,9 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.4\n
+	<string name="Change_log_text">1.4.0.1\n
+	Fixed error launching some apps\n
+1.4\n
 	Icon pack support\n
 	Fixed shortcut text width\n
 	Danish translation\n
@@ -91,4 +93,5 @@
 	<string name="label_already_exists">Label already exists</string>
 	<string name="looking_for_icons">Looking for icons...</string>
 	<string name="loading_icons">Loading icons...</string>	
+	<string name="error_while_launching_activity">Error while launching application</string>	
 </resources>
