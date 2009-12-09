@@ -46,8 +46,10 @@ import com.google.code.appsorganizer.dialogs.SimpleDialog;
 
 public class SplashScreenActivity extends ListActivityWithDialog {
 
+	private static final String APPS_RELOADED_FIX_RESOLUTION = "apps_reloaded_fix_resolution";
 	private static final String SHOW_START_HOW_TO = "showStartHowTo";
-	private static final String SHOW_FIRST_TIME_DOWNLOAD = "showFirstTimeDownload";
+	// private static final String SHOW_FIRST_TIME_DOWNLOAD =
+	// "showFirstTimeDownload";
 
 	private DatabaseHelper dbHelper;
 
@@ -223,7 +225,16 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		Thread t = new Thread() {
 			@Override
 			public void run() {
-				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, false);
+				SharedPreferences settings = getSharedPreferences("appsOrganizer_pref", 0);
+				boolean appsAlreadyReloaded = settings.getBoolean(APPS_RELOADED_FIX_RESOLUTION, false);
+
+				if (!appsAlreadyReloaded) {
+					SharedPreferences.Editor editor = settings.edit();
+					editor.putBoolean(APPS_RELOADED_FIX_RESOLUTION, true);
+					editor.commit();
+				}
+
+				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, !appsAlreadyReloaded);
 				handler.sendEmptyMessage(-3);
 			}
 		};
