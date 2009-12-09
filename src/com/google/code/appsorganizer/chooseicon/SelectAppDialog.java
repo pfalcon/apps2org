@@ -195,8 +195,9 @@ public final class SelectAppDialog extends SingleSelectDialog {
 	private static Bitmap getScaledImage(Bitmap bitmapOrg) {
 		int width = bitmapOrg.getWidth();
 		int height = bitmapOrg.getHeight();
-		int newWidth = 48;
-		int newHeight = 48;
+		// TODO impostare la dimensione in base alla risoluzione
+		int newWidth = 72;
+		int newHeight = 72;
 
 		// calculate the scale - in this case = 0.4f
 		float scaleWidth = ((float) newWidth) / width;
