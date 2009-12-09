@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:id="@+id/titleLayout"
-	android:layout_height="34px" android:orientation="horizontal">
+	android:layout_height="34dip" android:orientation="horizontal">
 	<TextView android:text="" android:id="@+id/title"
-		android:paddingLeft="8px" android:layout_width="wrap_content"
-		android:layout_height="fill_parent" android:textSize="18px"
+		android:paddingLeft="8dip" android:layout_width="wrap_content"
+		android:layout_height="fill_parent" android:textSize="18dip"
 		android:textStyle="bold" android:layout_alignParentLeft="true"
 		android:gravity="center_vertical"></TextView>
 
 	<Button android:text="X" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" style="?android:attr/buttonStyleSmall"
-		android:layout_alignParentRight="true" android:paddingLeft="20px"
-		android:paddingRight="20px" android:id="@+id/closeButton"></Button>
+		android:layout_alignParentRight="true" android:paddingLeft="20dip"
+		android:paddingRight="20dip" android:id="@+id/closeButton"></Button>
 
 	<CheckBox style="?android:attr/starStyle" android:id="@+id/starCheck"
-		android:layout_width="wrap_content" android:layout_marginLeft="10px"
+		android:layout_width="wrap_content" android:layout_marginLeft="10dip"
 		android:layout_height="fill_parent" android:layout_gravity="center_vertical"
 		android:layout_toRightOf="@id/title" />
 </RelativeLayout>

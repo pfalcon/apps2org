@@ -21,13 +21,13 @@ package com.google.code.appsorganizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
+import android.app.Activity;
 
 import com.google.code.appsorganizer.utils.ArrayAdapterSmallRow;
 
 public class ChooseLabelListAdapter extends ArrayAdapterSmallRow<AppLabelBinding> {
 
-	public ChooseLabelListAdapter(Context context, List<AppLabelBinding> list) {
+	public ChooseLabelListAdapter(Activity context, List<AppLabelBinding> list) {
 		super(context, android.R.layout.simple_list_item_multiple_choice, list);
 	}
 

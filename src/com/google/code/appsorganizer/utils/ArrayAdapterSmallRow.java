@@ -20,44 +20,47 @@ package com.google.code.appsorganizer.utils;
 
 import java.util.List;
 
-import android.content.Context;
+import android.app.Activity;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 
 public class ArrayAdapterSmallRow<T> extends ArrayAdapter<T> {
 
-	public ArrayAdapterSmallRow(Context context, int resource, int textViewResourceId, List<T> objects) {
+	public ArrayAdapterSmallRow(Activity context, int resource, int textViewResourceId, List<T> objects) {
 		super(context, resource, textViewResourceId, objects);
 	}
 
-	public ArrayAdapterSmallRow(Context context, int resource, int textViewResourceId, T[] objects) {
+	public ArrayAdapterSmallRow(Activity context, int resource, int textViewResourceId, T[] objects) {
 		super(context, resource, textViewResourceId, objects);
 	}
 
-	public ArrayAdapterSmallRow(Context context, int resource, int textViewResourceId) {
+	public ArrayAdapterSmallRow(Activity context, int resource, int textViewResourceId) {
 		super(context, resource, textViewResourceId);
 	}
 
-	public ArrayAdapterSmallRow(Context context, int textViewResourceId, List<T> objects) {
+	public ArrayAdapterSmallRow(Activity context, int textViewResourceId, List<T> objects) {
 		super(context, textViewResourceId, objects);
 	}
 
-	public ArrayAdapterSmallRow(Context context, int textViewResourceId, T[] objects) {
+	public ArrayAdapterSmallRow(Activity context, int textViewResourceId, T[] objects) {
 		super(context, textViewResourceId, objects);
 	}
 
-	public ArrayAdapterSmallRow(Context context, int textViewResourceId) {
+	public ArrayAdapterSmallRow(Activity context, int textViewResourceId) {
 		super(context, textViewResourceId);
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View view = super.getView(position, convertView, parent);
+
 		if (convertView == null) {
-			view.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.FILL_PARENT, 44));
+			DisplayMetrics dm = new DisplayMetrics();
+			((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(dm);
+			view.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, (int) (44 * dm.density)));
 		}
 		return view;
 	}

@@ -2,13 +2,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="wrap_content">
 
-	<LinearLayout android:layout_height="48px" android:id="@+id/buttonPanel"
+	<LinearLayout android:layout_height="48dip" android:id="@+id/buttonPanel"
 		android:layout_width="fill_parent" android:gravity="center" android:layout_alignParentBottom="true">
 		<Button android:text="@string/alert_dialog_ok" android:id="@+id/okButton"
-			android:layout_height="wrap_content" android:layout_width="110px"/>
+			android:layout_height="wrap_content" android:layout_width="110dip"/>
 
 		<Button android:text="@string/alert_dialog_cancel" android:id="@+id/cancelButton"
-			android:layout_height="wrap_content" android:layout_width="110px"/>
+			android:layout_height="wrap_content" android:layout_width="110dip"/>
 
 		<ImageButton android:text="@string/alert_dialog_new"
 			android:id="@+id/newLabelButton" android:layout_height="wrap_content"

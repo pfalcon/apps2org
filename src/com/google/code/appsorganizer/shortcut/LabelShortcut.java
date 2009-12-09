@@ -30,6 +30,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -401,7 +402,9 @@ public class LabelShortcut extends ActivityWithDialog {
 					}
 				});
 			}
-			layout.addView(titleLayout, 0, new LayoutParams(LayoutParams.FILL_PARENT, 34));
+			DisplayMetrics dm = new DisplayMetrics();
+			getWindowManager().getDefaultDisplay().getMetrics(dm);
+			layout.addView(titleLayout, 0, new LayoutParams(LayoutParams.FILL_PARENT, (int) (34 * dm.density)));
 		}
 		titleView.setText(title);
 		int v = labelId > 0 ? View.VISIBLE : View.INVISIBLE;

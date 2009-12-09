@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
-	android:orientation="vertical" android:minHeight="124px" android:id="@+id/shortcutLayout">
+	android:orientation="vertical" android:minHeight="124dip" android:id="@+id/shortcutLayout">
 
 	<GridView android:id="@+id/shortcutGrid" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:verticalSpacing="10dp"
-		android:numColumns="auto_fit" android:columnWidth="65px"
+		android:numColumns="auto_fit" android:columnWidth="65dip"
 		android:stretchMode="columnWidth" android:gravity="center" />
 
 

@@ -3,8 +3,8 @@
 	android:orientation="horizontal" android:layout_width="fill_parent"
 	android:layout_height="wrap_content" android:layout_weight="1">
 
-	<ImageView android:layout_width="48px" android:id="@+id/image"
-		android:layout_height="48px"></ImageView>
+	<ImageView android:layout_width="48dip" android:id="@+id/image"
+		android:layout_height="48dip"></ImageView>
 
 	<LinearLayout android:id="@+id/LinearLayout01"
 		android:orientation="vertical" android:layout_width="fill_parent"
@@ -19,6 +19,6 @@
 	</LinearLayout>
 
 	<CheckBox style="?android:attr/starStyle" android:id="@+id/starCheck"
-		android:layout_width="wrap_content" android:layout_marginRight="5px"
+		android:layout_width="wrap_content" android:layout_marginRight="5dip"
 		android:layout_height="wrap_content" android:layout_gravity="center_vertical"  />
 </LinearLayout>
