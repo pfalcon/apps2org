@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/reload_apps"
-        android:title="@string/reload_apps" />
+	<item android:id="@+id/new_label"
+        android:title="@string/New_label" android:icon="@android:drawable/ic_input_add" />
 
+    <item android:id="@+id/reload_apps"
+        android:title="@string/reload_apps" android:icon="@drawable/reload" />
+
+<!-- 
     <item android:id="@+id/download_labels"
-        android:title="@string/Download_labels" />
+        android:title="@string/Download_labels" android:icon="@drawable/down" />
+ -->
 
     <item android:id="@+id/donate"
-        android:title="@string/Donate" />
+        android:title="@string/Donate" android:icon="@drawable/package_favorite" />
 
     <item android:id="@+id/preferneces"
-        android:title="@string/Preferences" />
+        android:title="@string/Preferences" android:icon="@drawable/advancedsettings" />
 
     <item android:id="@+id/about"
-        android:title="@string/about" />
+        android:title="@string/about" android:icon="@drawable/info" />
 
     <item android:id="@+id/import_menu"
-        android:title="@string/import_menu" />
+        android:title="@string/import_menu" android:icon="@drawable/fileimport" />
 
     <item android:id="@+id/export_menu"
-        android:title="@string/export_menu" />
+        android:title="@string/export_menu" android:icon="@drawable/fileexport" />
 </menu>

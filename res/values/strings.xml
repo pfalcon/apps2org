@@ -94,4 +94,5 @@
 	<string name="looking_for_icons">Looking for icons...</string>
 	<string name="loading_icons">Loading icons...</string>	
 	<string name="error_while_launching_activity">Error while launching application</string>	
+	<string name="New_label">New label</string>	
 </resources>

@@ -32,8 +32,6 @@ import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
-import com.google.code.appsorganizer.dialogs.SimpleDialog;
-import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.AppLabelSaver;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
@@ -49,38 +47,27 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	private final OnOkClickListener onOkClickListener;
 
-	private final TextEntryDialog newLabelDialog;
-
-	private final SimpleDialog labelAlreadExistsDialog;
+	private final NewLabelDialog newLabelDialog;
 
 	public ChooseLabelDialogCreator(GenericDialogManager dialogManager, OnOkClickListener onOkClickListener) {
 		super(dialogManager);
 		this.onOkClickListener = onOkClickListener;
 
-		labelAlreadExistsDialog = new SimpleDialog(dialogManager, dialogManager.getString(R.string.label_already_exists));
-		labelAlreadExistsDialog.setShowNegativeButton(false);
+		newLabelDialog = new NewLabelDialog(dialogManager, new OnOkClickListener() {
 
-		newLabelDialog = new TextEntryDialog(dialogManager, dialogManager.getString(R.string.label_name), null, new OnOkClickListener() {
-
-			private static final long serialVersionUID = -8770995174749083484L;
+			private static final long serialVersionUID = 7421660517919410764L;
 
 			public void onClick(CharSequence t, DialogInterface dialog, int which) {
-				if (t != null && t.length() > 0) {
-					if (DatabaseHelper.initOrSingleton(owner).labelDao.labelAlreadyExists(t.toString())) {
-						labelAlreadExistsDialog.showDialog();
-					} else {
-						int count = adapter.getCount();
-						boolean[] checked = new boolean[count];
-						for (int i = 0; i < count; i++) {
-							checked[i] = listView.isItemChecked(i);
-						}
-						adapter.addLabel(t.toString());
-						for (int i = 1; i < count + 1; i++) {
-							listView.setItemChecked(i, checked[i - 1]);
-						}
-						listView.setItemChecked(0, true);
-					}
+				int count = adapter.getCount();
+				boolean[] checked = new boolean[count];
+				for (int i = 0; i < count; i++) {
+					checked[i] = listView.isItemChecked(i);
 				}
+				adapter.addLabel(t.toString());
+				for (int i = 1; i < count + 1; i++) {
+					listView.setItemChecked(i, checked[i - 1]);
+				}
+				listView.setItemChecked(0, true);
 			}
 		});
 	}

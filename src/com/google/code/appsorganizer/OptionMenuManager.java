@@ -52,6 +52,8 @@ public class OptionMenuManager {
 
 	private final LabelDownloader labelDownloader;
 
+	private final NewLabelDialog newLabelDialog;
+
 	private final OnOkClickListener onOkClickListener;
 
 	public OptionMenuManager(final Activity context, final DatabaseHelper dbHelper, OnOkClickListener onOkClickListener) {
@@ -81,34 +83,29 @@ public class OptionMenuManager {
 					}
 				});
 		aboutDialogCreator = new AboutDialogCreator(genericDialogManager);
+		newLabelDialog = new NewLabelDialog(genericDialogManager, new OnOkClickListener() {
+
+			private static final long serialVersionUID = 1036198138637107577L;
+
+			public void onClick(CharSequence l, DialogInterface dialog, int which) {
+				dbHelper.labelDao.insert(l.toString());
+				OptionMenuManager.this.onOkClickListener.onClick(l, dialog, which);
+			}
+		});
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Hold on to this
-		// mMenu = menu;
-
-		// Inflate the currently selected menu XML resource.
 		MenuInflater inflater = context.getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
-
-		int i = 0;
-
-		menu.getItem(i++).setIcon(R.drawable.reload);
-		MenuItem cyrketItem = menu.getItem(i++);
-		cyrketItem.setIcon(R.drawable.down);
-		cyrketItem.setVisible(false);
-
-		menu.getItem(i++).setIcon(R.drawable.package_favorite);
-		menu.getItem(i++).setIcon(R.drawable.advancedsettings);
-		menu.getItem(i++).setIcon(R.drawable.info);
-		menu.getItem(i++).setIcon(R.drawable.fileimport);
-		menu.getItem(i++).setIcon(R.drawable.fileexport);
 
 		return true;
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.new_label:
+			newLabelDialog.showDialog();
+			return true;
 		case R.id.reload_apps:
 			new AppsReloader(context, true).reload();
 			onOkClickListener.onClick(null, null, 0);
@@ -116,9 +113,9 @@ public class OptionMenuManager {
 		case R.id.export_menu:
 			textEntryDialog.showDialog();
 			return true;
-		case R.id.download_labels:
-			labelDownloader.download();
-			return true;
+			// case R.id.download_labels:
+			// labelDownloader.download();
+			// return true;
 		case R.id.import_menu:
 			context.startActivity(new Intent(context, FileImporter.class));
 			return true;
