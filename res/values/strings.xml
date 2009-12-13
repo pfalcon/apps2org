@@ -75,7 +75,10 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.4.0.1\n
+	<string name="Change_log_text">1.4.1\n
+	Fixed droid icons issue\n
+	New label menu item\n
+1.4.0.1\n
 	Fixed error launching some apps\n
 1.4\n
 	Icon pack support\n
