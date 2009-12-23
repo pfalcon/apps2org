@@ -49,6 +49,7 @@ public class ShortcutCreator extends ListActivity {
 		final List<Label> labels = DatabaseHelper.initOrSingleton(this).labelDao.getLabels();
 		labels.add(0, new Label(LabelShortcut.ALL_LABELS_ID, getString(R.string.all_labels), R.drawable.icon));
 		labels.add(1, new Label(LabelShortcut.ALL_STARRED_ID, getString(R.string.Starred_apps), R.drawable.favorites));
+		labels.add(2, new Label(LabelShortcut.OTHER_APPS, getString(R.string.other_label), 0));
 		setTitle(R.string.choose_labels_for_shortcut);
 		setListAdapter(new ArrayAdapterSmallRow<Label>(this, android.R.layout.simple_list_item_1, labels));
 

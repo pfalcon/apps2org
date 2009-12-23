@@ -72,6 +72,7 @@ public class LabelShortcut extends ActivityWithDialog {
 	private static final String ONLY_STARRED_PREF = "onlyStarred";
 	public static final long ALL_LABELS_ID = -2l;
 	public static final long ALL_STARRED_ID = -3l;
+	public static final long OTHER_APPS = -4l;
 	public static final String LABEL_ID = "com.example.android.apis.app.LauncherShortcuts";
 
 	private DatabaseHelperBasic dbHelper;
@@ -152,6 +153,10 @@ public class LabelShortcut extends ActivityWithDialog {
 			if (labelId == ALL_STARRED_ID) {
 				tmpCursor = getDbHelper().getDb().rawQuery(
 						"select _id, label, image, package, name from apps where starred = 1 and disabled = 0 order by upper(label)", null);
+			} else if (labelId == OTHER_APPS) {
+				tmpCursor = getDbHelper().getDb().rawQuery(
+						"select a._id, a.label, a.image, a.package, a.name from apps a where a.disabled = 0 and not exists("
+								+ "select 1 from apps_labels al where a.name = al.app and a.package = al.package) order by upper(a.label)", null);
 			} else {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
@@ -168,6 +173,8 @@ public class LabelShortcut extends ActivityWithDialog {
 			title = getString(R.string.all_labels);
 		} else if (labelId == ALL_STARRED_ID) {
 			title = getString(R.string.Starred_apps);
+		} else if (labelId == OTHER_APPS) {
+			title = getString(R.string.other_label);
 		} else {
 			Cursor c = getDbHelper().getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME }, LabelDao.ID_COL_NAME + "=?",
 					new String[] { Long.toString(labelId) }, null, null, null);
@@ -362,7 +369,7 @@ public class LabelShortcut extends ActivityWithDialog {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		if (labelId != ALL_LABELS_ID && labelId != ALL_STARRED_ID) {
+		if (labelId != ALL_LABELS_ID && labelId != ALL_STARRED_ID && labelId != OTHER_APPS) {
 			showChooseAppsDialog();
 		}
 		return false;
