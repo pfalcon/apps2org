@@ -24,7 +24,7 @@ public class ChangeLogDialog extends SimpleDialog {
 		setShowNegativeButton(false);
 	}
 
-	public void showDialogIfVersionChanged() {
+	public boolean showDialogIfVersionChanged() {
 		SharedPreferences settings = owner.getSharedPreferences("appsOrganizer_pref", 0);
 		int lastUsedVersion = settings.getInt(LAST_USED_VERSION, -1);
 
@@ -35,9 +35,11 @@ public class ChangeLogDialog extends SimpleDialog {
 				showDialog();
 
 				saveVersion(settings, currentVersion);
+				return true;
 			}
 		} catch (NameNotFoundException e) {
 		}
+		return false;
 	}
 
 	public void saveVersion() {

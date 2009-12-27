@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer.shortcut;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,33 +28,36 @@ import android.database.sqlite.SQLiteCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.google.code.appsorganizer.ApplicationContextMenuManager;
 import com.google.code.appsorganizer.BugReportActivity;
@@ -121,6 +125,16 @@ public class LabelShortcut extends ActivityWithDialog {
 	protected void onResume() {
 		super.onResume();
 		new LoadIconTask().execute();
+		// new Thread() {
+		// public void run() {
+		// try {
+		// Thread.sleep(5000);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// Debug.stopMethodTracing();
+		// }
+		// }.start();
 	}
 
 	@Override
@@ -217,7 +231,6 @@ public class LabelShortcut extends ActivityWithDialog {
 				cursorAdapter.notifyDataSetChanged();
 			} else if (progress.length == 1) {
 				updateTitleView((String) progress[0]);
-				// Debug.stopMethodTracing();
 			} else {
 				Cursor prevCursor = (Cursor) progress[0];
 				Cursor actualCursor = (Cursor) progress[1];
@@ -239,43 +252,55 @@ public class LabelShortcut extends ActivityWithDialog {
 	}
 
 	private void createAdapter(Cursor cursor) {
-		cursorAdapter = new SimpleCursorAdapter(this, R.layout.app_cell_with_icon, cursor, new String[] { LabelDao.ID_COL_NAME,
-				LabelDao.LABEL_COL_NAME }, new int[] { R.id.image, R.id.name });
-		cursorAdapter.setViewBinder(new ViewBinder() {
-			public boolean setViewValue(final View view, Cursor cursor, int columnIndex) {
-				if (view instanceof ImageView) {
-					ImageView icon = (ImageView) view;
-					if (cursor.getColumnCount() == 4) {
-						if (!cursor.isNull(3)) {
-							byte[] imageBytes = cursor.getBlob(3);
-							icon.setImageBitmap(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
-						} else {
-							if (!cursor.isNull(2)) {
-								int ic = Label.convertToIcon(cursor.getInt(2));
-								icon.setImageResource(ic);
-							} else {
-								icon.setImageResource(R.drawable.icon_default);
-							}
-						}
+		DisplayMetrics dm = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		final float density = dm.density;
+		final int iconSize = (int) (48 * density);
+		cursorAdapter = new SimpleCursorAdapter(this, 0, cursor, new String[] { LabelDao.ID_COL_NAME }, new int[] { R.id.name }) {
+			@Override
+			public View newView(Context context, Cursor cursor, ViewGroup parent) {
+				TextView t = new TextView(context);
+				t.setLayoutParams(new AbsListView.LayoutParams((int) (65 * density), (int) (78 * density)));
+				t.setGravity(Gravity.CENTER_HORIZONTAL);
+				t.setTextSize(12);
+				return t;
+			}
+
+			@Override
+			public void bindView(View view, Context context, Cursor cursor) {
+				TextView v = (TextView) view;
+				v.setText(cursor.getString(1));
+
+				Drawable b = null;
+				if (cursor.getColumnCount() == 4) {
+					if (!cursor.isNull(3)) {
+						byte[] imageBytes = cursor.getBlob(3);
+						b = new BitmapDrawable(BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
 					} else {
-						byte[] imageBytes = cursor.getBlob(2);
-						if (imageBytes != null) {
-							Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-							if (bitmap != null) {
-								icon.setImageBitmap(bitmap);
-							} else {
-								icon.setImageResource(R.drawable.icon_default);
+						if (!cursor.isNull(2)) {
+							int ic = Label.convertToIcon(cursor.getInt(2));
+							if (ic > 0) {
+								b = context.getResources().getDrawable(ic);
 							}
-						} else {
-							icon.setImageResource(R.drawable.icon_default);
 						}
 					}
 				} else {
-					((TextView) view).setText(cursor.getString(columnIndex));
+					byte[] imageBytes = cursor.getBlob(2);
+					if (imageBytes != null) {
+						Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+						if (bitmap != null) {
+							b = new BitmapDrawable(bitmap);
+						}
+					}
 				}
-				return true;
+				if (b == null) {
+					b = context.getResources().getDrawable(R.drawable.icon_default);
+				}
+				b.setBounds(0, 0, iconSize, iconSize);
+
+				v.setCompoundDrawables(null, b, null, null);
 			}
-		});
+		};
 		grid.setAdapter(cursorAdapter);
 	}
 

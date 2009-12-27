@@ -75,7 +75,10 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.4.2\n
+	<string name="Change_log_text">1.4.3\n
+	German translation\n
+	Performance improvement\n
+1.4.2\n
 	Other apps shortcut\n
 1.4.1\n
 	Fixed droid icons issue\n
@@ -100,4 +103,5 @@
 	<string name="loading_icons">Loading icons...</string>	
 	<string name="error_while_launching_activity">Error while launching application</string>	
 	<string name="New_label">New label</string>	
+	<string name="Apps_list">Apps list</string>
 </resources>

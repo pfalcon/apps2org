@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<PreferenceCategory android:title="@string/Shortcut_folder">
+	<PreferenceCategory android:title="@string/Apps_list">
 		<ListPreference android:key="defaultAction"
 			android:title="@string/list_default_action" android:summary="@string/list_default_action_summary"
 			android:entries="@array/entries_list_preference" android:entryValues="@array/entryvalues_list_preference"

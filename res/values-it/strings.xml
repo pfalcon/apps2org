@@ -80,4 +80,5 @@
 	<string name="loading_icons">Caricamento icone...</string>	
 	<string name="error_while_launching_activity">Errore lancio applicazione</string>	
 	<string name="New_label">Nuova etichetta</string>	
+	<string name="Apps_list">Lista applicazioni</string>
 </resources>
