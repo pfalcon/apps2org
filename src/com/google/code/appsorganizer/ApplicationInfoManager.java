@@ -42,7 +42,7 @@ public class ApplicationInfoManager {
 	private ApplicationInfoManager() {
 	}
 
-	public static void reloadAll(PackageManager pm, DatabaseHelper dbHelper, Handler handler, boolean discardCache) {
+	public static void reloadAll(PackageManager pm, DatabaseHelper dbHelper, Handler handler, boolean discardCache, String packageToReload) {
 		AppCacheDao appCacheDao = dbHelper.appCacheDao;
 		synchronized (ApplicationInfoManager.class) {
 			AppCacheMap nameCache = appCacheDao.queryForCacheMap(true);
@@ -62,7 +62,7 @@ public class ApplicationInfoManager {
 					if (appCache != null) {
 						installedApps[appCachePosition] = true;
 					}
-					String label = loadAppLabel(pm, a, discardCache, appCacheDao, appCache);
+					String label = loadAppLabel(pm, a, discardCache || a.packageName.equals(packageToReload), appCacheDao, appCache);
 					if (handler != null) {
 						Message message = new Message();
 						message.obj = label;

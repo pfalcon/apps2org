@@ -27,17 +27,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,13 +44,11 @@ import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.GridView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -97,9 +93,13 @@ public class LabelShortcut extends ActivityWithDialog {
 
 	public static boolean firstTime = true;
 
+	private SharedPreferences prefs;
+
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
+		Debug.startMethodTracing("grid1");
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		OnOkClickListener onOkClickListener = new OnOkClickListener() {
 			private static final long serialVersionUID = 1L;
 
@@ -109,7 +109,6 @@ public class LabelShortcut extends ActivityWithDialog {
 		};
 		chooseAppsDialogCreator = new ChooseAppsDialogCreator(getGenericDialogManager(), onOkClickListener);
 		chooseLabelDialog = new ChooseLabelDialogCreator(getGenericDialogManager(), onOkClickListener);
-		// Debug.startMethodTracing("grid1");
 		BugReportActivity.registerExceptionHandler(this);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -124,17 +123,17 @@ public class LabelShortcut extends ActivityWithDialog {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		new LoadIconTask().execute();
-		// new Thread() {
-		// public void run() {
-		// try {
-		// Thread.sleep(5000);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// Debug.stopMethodTracing();
-		// }
-		// }.start();
+		reloadData();
+		new Thread() {
+			public void run() {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Debug.stopMethodTracing();
+			}
+		}.start();
 	}
 
 	@Override
@@ -172,7 +171,6 @@ public class LabelShortcut extends ActivityWithDialog {
 						"select a._id, a.label, a.image, a.package, a.name from apps a where a.disabled = 0 and not exists("
 								+ "select 1 from apps_labels al where a.name = al.app and a.package = al.package) order by upper(a.label)", null);
 			} else {
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
 				tmpCursor = AppCacheDao.getAppsOfLabelCursor(getDbHelper().getDb(), labelId, starredFirst, onlyStarred);
@@ -182,25 +180,24 @@ public class LabelShortcut extends ActivityWithDialog {
 	}
 
 	private String retrieveTitle() {
-		String title = "";
 		if (labelId == ALL_LABELS_ID) {
-			title = getString(R.string.all_labels);
+			return getString(R.string.all_labels);
 		} else if (labelId == ALL_STARRED_ID) {
-			title = getString(R.string.Starred_apps);
+			return getString(R.string.Starred_apps);
 		} else if (labelId == OTHER_APPS) {
-			title = getString(R.string.other_label);
+			return getString(R.string.other_label);
 		} else {
 			Cursor c = getDbHelper().getDb().query(LabelDao.TABLE_NAME, new String[] { LabelDao.LABEL_COL_NAME }, LabelDao.ID_COL_NAME + "=?",
 					new String[] { Long.toString(labelId) }, null, null, null);
 			try {
 				if (c.moveToNext()) {
-					title = c.getString(0);
+					return c.getString(0);
 				}
 			} finally {
 				c.close();
 			}
 		}
-		return title;
+		return "";
 	}
 
 	public DatabaseHelperBasic getDbHelper() {
@@ -210,45 +207,40 @@ public class LabelShortcut extends ActivityWithDialog {
 		return dbHelper;
 	}
 
-	private class LoadIconTask extends AsyncTask<String, Object, Object> {
+	private void reloadData() {
+		new Thread() {
+			@Override
+			public void run() {
+				final String title = retrieveTitle();
 
-		@Override
-		protected Object doInBackground(String... ss) {
-			publishProgress(retrieveTitle());
-
-			Cursor prevCursor = null;
-			if (cursorAdapter != null) {
-				prevCursor = cursorAdapter.getCursor();
-			}
-			Cursor actual = reloadGrid();
-			publishProgress(prevCursor, actual);
-			return null;
-		}
-
-		@Override
-		protected void onProgressUpdate(Object... progress) {
-			if (progress.length == 0) {
-				cursorAdapter.notifyDataSetChanged();
-			} else if (progress.length == 1) {
-				updateTitleView((String) progress[0]);
-			} else {
-				Cursor prevCursor = (Cursor) progress[0];
-				Cursor actualCursor = (Cursor) progress[1];
-				if (cursorAdapter == null) {
-					createAdapter(actualCursor);
+				final Cursor prevCursor;
+				if (cursorAdapter != null) {
+					prevCursor = cursorAdapter.getCursor();
 				} else {
-					cursorAdapter.changeCursor(actualCursor);
+					prevCursor = null;
 				}
-				if (prevCursor != null && !prevCursor.isClosed()) {
-					prevCursor.close();
-				}
-				if (!firstTime) {
-					setVisible(true);
-				} else {
-					firstTime = false;
-				}
+				final Cursor actualCursor = reloadGrid();
+				runOnUiThread(new Runnable() {
+
+					public void run() {
+						updateTitleView(title);
+						if (cursorAdapter == null) {
+							createAdapter(actualCursor);
+						} else {
+							cursorAdapter.changeCursor(actualCursor);
+						}
+						if (prevCursor != null && !prevCursor.isClosed()) {
+							prevCursor.close();
+						}
+						if (!firstTime) {
+							setVisible(true);
+						} else {
+							firstTime = false;
+						}
+					}
+				});
 			}
-		}
+		}.start();
 	}
 
 	private void createAdapter(Cursor cursor) {
@@ -256,11 +248,13 @@ public class LabelShortcut extends ActivityWithDialog {
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
 		final float density = dm.density;
 		final int iconSize = (int) (48 * density);
+		final int width = (int) (65 * density);
+		final int height = (int) (78 * density);
 		cursorAdapter = new SimpleCursorAdapter(this, 0, cursor, new String[] { LabelDao.ID_COL_NAME }, new int[] { R.id.name }) {
 			@Override
 			public View newView(Context context, Cursor cursor, ViewGroup parent) {
 				TextView t = new TextView(context);
-				t.setLayoutParams(new AbsListView.LayoutParams((int) (65 * density), (int) (78 * density)));
+				t.setLayoutParams(new AbsListView.LayoutParams(width, height));
 				t.setGravity(Gravity.CENTER_HORIZONTAL);
 				t.setTextSize(12);
 				return t;
@@ -317,14 +311,13 @@ public class LabelShortcut extends ActivityWithDialog {
 					Cursor item = (Cursor) cursorAdapter.getItem(pos);
 					if (labelId == ALL_LABELS_ID) {
 						labelId = item.getLong(0);
-						new LoadIconTask().execute();
+						reloadData();
 					} else {
 						Intent i = new Intent(Intent.ACTION_MAIN);
 						i.addCategory(Intent.CATEGORY_LAUNCHER);
 						i.setClassName(item.getString(3), item.getString(4));
 						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						startActivity(i);
-						SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this);
 						if (prefs.getBoolean("close_folder_after_launch", false)) {
 							finish();
 						}
@@ -380,7 +373,7 @@ public class LabelShortcut extends ActivityWithDialog {
 		if (allLabelsSelected) {
 			if (labelId != ALL_LABELS_ID) {
 				labelId = ALL_LABELS_ID;
-				new LoadIconTask().execute();
+				reloadData();
 				return true;
 			}
 		}
@@ -407,22 +400,18 @@ public class LabelShortcut extends ActivityWithDialog {
 
 	private void updateTitleView(String title) {
 		if (titleView == null) {
-			LayoutInflater factory = LayoutInflater.from(LabelShortcut.this);
-			RelativeLayout titleLayout = (RelativeLayout) factory.inflate(R.layout.shortcut_grid_title, null);
-			titleLayout.setBackgroundColor(Color.GRAY);
+			RelativeLayout titleLayout = (RelativeLayout) findViewById(R.id.titleLayout);
 			titleView = (TextView) titleLayout.findViewById(R.id.title);
 			starCheck = (CheckBox) titleLayout.findViewById(R.id.starCheck);
-			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LabelShortcut.this);
 			starCheck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 					Editor edit = prefs.edit();
 					edit.putBoolean(ONLY_STARRED_PREF, isChecked);
 					edit.commit();
-					new LoadIconTask().execute();
+					reloadData();
 				}
 			});
 			starCheck.setChecked(prefs.getBoolean(ONLY_STARRED_PREF, false));
-			LinearLayout layout = (LinearLayout) findViewById(R.id.shortcutLayout);
 
 			boolean showCloseButton = prefs.getBoolean("show_close_button_in_folder", true);
 			View closeButton = titleLayout.findViewById(R.id.closeButton);
@@ -434,9 +423,6 @@ public class LabelShortcut extends ActivityWithDialog {
 					}
 				});
 			}
-			DisplayMetrics dm = new DisplayMetrics();
-			getWindowManager().getDefaultDisplay().getMetrics(dm);
-			layout.addView(titleLayout, 0, new LayoutParams(LayoutParams.FILL_PARENT, (int) (34 * dm.density)));
 		}
 		titleView.setText(title);
 		int v = labelId > 0 ? View.VISIBLE : View.INVISIBLE;

@@ -82,6 +82,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 
 	private SelectAppDialog selectAppDialog;
 
+	private ApplicationViewBinder applicationViewBinder;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -117,11 +119,22 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 			}
 		});
 
-		registerForContextMenu(getExpandableListView());
+		applicationViewBinder = new ApplicationViewBinder(dbHelper, this, chooseLabelDialog);
+		ExpandableListView expandableListView = getExpandableListView();
+		registerForContextMenu(expandableListView);
+		expandableListView.setClickable(true);
+		expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+				Cursor cursor = getExpandableListAdapter().getChild(groupPosition, childPosition);
+				String packageName = cursor.getString(ApplicationViewBinder.PACKAGE);
+				String name = cursor.getString(ApplicationViewBinder.NAME);
+				applicationViewBinder.onItemClick(packageName, name);
+				return true;
+			}
+		});
 	}
 
 	private SimpleCursorTreeAdapter createAdapter() {
-		final ApplicationViewBinder applicationViewBinder = new ApplicationViewBinder(dbHelper, this, chooseLabelDialog);
 		Cursor c = dbHelper.labelDao.getLabelCursor();
 		MatrixCursor otherAppsCursor = new MatrixCursor(LabelDao.COLS_STRING, 1);
 		otherAppsCursor.addRow(new Object[] { AppCacheDao.OTHER_LABEL_ID, getText(R.string.other_label).toString(), 0, null });

@@ -57,7 +57,7 @@ public class AppsReloader {
 			@Override
 			public void run() {
 				DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
-				ApplicationInfoManager.reloadAll(context.getPackageManager(), dbHelper, handler, discardCache);
+				ApplicationInfoManager.reloadAll(context.getPackageManager(), dbHelper, handler, discardCache, null);
 				handler.sendEmptyMessage(-1);
 			}
 		};

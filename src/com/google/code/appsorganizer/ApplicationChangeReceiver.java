@@ -39,7 +39,7 @@ public class ApplicationChangeReceiver extends BroadcastReceiver {
 			Log.i("ApplicationChangeReceiver", packageName + " added");
 			DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
 			dbHelper.appCacheDao.disablePackage(packageName, false);
-			ApplicationInfoManager.reloadAll(context.getPackageManager(), dbHelper, null, false);
+			ApplicationInfoManager.reloadAll(context.getPackageManager(), dbHelper, null, false, packageName);
 		} else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
 			String packageName = intent.getDataString().substring(8);
 			Log.i("ApplicationChangeReceiver", packageName + " removed");

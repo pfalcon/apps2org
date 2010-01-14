@@ -33,9 +33,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.ToggleButton;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.ChangeLogDialog;
@@ -91,9 +94,17 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 
 		setContentView(R.layout.main);
 
-		getListView().setClickable(true);
-
-		registerForContextMenu(getListView());
+		ListView listView = getListView();
+		listView.setClickable(true);
+		registerForContextMenu(listView);
+		listView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+				Cursor cursor = (Cursor) getListAdapter().getItem(position);
+				String packageName = cursor.getString(ApplicationViewBinder.PACKAGE);
+				String name = cursor.getString(ApplicationViewBinder.NAME);
+				applicationViewBinder.onItemClick(packageName, name);
+			}
+		});
 
 		labelButton = (ToggleButton) findViewById(R.id.labelButton);
 		appButton = (ToggleButton) findViewById(R.id.appButton);
@@ -208,6 +219,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	};
 
 	private ProgressDialog pd;
+	private ApplicationViewBinder applicationViewBinder;
 
 	@Override
 	public SimpleCursorAdapter getListAdapter() {
@@ -234,7 +246,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 					editor.commit();
 				}
 
-				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, !appsAlreadyReloaded);
+				ApplicationInfoManager.reloadAll(getPackageManager(), dbHelper, handler, !appsAlreadyReloaded, null);
 				handler.sendEmptyMessage(-3);
 			}
 		};
@@ -295,7 +307,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c, ApplicationViewBinder.COLS,
 				ApplicationViewBinder.VIEWS) {
 		};
-		adapter.setViewBinder(new ApplicationViewBinder(dbHelper, this, chooseLabelDialog));
+		applicationViewBinder = new ApplicationViewBinder(dbHelper, this, chooseLabelDialog);
+		adapter.setViewBinder(applicationViewBinder);
 		setListAdapter(adapter);
 	}
 

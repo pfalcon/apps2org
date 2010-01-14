@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -60,7 +61,8 @@ public class BugReportActivity extends Activity {
 	}
 
 	private String getExceptionString() {
-		return "Version: " + getIntent().getStringExtra(LAST_EXCEPTION_VERSION) + "\n" + getIntent().getStringExtra(EXCEPTION);
+		return "Version: " + getIntent().getStringExtra(LAST_EXCEPTION_VERSION) + "\nCurrent version: " + AboutDialogCreator.getVersionName(this)
+				+ "\nAndroid version: " + Build.VERSION.SDK + "\n" + getIntent().getStringExtra(EXCEPTION);
 	}
 
 	private static void startBugreportActivity(final Context context, String exceptionString, String version) {

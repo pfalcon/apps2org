@@ -141,21 +141,11 @@ public class ApplicationViewBinder implements ViewBinder {
 	private void addOnClickListener(View view, final Cursor cursor) {
 		final String packageName = cursor.getString(PACKAGE);
 		final String name = cursor.getString(NAME);
-		OnClickListener onClickListener = new OnClickListener() {
+		view.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-				String defaultAction = prefs.getString("defaultAction", "choose_labels");
-				if (defaultAction.equals("choose_labels")) {
-					chooseLabelDialog.setCurrentApp(packageName, name);
-					((GenericDialogManagerActivity) context).showDialog(chooseLabelDialog);
-				} else if (defaultAction.equals("uninstall")) {
-					ApplicationContextMenuManager.uninstallApplication(context, packageName);
-				} else {
-					ApplicationContextMenuManager.startApplication(context, packageName, name);
-				}
+				onItemClick(packageName, name);
 			}
-		};
-		view.setOnClickListener(onClickListener);
+		});
 	}
 
 	private void bindStarred(CheckBox checkbox, Cursor cursor) {
@@ -169,5 +159,18 @@ public class ApplicationViewBinder implements ViewBinder {
 				dbHelper.appCacheDao.updateStarred(packageName, name, isChecked);
 			}
 		});
+	}
+
+	public void onItemClick(final String packageName, final String name) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		String defaultAction = prefs.getString("defaultAction", "choose_labels");
+		if (defaultAction.equals("choose_labels")) {
+			chooseLabelDialog.setCurrentApp(packageName, name);
+			((GenericDialogManagerActivity) context).showDialog(chooseLabelDialog);
+		} else if (defaultAction.equals("uninstall")) {
+			ApplicationContextMenuManager.uninstallApplication(context, packageName);
+		} else {
+			ApplicationContextMenuManager.startApplication(context, packageName, name);
+		}
 	}
 }
