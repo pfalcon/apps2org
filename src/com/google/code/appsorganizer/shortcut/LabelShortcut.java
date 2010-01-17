@@ -30,7 +30,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Debug;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
@@ -98,7 +97,7 @@ public class LabelShortcut extends ActivityWithDialog {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		Debug.startMethodTracing("grid1");
+		// Debug.startMethodTracing("grid1");
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		OnOkClickListener onOkClickListener = new OnOkClickListener() {
 			private static final long serialVersionUID = 1L;
@@ -124,16 +123,16 @@ public class LabelShortcut extends ActivityWithDialog {
 	protected void onResume() {
 		super.onResume();
 		reloadData();
-		new Thread() {
-			public void run() {
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Debug.stopMethodTracing();
-			}
-		}.start();
+		// new Thread() {
+		// public void run() {
+		// try {
+		// Thread.sleep(5000);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// Debug.stopMethodTracing();
+		// }
+		// }.start();
 	}
 
 	@Override

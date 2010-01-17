@@ -75,7 +75,9 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.4.4\n
+	<string name="Change_log_text">1.4.5\n
+	Performance improvement (revert to version 1.4.3)\n
+1.4.4\n
 	Fixed reload when an app change icon after an update\n
 	Fixed navigation with buttons/trackball\n
 1.4.3\n
