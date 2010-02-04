@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.google.code.appsorganizer" android:versionCode="130"
-	android:versionName="1.4.5">
+	package="com.google.code.appsorganizer" android:versionCode="131"
+	android:versionName="1.4.6">
 	<application android:icon="@drawable/icon" android:label="@string/app_name"
 		android:name="AppsOrganizerApplication">
 		<uses-library android:name="android.test.runner" />
@@ -61,6 +61,8 @@
 
         <activity android:name="BugReportActivity" android:label="@string/Bug_report"/>
 
+		<provider android:name="com.google.code.appsorganizer.MyBackupPro" android:authorities="com.google.code.appsorganizer.MyBackupPro"/>
+		
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
 	<instrumentation android:name="android.test.InstrumentationTestRunner"
