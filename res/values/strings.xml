@@ -111,4 +111,9 @@
 	<string name="error_while_launching_activity">Error while launching application</string>	
 	<string name="New_label">New label</string>	
 	<string name="Apps_list">Apps list</string>
+    <string name="label_default_internet">Internet</string>
+    <string name="label_default_android">Android</string>
+    <string name="label_default_multimedia">Multimedia</string>
+    <string name="label_default_tools">Tools</string>
+    <string name="label_default_games">Games</string>
 </resources>

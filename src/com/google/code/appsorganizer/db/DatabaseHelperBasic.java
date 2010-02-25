@@ -37,8 +37,11 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 
 	protected final SQLiteDatabase db;
 
+	private Context context;
+
 	public DatabaseHelperBasic(Context context) {
 		super(context, "data", null, DATABASE_VERSION);
+		this.context = context;
 		db = getWritableDatabase();
 	}
 
@@ -48,11 +51,11 @@ public class DatabaseHelperBasic extends SQLiteOpenHelper {
 		db.execSQL(AppLabelDao.getCreateTableScript());
 		db.execSQL(AppCacheDao.getCreateTableScript());
 
-		long internetId = insertLabel(db, null, "Internet", Label.convertToIconDb(R.drawable.globe));
-		long androidId = insertLabel(db, null, "Android", Label.convertToIconDb(R.drawable.pda_black));
-		long multimediaId = insertLabel(db, null, "Multimedia", Label.convertToIconDb(R.drawable.multimedia));
-		long utilityId = insertLabel(db, null, "Tools", Label.convertToIconDb(R.drawable.service_manager));
-		insertLabel(db, null, "Games", Label.convertToIconDb(R.drawable.joystick));
+		long internetId = insertLabel(db, null, context.getString(R.string.label_default_internet), Label.convertToIconDb(R.drawable.globe));
+		long androidId = insertLabel(db, null, context.getString(R.string.label_default_android), Label.convertToIconDb(R.drawable.pda_black));
+		long multimediaId = insertLabel(db, null, context.getString(R.string.label_default_multimedia), Label.convertToIconDb(R.drawable.multimedia));
+		long utilityId = insertLabel(db, null, context.getString(R.string.label_default_tools), Label.convertToIconDb(R.drawable.service_manager));
+		insertLabel(db, null, context.getString(R.string.label_default_games), Label.convertToIconDb(R.drawable.joystick));
 
 		insertInterneApps(db, internetId);
 		insertAndroidApps(db, androidId);
