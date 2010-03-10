@@ -30,6 +30,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.MessageQueue;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
@@ -97,7 +99,6 @@ public class LabelShortcut extends ActivityWithDialog {
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		// Debug.startMethodTracing("grid1");
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		OnOkClickListener onOkClickListener = new OnOkClickListener() {
 			private static final long serialVersionUID = 1L;
@@ -111,7 +112,7 @@ public class LabelShortcut extends ActivityWithDialog {
 		BugReportActivity.registerExceptionHandler(this);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getOrCreateGrid();
+		createGrid();
 
 		final Intent intent = getIntent();
 
@@ -122,8 +123,10 @@ public class LabelShortcut extends ActivityWithDialog {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		reloadData();
+		// Debug.startMethodTracing("grid1");
+		reloadDataExternalThread();
 		// new Thread() {
+		// @Override
 		// public void run() {
 		// try {
 		// Thread.sleep(5000);
@@ -207,9 +210,32 @@ public class LabelShortcut extends ActivityWithDialog {
 	}
 
 	private void reloadData() {
-		new Thread() {
-			@Override
-			public void run() {
+		final String title = retrieveTitle();
+
+		Cursor prevCursor = null;
+		if (cursorAdapter != null) {
+			prevCursor = cursorAdapter.getCursor();
+		}
+		final Cursor actualCursor = reloadGrid();
+		updateTitleView(title);
+		if (cursorAdapter == null) {
+			createAdapter(actualCursor);
+		} else {
+			cursorAdapter.changeCursor(actualCursor);
+		}
+		if (prevCursor != null && !prevCursor.isClosed()) {
+			prevCursor.close();
+		}
+		if (!firstTime) {
+			setVisible(true);
+		} else {
+			firstTime = false;
+		}
+	}
+
+	private void reloadDataExternalThread() {
+		Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
+			public boolean queueIdle() {
 				final String title = retrieveTitle();
 
 				final Cursor prevCursor;
@@ -219,27 +245,23 @@ public class LabelShortcut extends ActivityWithDialog {
 					prevCursor = null;
 				}
 				final Cursor actualCursor = reloadGrid();
-				runOnUiThread(new Runnable() {
-
-					public void run() {
-						updateTitleView(title);
-						if (cursorAdapter == null) {
-							createAdapter(actualCursor);
-						} else {
-							cursorAdapter.changeCursor(actualCursor);
-						}
-						if (prevCursor != null && !prevCursor.isClosed()) {
-							prevCursor.close();
-						}
-						if (!firstTime) {
-							setVisible(true);
-						} else {
-							firstTime = false;
-						}
-					}
-				});
+				updateTitleView(title);
+				if (cursorAdapter == null) {
+					createAdapter(actualCursor);
+				} else {
+					cursorAdapter.changeCursor(actualCursor);
+				}
+				if (prevCursor != null && !prevCursor.isClosed()) {
+					prevCursor.close();
+				}
+				if (!firstTime) {
+					setVisible(true);
+				} else {
+					firstTime = false;
+				}
+				return false;
 			}
-		}.start();
+		});
 	}
 
 	private void createAdapter(Cursor cursor) {
@@ -249,11 +271,12 @@ public class LabelShortcut extends ActivityWithDialog {
 		final int iconSize = (int) (48 * density);
 		final int width = (int) (65 * density);
 		final int height = (int) (78 * density);
+		final AbsListView.LayoutParams layoutParams = new AbsListView.LayoutParams(width, height);
 		cursorAdapter = new SimpleCursorAdapter(this, 0, cursor, new String[] { LabelDao.ID_COL_NAME }, new int[] { R.id.name }) {
 			@Override
 			public View newView(Context context, Cursor cursor, ViewGroup parent) {
 				TextView t = new TextView(context);
-				t.setLayoutParams(new AbsListView.LayoutParams(width, height));
+				t.setLayoutParams(layoutParams);
 				t.setGravity(Gravity.CENTER_HORIZONTAL);
 				t.setTextSize(12);
 				return t;
@@ -299,44 +322,41 @@ public class LabelShortcut extends ActivityWithDialog {
 
 	private SimpleCursorAdapter cursorAdapter;
 
-	private GridView getOrCreateGrid() {
-		if (grid == null) {
-			setContentView(R.layout.shortcut_grid);
+	private void createGrid() {
+		setContentView(R.layout.shortcut_grid);
 
-			grid = (GridView) findViewById(R.id.shortcutGrid);
+		grid = (GridView) findViewById(R.id.shortcutGrid);
 
-			grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-				public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-					Cursor item = (Cursor) cursorAdapter.getItem(pos);
-					if (labelId == ALL_LABELS_ID) {
-						labelId = item.getLong(0);
-						reloadData();
-					} else {
-						Intent i = new Intent(Intent.ACTION_MAIN);
-						i.addCategory(Intent.CATEGORY_LAUNCHER);
-						i.setClassName(item.getString(3), item.getString(4));
-						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-						startActivity(i);
-						if (prefs.getBoolean("close_folder_after_launch", false)) {
-							finish();
-						}
+		grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
+				Cursor item = (Cursor) cursorAdapter.getItem(pos);
+				if (labelId == ALL_LABELS_ID) {
+					labelId = item.getLong(0);
+					reloadData();
+				} else {
+					Intent i = new Intent(Intent.ACTION_MAIN);
+					i.addCategory(Intent.CATEGORY_LAUNCHER);
+					i.setClassName(item.getString(3), item.getString(4));
+					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					startActivity(i);
+					if (prefs.getBoolean("close_folder_after_launch", false)) {
+						finish();
 					}
 				}
-			});
-			grid.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-				public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-					AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-					SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
-					if (c.getColumnCount() != 4) {
-						ApplicationContextMenuManager.createMenu(menu, c.getString(1));
-					}
-				}
-			});
-			if (!firstTime) {
-				setVisible(false);
 			}
+		});
+		grid.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+				SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
+				if (c.getColumnCount() != 4) {
+					ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+				}
+			}
+		});
+		if (!firstTime) {
+			setVisible(false);
 		}
-		return grid;
 	}
 
 	@Override
