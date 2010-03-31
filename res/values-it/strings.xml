@@ -81,4 +81,5 @@
 	<string name="error_while_launching_activity">Errore lancio applicazione</string>	
 	<string name="New_label">Nuova etichetta</string>	
 	<string name="Apps_list">Lista applicazioni</string>
+	<string name="add_to_home">Aggiungi alla home</string>
 </resources>

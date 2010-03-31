@@ -42,6 +42,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.ChangeLogDialog;
+import com.google.code.appsorganizer.dialogs.FullVersionDialog;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.ListActivityWithDialog;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
@@ -59,6 +60,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	private ChooseLabelDialogCreator chooseLabelDialog;
 
 	private ChangeLogDialog changeLogDialog;
+
+	private FullVersionDialog fullVersionDialog;
 
 	private ToggleButton labelButton;
 
@@ -116,6 +119,8 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 
 		createHowToDialog();
 		createFirstTimeDownloadDialog();
+
+		fullVersionDialog = new FullVersionDialog(genericDialogManager);
 	}
 
 	private SimpleDialog howToDialog;
@@ -206,7 +211,9 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 				pd.hide();
 				if (!showFirstTimeDownloadDialog()) {
 					if (!showStartHowTo()) {
-						changeLogDialog.showDialogIfVersionChanged();
+						if (!changeLogDialog.showDialogIfVersionChanged()) {
+							fullVersionDialog.showDialogIfFirstTime();
+						}
 					} else {
 						changeLogDialog.saveVersion();
 					}

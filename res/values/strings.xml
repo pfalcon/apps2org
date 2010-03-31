@@ -75,7 +75,9 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.4.8\n
+	<string name="Change_log_text">1.4.9\n
+	Add label to home command\n
+1.4.8\n
 	Spanish translation\n
 1.4.7\n
 	Korean translation\n
@@ -120,4 +122,7 @@
     <string name="label_default_multimedia">Multimedia</string>
     <string name="label_default_tools">Tools</string>
     <string name="label_default_games">Games</string>
+    <string name="add_to_home">Add to home</string>
+    <string name="FolderOrganizer_title">FolderOrganizer</string>
+    <string name="FolderOrganizer_message">If you want to organize Apps, Bookmarks and Contacts you can try FolderOrganizer.\nExported Apps Organizer data can be easily imported</string>
 </resources>

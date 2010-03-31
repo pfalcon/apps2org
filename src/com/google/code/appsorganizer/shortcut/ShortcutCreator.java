@@ -20,6 +20,7 @@ package com.google.code.appsorganizer.shortcut;
 
 import java.util.List;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -63,27 +64,31 @@ public class ShortcutCreator extends ListActivity {
 	}
 
 	private void setupShortcut(Label label) {
-		Intent shortcutIntent = createOpenLabelIntent(label.getId());
-
-		Intent intent = new Intent();
-		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, label.getName());
-
-		byte[] imageBytes = label.getImageBytes();
-		if (imageBytes != null) {
-			intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
-		} else {
-			Parcelable iconResource = Intent.ShortcutIconResource.fromContext(this, label.getIcon());
-			intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
-		}
+		Intent intent = createIntent(this, label.getId(), label.getName(), label.getImageBytes(), label.getIcon());
 		setResult(LabelShortcut.RESULT_OK, intent);
 	}
 
-	private Intent createOpenLabelIntent(Long id) {
+	public static Intent createIntent(Activity a, Long id, String name, byte[] imageBytes, int icon) {
+		Intent shortcutIntent = createOpenLabelIntent(a, id);
+
+		Intent intent = new Intent();
+		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, name);
+
+		if (imageBytes != null) {
+			intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length));
+		} else {
+			Parcelable iconResource = Intent.ShortcutIconResource.fromContext(a, icon);
+			intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
+		}
+		return intent;
+	}
+
+	private static Intent createOpenLabelIntent(Activity a, Long id) {
 		Intent shortcutIntent = new Intent(Intent.ACTION_MAIN);
 		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		shortcutIntent.setClassName(this, LabelShortcut.class.getName());
+		shortcutIntent.setClassName(a, LabelShortcut.class.getName());
 		shortcutIntent.putExtra(LabelShortcut.LABEL_ID, id);
 		return shortcutIntent;
 	}

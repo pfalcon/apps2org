@@ -52,6 +52,7 @@ import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.dialogs.SimpleDialog;
 import com.google.code.appsorganizer.dialogs.TextEntryDialog;
 import com.google.code.appsorganizer.model.Label;
+import com.google.code.appsorganizer.shortcut.ShortcutCreator;
 
 public class LabelListActivity extends ExpandableListActivityWithDialog implements GenericDialogManagerActivity {
 	private static final int MENU_ITEM_SELECT_APPS = 2;
@@ -61,6 +62,8 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 	private static final int MENU_ITEM_RENAME = 0;
 
 	private static final int MENU_ITEM_DELETE = 3;
+
+	private static final int MENU_ITEM_ADD_TO_HOME = 4;
 
 	private DatabaseHelper dbHelper;
 
@@ -296,6 +299,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 			MenuItem deleteItem = menu.add(0, MENU_ITEM_DELETE, 1, R.string.delete);
 			MenuItem changeIconItem = menu.add(0, MENU_ITEM_CHANGE_ICON, 2, R.string.change_icon);
 			MenuItem chooseAppsItem = menu.add(0, MENU_ITEM_SELECT_APPS, 3, R.string.select_apps);
+			menu.add(0, MENU_ITEM_ADD_TO_HOME, 4, R.string.add_to_home);
 			if (c.getLong(0) == AppCacheDao.OTHER_LABEL_ID) {
 				deleteItem.setEnabled(false);
 				renameItem.setEnabled(false);
@@ -338,6 +342,14 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 			case MENU_ITEM_SELECT_APPS:
 				chooseAppsDialogCreator.setCurrentLabelId(labelId);
 				showDialog(chooseAppsDialogCreator);
+				break;
+			case MENU_ITEM_ADD_TO_HOME:
+				int icon = c.getInt(2);
+				Intent result = ShortcutCreator.createIntent(this, labelId, labelName, c.isNull(3) ? null : c.getBlob(3), icon > 0 ? Label
+						.convertToIcon(icon) : R.drawable.icon_default);
+
+				result.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+				sendBroadcast(result);
 				break;
 			}
 		}
