@@ -18,10 +18,10 @@
 	<string name="label_name">Имя метки</string>
 	<string name="other_label">Остальные приложения</string>
 	<string name="uninstall">Удалить</string>
-	<string name="reload_apps">Перезагрузить</string>
+	<string name="reload_apps">Обновить</string>
 	<string name="about">О программе</string>
 	<string name="Apps_organizer_label">Метки приложений</string>
-	<string name="choose_labels_for_shortcut">Выберите метки</string>
+	<string name="choose_labels_for_shortcut">Выбрать метку</string>
 	<string name="all_labels">Все метки</string>
 	<string name="select_apps">Выберите приложения</string>
 	<string name="loading_shortcut_grid">Загрузка...</string>
