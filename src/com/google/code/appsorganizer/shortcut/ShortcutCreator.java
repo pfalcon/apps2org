@@ -22,6 +22,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -84,10 +85,11 @@ public class ShortcutCreator extends ListActivity {
 		return intent;
 	}
 
-	private static Intent createOpenLabelIntent(Activity a, Long id) {
+	public static Intent createOpenLabelIntent(Context a, Long id) {
 		Intent shortcutIntent = new Intent(Intent.ACTION_MAIN);
 		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 		shortcutIntent.setClassName(a, LabelShortcut.class.getName());
 		shortcutIntent.putExtra(LabelShortcut.LABEL_ID, id);
 		return shortcutIntent;

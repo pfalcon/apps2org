@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">Apps Organizer</string>
 	<string name="choose_labels_header">Choose labels</string>
 	<string name="alert_dialog_ok">OK</string>
@@ -75,7 +75,9 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.4.10\n
+	<string name="Change_log_text">1.5\n
+	Android Widget\n
+1.4.10\n
 	Russian translation\n
 1.4.9\n
 	Add label to home command\n
