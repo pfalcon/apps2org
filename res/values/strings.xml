@@ -129,4 +129,5 @@
     <string name="add_to_home">Add to home</string>
     <string name="FolderOrganizer_title">FolderOrganizer</string>
     <string name="FolderOrganizer_message">If you want to organize Apps, Bookmarks and Contacts you can try FolderOrganizer.\nExported Apps Organizer data can be easily imported</string>
+    <string name="Deleted_label">Deleted label</string>
 </resources>

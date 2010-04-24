@@ -18,6 +18,7 @@ package com.google.code.appsorganizer.appwidget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import android.app.ListActivity;
 import android.appwidget.AppWidgetManager;
@@ -59,29 +60,15 @@ public class AppWidgetConfigure extends ListActivity {
 		// out of the widget placement if they press the back button.
 		setResult(RESULT_CANCELED);
 
-		// // Set the view layout resource to use.
-		// setContentView(R.layout.appwidget_configure);
-		//
-		// // Find the EditText
-		// mAppWidgetPrefix = (EditText) findViewById(R.id.appwidget_prefix);
-		//
-		// // Bind the action for the save button.
-		// findViewById(R.id.save_button).setOnClickListener(mOnClickListener);
-
-		// Find the widget id from the intent.
 		Intent intent = getIntent();
 		Bundle extras = intent.getExtras();
 		if (extras != null) {
 			mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
 		}
 
-		// If they gave us an intent without the widget id, just bail.
 		if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
 			finish();
 		}
-
-		// mAppWidgetPrefix.setText(loadTitlePref(ExampleAppWidgetConfigure.this,
-		// mAppWidgetId));
 
 		showCreateShortcutView();
 	}
@@ -128,12 +115,24 @@ public class AppWidgetConfigure extends ListActivity {
 
 	static long loadLabelId(Context context, int appWidgetId) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		return prefs.getLong(PREF_PREFIX_KEY + appWidgetId, -1);
+		return prefs.getLong(PREF_PREFIX_KEY + appWidgetId, -155);
 	}
 
-	static void deleteTitlePref(Context context, int appWidgetId) {
+	static void deleteWidgetPref(Context context, int appWidgetId) {
+		SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(context).edit();
+		prefs.remove(PREF_PREFIX_KEY + appWidgetId);
+		prefs.commit();
 	}
 
-	static void loadAllTitlePrefs(Context context, ArrayList<Integer> appWidgetIds, ArrayList<String> texts) {
+	public static ArrayList<Integer> getWidgets(Context context, Long id) {
+		@SuppressWarnings("unchecked")
+		Map<String, Object> map = (Map<String, Object>) PreferenceManager.getDefaultSharedPreferences(context).getAll();
+		ArrayList<Integer> ret = new ArrayList<Integer>();
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+			if (entry.getKey().startsWith(PREF_PREFIX_KEY) && entry.getValue().equals(id)) {
+				ret.add(Integer.parseInt(entry.getKey().substring(9)));
+			}
+		}
+		return ret;
 	}
 }

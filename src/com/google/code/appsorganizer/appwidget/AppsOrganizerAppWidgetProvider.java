@@ -16,6 +16,8 @@
 
 package com.google.code.appsorganizer.appwidget;
 
+import java.util.ArrayList;
+
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -27,81 +29,61 @@ import android.widget.RemoteViews;
 import com.google.code.appsorganizer.R;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.model.Label;
+import com.google.code.appsorganizer.shortcut.LabelShortcut;
 import com.google.code.appsorganizer.shortcut.ShortcutCreator;
 
 public class AppsOrganizerAppWidgetProvider extends AppWidgetProvider {
 	// log tag
-	private static final String TAG = "ExampleAppWidgetProvider";
+	private static final String TAG = "AppsOrganizer.AppWidgetProvider";
 
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 		Log.d(TAG, "onUpdate");
-		// For each widget that needs an update, get the text that we should
-		// display:
-		// - Create a RemoteViews object for it
-		// - Set the text in the RemoteViews object
-		// - Tell the AppWidgetManager to show that views object for the widget.
 		final int N = appWidgetIds.length;
 		DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(context);
 		for (int i = 0; i < N; i++) {
 			int appWidgetId = appWidgetIds[i];
 			long labelId = AppWidgetConfigure.loadLabelId(context, appWidgetId);
-			Label label = dbHelper.labelDao.queryById(labelId);
+			Label label = getLabel(context, dbHelper, labelId);
 			updateAppWidget(context, appWidgetManager, appWidgetId, label);
 		}
 	}
 
+	private Label getLabel(Context context, DatabaseHelper dbHelper, long labelId) {
+		if (labelId == LabelShortcut.ALL_LABELS_ID) {
+			return new Label(labelId, context.getString(R.string.all_labels), R.drawable.icon);
+		}
+		if (labelId == LabelShortcut.ALL_STARRED_ID) {
+			return new Label(labelId, context.getString(R.string.Starred_apps), R.drawable.favorites);
+		}
+		if (labelId == LabelShortcut.OTHER_APPS) {
+			return new Label(labelId, context.getString(R.string.other_label), 0);
+		}
+		return dbHelper.labelDao.queryById(labelId);
+	}
+
 	@Override
 	public void onDeleted(Context context, int[] appWidgetIds) {
-		// Log.d(TAG, "onDeleted");
-		// // When the user deletes the widget, delete the preference associated
-		// // with it.
-		// final int N = appWidgetIds.length;
-		// for (int i = 0; i < N; i++) {
-		// ExampleAppWidgetConfigure.deleteTitlePref(context, appWidgetIds[i]);
-		// }
+		Log.d(TAG, "onDeleted");
+		final int N = appWidgetIds.length;
+		for (int i = 0; i < N; i++) {
+			AppWidgetConfigure.deleteWidgetPref(context, appWidgetIds[i]);
+		}
 	}
 
 	@Override
 	public void onEnabled(Context context) {
-		// Log.d(TAG, "onEnabled");
-		// // When the first widget is created, register for the
-		// TIMEZONE_CHANGED
-		// // and TIME_CHANGED
-		// // broadcasts. We don't want to be listening for these if nobody has
-		// our
-		// // widget active.
-		// // This setting is sticky across reboots, but that doesn't matter,
-		// // because this will
-		// // be called after boot if there is a widget instance for this
-		// provider.
-		// PackageManager pm = context.getPackageManager();
-		// pm.setComponentEnabledSetting(new
-		// ComponentName("com.google.code.appsorganizer.appwidget",
-		// ".appwidget.ExampleBroadcastReceiver"),
-		// PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-		// PackageManager.DONT_KILL_APP);
 	}
 
 	@Override
 	public void onDisabled(Context context) {
-		// When the first widget is created, stop listening for the
-		// TIMEZONE_CHANGED and
-		// TIME_CHANGED broadcasts.
-		// Log.d(TAG, "onDisabled");
-		// PackageManager pm = context.getPackageManager();
-		// pm.setComponentEnabledSetting(new
-		// ComponentName("com.example.android.apis",
-		// ".appwidget.ExampleBroadcastReceiver"),
-		// PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-		// PackageManager.DONT_KILL_APP);
 	}
 
-	static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Label label) {
+	public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Label label) {
 		Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId + " titlePrefix=" + label);
 
+		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_provider);
 		if (label != null) {
-			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_provider);
 			views.setTextViewText(R.id.appwidget_text, label.getLabel());
 			byte[] imageBytes = label.getImageBytes();
 			if (imageBytes != null) {
@@ -113,8 +95,20 @@ public class AppsOrganizerAppWidgetProvider extends AppWidgetProvider {
 					label.getId()), 0);
 			views.setOnClickPendingIntent(R.id.appwidget_text, pendingIntent);
 			views.setOnClickPendingIntent(R.id.appwidget_image, pendingIntent);
+		} else {
+			views.setTextViewText(R.id.appwidget_text, context.getText(R.string.Deleted_label));
+			views.setImageViewResource(R.id.appwidget_image, R.drawable.icon_default);
+		}
+		appWidgetManager.updateAppWidget(appWidgetId, views);
+	}
 
-			appWidgetManager.updateAppWidget(appWidgetId, views);
+	public static void updateAppWidget(Context context, Label label) {
+		ArrayList<Integer> widgets = AppWidgetConfigure.getWidgets(context, label.getId());
+		if (!widgets.isEmpty()) {
+			AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+			for (Integer widgetId : widgets) {
+				updateAppWidget(context, appWidgetManager, widgetId, label);
+			}
 		}
 	}
 }

@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.provider.MediaStore.Images.Media;
 
 import com.google.code.appsorganizer.R;
+import com.google.code.appsorganizer.appwidget.AppsOrganizerAppWidgetProvider;
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
@@ -43,13 +44,13 @@ public final class SelectAppDialog extends SingleSelectDialog {
 
 	public static final int AND_EXPLORER = 30;
 
-	private SimpleDialog applicationNotFoundDialog;
+	private final SimpleDialog applicationNotFoundDialog;
 
-	private SimpleDialog selectImageDialog;
+	private final SimpleDialog selectImageDialog;
 
 	private long itemId;
 
-	private DatabaseHelper dbHelper;
+	private final DatabaseHelper dbHelper;
 
 	public SelectAppDialog(GenericDialogManager dialogManager, DatabaseHelper dbHelper) {
 		super(dialogManager, dialogManager.getString(R.string.choose_app), dialogManager.getString(R.string.alert_dialog_ok), new CharSequence[] {
@@ -131,19 +132,21 @@ public final class SelectAppDialog extends SingleSelectDialog {
 	}
 
 	public boolean onActivityResult(int requestCode, int resultCode, Intent intent) {
+		boolean ret = false;
 		if (resultCode == Activity.RESULT_OK) {
 			switch (requestCode) {
 			case DEFAULT_ICONS:
 				int icon = intent.getIntExtra("icon", -1);
 				dbHelper.labelDao.updateIcon(itemId, Label.convertToIconDb(icon), null);
-				return true;
+				ret = true;
+				break;
 			case IMAGE_GALLERY:
 				Uri uriImage = intent.getData();
 				if (uriImage != null) {
 					try {
 						byte[] byteArray = convertToByteArray(uriImage);
 						dbHelper.labelDao.updateIcon(itemId, null, byteArray);
-						return true;
+						ret = true;
 					} catch (IOException e) {
 						selectImageDialog.showDialog();
 					}
@@ -163,17 +166,21 @@ public final class SelectAppDialog extends SingleSelectDialog {
 						bitmap.compress(CompressFormat.PNG, 100, os);
 
 						dbHelper.labelDao.updateIcon(itemId, null, os.toByteArray());
-						return true;
+						ret = true;
 					}
 				}
 				break;
 			case ICON_PACK:
 				byte[] image = intent.getByteArrayExtra("image");
 				dbHelper.labelDao.updateIcon(itemId, null, image);
-				return true;
+				ret = true;
+				break;
+			}
+			if (ret) {
+				AppsOrganizerAppWidgetProvider.updateAppWidget(getOwner(), dbHelper.labelDao.queryById(itemId));
 			}
 		}
-		return false;
+		return ret;
 	}
 
 	private byte[] convertToByteArray(Uri uri) throws FileNotFoundException, IOException {

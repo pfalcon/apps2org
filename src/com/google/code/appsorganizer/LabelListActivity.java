@@ -41,6 +41,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 
+import com.google.code.appsorganizer.appwidget.AppsOrganizerAppWidgetProvider;
 import com.google.code.appsorganizer.chooseicon.SelectAppDialog;
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
@@ -202,6 +203,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 						labelAlreadExistsDialog.showDialog();
 					} else {
 						dbHelper.labelDao.updateName(labelId, labelName);
+						AppsOrganizerAppWidgetProvider.updateAppWidget(LabelListActivity.this, dbHelper.labelDao.queryById(labelId));
 						requeryCursor();
 					}
 				}
