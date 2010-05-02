@@ -53,6 +53,7 @@ import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
@@ -176,6 +177,9 @@ public class LabelShortcut extends ActivityWithDialog {
 				boolean starredFirst = prefs.getBoolean("starred_first", true);
 				boolean onlyStarred = prefs.getBoolean(ONLY_STARRED_PREF, false);
 				tmpCursor = AppCacheDao.getAppsOfLabelCursor(getDbHelper().getDb(), labelId, starredFirst, onlyStarred);
+				if (onlyStarred && tmpCursor.getCount() == 0) {
+					Toast.makeText(this, R.string.starred_warning, Toast.LENGTH_LONG).show();
+				}
 			}
 			return tmpCursor;
 		}

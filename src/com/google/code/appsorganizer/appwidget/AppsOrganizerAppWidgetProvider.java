@@ -93,8 +93,7 @@ public class AppsOrganizerAppWidgetProvider extends AppWidgetProvider {
 			}
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, label.getId().intValue(), ShortcutCreator.createOpenLabelIntent(context,
 					label.getId()), 0);
-			views.setOnClickPendingIntent(R.id.appwidget_text, pendingIntent);
-			views.setOnClickPendingIntent(R.id.appwidget_image, pendingIntent);
+			views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 		} else {
 			views.setTextViewText(R.id.appwidget_text, context.getText(R.string.Deleted_label));
 			views.setImageViewResource(R.id.appwidget_image, R.drawable.icon_default);

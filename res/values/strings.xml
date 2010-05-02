@@ -75,7 +75,9 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.5\n
+	<string name="Change_log_text">1.5.1\n
+	Feedback on widget selection\n
+1.5\n
 	Android Widget\n
 1.4.10\n
 	Russian translation\n
@@ -130,4 +132,5 @@
     <string name="FolderOrganizer_title">FolderOrganizer</string>
     <string name="FolderOrganizer_message">If you want to organize Apps, Bookmarks and Contacts you can try FolderOrganizer.\nExported Apps Organizer data can be easily imported</string>
     <string name="Deleted_label">Deleted label</string>
+    <string name="starred_warning">No starred apps in current label. Click on star in title bar to show all apps of the label</string>
 </resources>
