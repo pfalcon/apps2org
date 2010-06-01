@@ -68,4 +68,11 @@ public class ListActivityWithDialog extends ListActivity implements GenericDialo
 	public void showDialog(GenericDialogCreator d) {
 		getGenericDialogManager().showDialog(d);
 	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		getGenericDialogManager().onDestroy();
+	}
+
 }

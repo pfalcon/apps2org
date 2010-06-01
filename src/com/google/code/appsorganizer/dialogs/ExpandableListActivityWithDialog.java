@@ -68,4 +68,10 @@ public class ExpandableListActivityWithDialog extends ExpandableListActivity imp
 	public void showDialog(GenericDialogCreator d) {
 		getGenericDialogManager().showDialog(d);
 	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		getGenericDialogManager().onDestroy();
+	}
 }

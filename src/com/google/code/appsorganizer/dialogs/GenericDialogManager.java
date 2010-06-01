@@ -122,4 +122,15 @@ public class GenericDialogManager {
 	public String getString(int resId) {
 		return owner.getString(resId);
 	}
+
+	public void onDestroy() {
+		for (Entry<Integer, GenericDialogCreator> e : dialogs.entrySet()) {
+			GenericDialogCreator dialogCreator = e.getValue();
+			Dialog dialog = dialogCreator.getDialog();
+			if (dialog != null) {
+				dialog.cancel();
+			}
+		}
+	}
+
 }

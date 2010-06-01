@@ -68,4 +68,11 @@ public class ActivityWithDialog extends Activity implements GenericDialogManager
 	public void showDialog(GenericDialogCreator d) {
 		getGenericDialogManager().showDialog(d);
 	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		getGenericDialogManager().onDestroy();
+	}
+
 }

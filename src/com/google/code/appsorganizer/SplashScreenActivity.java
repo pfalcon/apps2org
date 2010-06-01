@@ -208,7 +208,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			} else if (msg.what == -3) {
 				pd.setMessage(getText(R.string.preparing_apps_list));
 				initAdapter();
-				pd.hide();
+				pd.cancel();
 				if (!showFirstTimeDownloadDialog()) {
 					if (!showStartHowTo()) {
 						if (!changeLogDialog.showDialogIfVersionChanged()) {
@@ -258,11 +258,6 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			}
 		};
 		t.start();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
 	}
 
 	@Override
