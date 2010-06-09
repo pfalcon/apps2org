@@ -39,11 +39,13 @@ public class AppsReloader {
 	private final Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			if (msg.what == -1) {
+			if (msg.arg1 != 0) {
+				pd.setMax(msg.arg1);
+			} else if (msg.what == -1) {
 				pd.setMessage(context.getText(R.string.preparing_apps_list));
-				pd.hide();
+				pd.dismiss();
 			} else {
-				pd.setMessage(context.getString(R.string.total_apps) + ": " + msg.what);
+				pd.incrementProgressBy(1);
 			}
 		}
 	};
@@ -51,8 +53,14 @@ public class AppsReloader {
 	private ProgressDialog pd;
 
 	public void reload() {
-		pd = ProgressDialog.show(context, context.getText(R.string.preparing_apps_list), context.getText(R.string.please_wait_loading),
-				true, false);
+		pd = new ProgressDialog(context);
+		pd.setTitle(context.getText(R.string.preparing_apps_list));
+		pd.setMessage(context.getText(R.string.please_wait_loading));
+		pd.setIndeterminate(false);
+		pd.setCancelable(false);
+		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		pd.show();
+
 		Thread t = new Thread() {
 			@Override
 			public void run() {

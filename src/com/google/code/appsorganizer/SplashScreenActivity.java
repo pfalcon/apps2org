@@ -99,6 +99,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 
 		ListView listView = getListView();
 		listView.setClickable(true);
+		listView.setFastScrollEnabled(true);
 		registerForContextMenu(listView);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
@@ -208,7 +209,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			} else if (msg.what == -3) {
 				pd.setMessage(getText(R.string.preparing_apps_list));
 				initAdapter();
-				pd.cancel();
+				pd.dismiss();
 				if (!showFirstTimeDownloadDialog()) {
 					if (!showStartHowTo()) {
 						if (!changeLogDialog.showDialogIfVersionChanged()) {
@@ -306,9 +307,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	private void initAdapter() {
 		Cursor c = dbHelper.appCacheDao.getAllApps(ApplicationViewBinder.COLS);
 		startManagingCursor(c);
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(SplashScreenActivity.this, R.layout.app_row, c, ApplicationViewBinder.COLS,
-				ApplicationViewBinder.VIEWS) {
-		};
+		SimpleCursorAdapter adapter = new AppCursorAdapter(this, R.layout.app_row, c, ApplicationViewBinder.COLS, ApplicationViewBinder.VIEWS);
 		applicationViewBinder = new ApplicationViewBinder(dbHelper, this, chooseLabelDialog);
 		adapter.setViewBinder(applicationViewBinder);
 		setListAdapter(adapter);
