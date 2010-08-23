@@ -12,14 +12,17 @@
         android:title="@string/Download_labels" android:icon="@drawable/down" />
  -->
 
-    <item android:id="@+id/donate"
-        android:title="@string/Donate" android:icon="@drawable/package_favorite" />
-
     <item android:id="@+id/preferneces"
         android:title="@string/Preferences" android:icon="@drawable/advancedsettings" />
 
+    <item android:id="@+id/other_apps"
+        android:title="@string/other_apps_in_market" android:icon="@drawable/z_folder_organizer_icon" />
+
     <item android:id="@+id/about"
         android:title="@string/about" android:icon="@drawable/info" />
+
+    <item android:id="@+id/donate"
+        android:title="@string/Donate" android:icon="@drawable/package_favorite" />
 
     <item android:id="@+id/import_menu"
         android:title="@string/import_menu" android:icon="@drawable/fileimport" />

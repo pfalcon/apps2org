@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbImportExport;
@@ -128,6 +129,14 @@ public class OptionMenuManager {
 		case R.id.donate:
 			context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://sites.google.com/site/appsorganizer/donate")));
 			return true;
+		case R.id.other_apps:
+			try {
+				Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("market://search?q=FolderOrganizer"));
+				context.startActivity(intent);
+				return true;
+			} catch (Throwable t) {
+				Toast.makeText(context, "Error launching Android Market", Toast.LENGTH_LONG).show();
+			}
 		}
 		return false;
 	}

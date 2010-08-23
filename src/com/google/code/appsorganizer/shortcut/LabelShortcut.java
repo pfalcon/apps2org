@@ -35,27 +35,28 @@ import android.os.MessageQueue;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import com.google.code.appsorganizer.ApplicationContextMenuManager;
 import com.google.code.appsorganizer.BugReportActivity;
@@ -462,5 +463,15 @@ public class LabelShortcut extends ActivityWithDialog {
 				c.requery();
 			}
 		}
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		boolean ret = super.onTouchEvent(event);
+		if (!ret) {
+			finish();
+			return true;
+		}
+		return ret;
 	}
 }
