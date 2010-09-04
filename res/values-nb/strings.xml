@@ -10,7 +10,7 @@
 	<string name="tab_apps">Progr</string>
 	<string name="tab_labels">Etiketter</string>
 	<string name="preparing_apps_list">Forbereder prog liste</string>
-	<string name="total_apps">Totalt prog</string>
+	<string name="total_apps">Totalt prog</string> 
 	<string name="please_wait_loading">Vent mens innhold lastes...</string>
 	<string name="rename">Nytt navn</string>
 	<string name="change_icon">Endre ikon</string>
