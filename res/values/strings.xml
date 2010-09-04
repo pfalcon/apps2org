@@ -76,7 +76,10 @@
 	<string name="choose_app">Choose app</string>
 	<string name="Android_Image_Gallery">Android Image Gallery</string>
 	<string name="Change_log">Change log</string>
-	<string name="Change_log_text">1.5.6\n
+	<string name="Change_log_text">1.5.7\n
+	Fixed apps moved to sd bug\n
+	Norwegian translation\n
+1.5.6\n
 	New close button\n
 	Click outside a folder to close it\n
 1.5.5\n

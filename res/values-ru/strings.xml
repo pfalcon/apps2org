@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="choose_labels_header">Выбрать метки</string>
+    <string name="label_name">Имя</string>
+    <string name="no_files_error">Не найдены файлы в папке Apps Organizer на карте памяти</string>
+    <string name="how_to_message_2">Инструкция к приложению доступна онлайн, смотрите диалог "О программе".</string>
+    <string name="Bug_report_button">Отправить Email</string>
+    <string name="looking_for_icons">Поиск иконок...</string>
+    <string name="select_apps">Выбрать приложения</string>
+    <string name="other_apps_in_market">Другие приложения</string>
+    <string name="Deleted_label">Удаленная метка</string>
+    <string name="starred_warning">Нет избранных приложений в данной папке. Нажмите на звезду в заголовке, чтобы отобразить все приложения.</string>
 	<string name="app_name">Apps Organizer</string>
-	<string name="choose_labels_header">Выберите метки</string>
 	<string name="alert_dialog_ok">OK</string>
 	<string name="alert_dialog_hide">Скрыть</string>
 	<string name="alert_dialog_cancel">Отмена</string>
@@ -15,7 +24,6 @@
 	<string name="change_icon">Сменить иконку</string>
 	<string name="launch">Запустить</string>
 	<string name="rename_label">Переименовать метку</string>
-	<string name="label_name">Имя метки</string>
 	<string name="other_label">Остальные приложения</string>
 	<string name="uninstall">Удалить</string>
 	<string name="reload_apps">Обновить</string>
@@ -23,7 +31,6 @@
 	<string name="Apps_organizer_label">Метки приложений</string>
 	<string name="choose_labels_for_shortcut">Выбрать метку</string>
 	<string name="all_labels">Все метки</string>
-	<string name="select_apps">Выберите приложения</string>
 	<string name="loading_shortcut_grid">Загрузка...</string>
 	<string name="delete">Удалить</string>
 	<string name="delete_confirm">Вы действительно хотите удалить метку %s?</string>
@@ -34,7 +41,6 @@
 	<string name="sdcard_error">Ошибка карты памяти</string>
 	<string name="directory_error">Ошибка папки</string>
 	<string name="file_name">Имя файла</string>
-	<string name="no_files_error">Не найдены файлы в папке AppsOrganizer на карте памяти</string>
 	<string name="Author">Автор</string>
 	<string name="Any_suggestion_or_bug_to">Все предложения или ошибки на</string>
 	<string name="Follow_me_on">Читайте меня на</string>
@@ -42,7 +48,6 @@
 	<string name="How_to">Как использовать Apps Organizer</string>
 	<string name="Starred_apps">Избранные приложения</string>
 	<string name="how_to_message">Вы можете создавать ярлыки для меток с помощью долгого нажатия на рабочем столе</string>
-	<string name="how_to_message_2">Руководство доступно онлайн (Смотрите диалог "О программе" для деталей)</string>
 	<string name="Preferences">Настройки</string>
 	<string name="Shortcut_folder">Папка с ярлыками</string>
 	<string name="show_close_button_in_folder">Показывать кнопку закрытия</string>
@@ -51,7 +56,6 @@
 	<string name="Bug_report">Отчёт об ошибке</string>
 	<string name="Bug_report_1">Apps Organizer неожиданно завершился</string>
 	<string name="Bug_report_2">Если вы хотите помочь нам исправить эту ошибку, пожалуйста, отправьте отчёт</string>
-	<string name="Bug_report_button">Отправить email</string>
 	<string name="Bug_report_3">Спасибо!</string>
 	<string name="Load_from_sd">Загрузка с карты памяти</string>
 	<string name="list_default_action">Действие на одиночное нажатие</string>
@@ -76,7 +80,6 @@
 	<string name="Android_Image_Gallery">Галерея изображений Android</string>
 	<string name="Change_log">История</string>
 	<string name="label_already_exists">Метка уже существует</string>
-	<string name="looking_for_icons">Ищем иконки...</string>
 	<string name="loading_icons">Загружаем иконки...</string>	
 	<string name="error_while_launching_activity">Ошибка при запуске приложения</string>	
 	<string name="New_label">Новая метка</string>	

@@ -45,7 +45,7 @@ public class ApplicationInfoManager {
 	public static void reloadAll(PackageManager pm, DatabaseHelper dbHelper, Handler handler, boolean discardCache, String packageToReload) {
 		AppCacheDao appCacheDao = dbHelper.appCacheDao;
 		synchronized (ApplicationInfoManager.class) {
-			AppCacheMap nameCache = appCacheDao.queryForCacheMap(true);
+			AppCacheMap nameCache = appCacheDao.queryForCacheMap(false);
 			boolean[] installedApps = new boolean[nameCache.size()];
 			List<ResolveInfo> installedApplications = getAllResolveInfo(pm);
 
@@ -72,7 +72,6 @@ public class ApplicationInfoManager {
 			}
 
 			appCacheDao.removeUninstalledApps(installedApps, nameCache.keys());
-			dbHelper.appsLabelDao.removeUninstalledApps(installedApps, nameCache.keys());
 		}
 	}
 
@@ -89,6 +88,9 @@ public class ApplicationInfoManager {
 		if (loadedObj != null) {
 			label = loadedObj.label;
 			image = loadedObj.image;
+			if (loadedObj.disabled) {
+				changed = true;
+			}
 		}
 		if (label == null || discardCache) {
 			CharSequence l = a.loadLabel(pm);
@@ -120,7 +122,7 @@ public class ApplicationInfoManager {
 				obj.image = image;
 				appCacheDao.insert(obj);
 			} else {
-				appCacheDao.updateLabel(a.packageName, a.name, label, image);
+				appCacheDao.updateLabel(a.packageName, a.name, label, image, false);
 			}
 		}
 		return label;
