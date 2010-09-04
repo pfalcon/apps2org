@@ -45,6 +45,7 @@ public class ApplicationInfoManager {
 	public static void reloadAll(PackageManager pm, DatabaseHelper dbHelper, Handler handler, boolean discardCache, String packageToReload) {
 		AppCacheDao appCacheDao = dbHelper.appCacheDao;
 		synchronized (ApplicationInfoManager.class) {
+			appCacheDao.fixDuplicateApps();
 			AppCacheMap nameCache = appCacheDao.queryForCacheMap(false);
 			boolean[] installedApps = new boolean[nameCache.size()];
 			List<ResolveInfo> installedApplications = getAllResolveInfo(pm);

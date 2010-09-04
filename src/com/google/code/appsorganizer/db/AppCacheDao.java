@@ -122,7 +122,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		ContentValues v = new ContentValues();
 		v.put(LABEL_COL_NAME, l);
 		v.put(IMAGE_COL_NAME, img);
-		v.put(DISABLED_COL_NAME, disabled);
+		v.put(DISABLED_COL_NAME, disabled ? 1 : 0);
 		db.update(name, v, PACKAGE_NAME_COL_NAME + " = ? and " + NAME_COL_NAME + "=?", new String[] { p, n });
 	}
 
@@ -187,5 +187,26 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public Cursor getAllApps(String[] cols) {
 		return db.query(TABLE_NAME, cols, "disabled=0", null, null, null, "upper(label)");
+	}
+
+	public void fixDuplicateApps() {
+		Cursor c = db.rawQuery("select _id from apps a where a.disabled = 1 and "
+				+ "exists(select 1 from apps a2 where a.package = a2.package and a.name = a2.name and a._id != a2._id)", null);
+		if (c != null) {
+			StringBuilder b = new StringBuilder();
+			try {
+				while (c.moveToNext()) {
+					if (b.length() > 0) {
+						b.append(',');
+					}
+					b.append(c.getLong(0));
+				}
+			} finally {
+				c.close();
+			}
+			if (b.length() > 0) {
+				db.delete(TABLE_NAME, "_id in (" + b.toString() + ")", null);
+			}
+		}
 	}
 }

@@ -66,7 +66,7 @@ public class DbImportExport {
 	}
 
 	private static void writeStarredApps(AppCacheDao appCacheDao, BufferedWriter bout) throws IOException {
-		AppCacheMap cache = appCacheDao.queryForCacheMap(false);
+		AppCacheMap cache = appCacheDao.queryForCacheMap(true);
 		AppCache[] values = cache.values();
 		for (int i = 0; i < values.length; i++) {
 			AppCache a = values[i];
