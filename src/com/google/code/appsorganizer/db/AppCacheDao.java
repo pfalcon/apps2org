@@ -126,13 +126,19 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		db.update(name, v, PACKAGE_NAME_COL_NAME + " = ? and " + NAME_COL_NAME + "=?", new String[] { p, n });
 	}
 
-	public void removeUninstalledApps(boolean[] installedApps, String[] appNames) {
+	public void removeUninstalledApps(boolean[] installedApps, AppCacheMap nameCache) {
+		String[] keys = nameCache.keys();
 		for (int i = 0; i < installedApps.length; i++) {
 			if (!installedApps[i]) {
-				String a = appNames[i];
-				int ind = a.indexOf(AppCacheMap.SEPARATOR);
-				String packageName = a.substring(0, ind);
-				disablePackage(packageName, true);
+				AppCache app = nameCache.getAt(i);
+				if (!app.disabled) {
+					String a = keys[i];
+					int ind = a.indexOf(AppCacheMap.SEPARATOR);
+					String packageName = a.substring(0, ind);
+					String appName = a.substring(ind + 1);
+					disablePackage(packageName, appName, true);
+					System.out.println("Disabilito " + packageName);
+				}
 			}
 		}
 	}
@@ -141,6 +147,12 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		ContentValues c = new ContentValues(1);
 		c.put(DISABLED_COL_NAME, d);
 		return db.update(TABLE_NAME, c, PACKAGE_NAME_COL_NAME + "=?", new String[] { packageName });
+	}
+
+	public int disablePackage(String packageName, String appName, boolean d) {
+		ContentValues c = new ContentValues(1);
+		c.put(DISABLED_COL_NAME, d);
+		return db.update(TABLE_NAME, c, PACKAGE_NAME_COL_NAME + "=? and " + NAME_COL_NAME + "=?", new String[] { packageName, appName });
 	}
 
 	public static Cursor getAppsOfLabelCursor(SQLiteDatabase db, long labelId, boolean starredFirst, boolean onlyStarred) {

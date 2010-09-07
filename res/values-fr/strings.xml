@@ -29,8 +29,8 @@
     <string name="delete_confirm">Confirmer la suppression du libellé %s?</string>
     <string name="export_menu">Exporter</string>
     <string name="import_menu">Importer</string>
-    <string name="export_error">Erreur lors de l'exportation</string>
-    <string name="import_error">Erreur lors de l'importation</string>
+    <string name="export_error">Erreur lors de l\'exportation</string>
+    <string name="import_error">Erreur lors de l\'importation</string>
     <string name="sdcard_error">Erreur SD card</string>
     <string name="directory_error">Erreur dossier</string>
     <string name="file_name">Nom du fichier</string>
@@ -46,20 +46,20 @@
 	<string name="Preferences">Préférences</string>
     <string name="Shortcut_folder">Dossier de raccourcis</string>
     <string name="show_close_button_in_folder">Afficher le bouton fermer</string>
-    <string name="close_folder_after_launch">Fermer le dossier après lancement de l'appli</string>
+    <string name="close_folder_after_launch">Fermer le dossier après lancement de l\'appli</string>
     <string name="starred_first">Applis favorites en premier</string>
-    <string name="Bug_report">Rapport d'erreur</string>
+    <string name="Bug_report">Rapport d\'erreur</string>
     <string name="Bug_report_1">Apps Organizer a planté</string>
     <string name="Bug_report_2">Pour nous aider à régler ces erreurs, merci de nous les reporter</string>
     <string name="Bug_report_button">Envoyer email</string>
     <string name="Bug_report_3">Merci!</string>
 	<string name="Load_from_sd">sélectionner icônes depuis la carte SD</string>
 	<string name="list_default_action">1 clic</string>
-	<string name="list_default_action_summary">action par défaut quand l'appli est cliquée une fois</string>
+	<string name="list_default_action_summary">action par défaut quand l\'appli est cliquée une fois</string>
 	<string name="choose_action">Choisir action</string>
 	<string name="Application_not_found">Application introuvable</string>
 	<string name="Application_not_found_message">Vous devez télécharger AndExplorer pour sélectionner les fichiers (gratuit)</string>
-	<string name="Open_market">Aller sur l'android market</string>
+	<string name="Open_market">Aller sur l\'android market</string>
 	<string name="select_jpg_bmp_title">format fichier non supporté</string>
 	<string name="select_jpg_bmp">Vous devez sélectionner un fichier png ou jpg</string>    
 	<string name="Donate">Faire un don</string>    
@@ -70,8 +70,8 @@
     <string name="Apps_with_no_label">Applis sans étiquette</string>
     <string name="Download_labels">Télécharger les étiquettes</string>
     <string name="Download_labels_from_Cyrket">Télécharger les étiquettes depuis Cyrket</string>
-    <string name="First_time_download_message_1">Depuis la version 1.3 pouvez télécharger les étiquettes de l'Android Market depuis Cyrket</string>
+    <string name="First_time_download_message_1">Depuis la version 1.3 pouvez télécharger les étiquettes de l\'Android Market depuis Cyrket</string>
     <string name="First_time_download_message_2">Télécharger les étiquettes maintenant?</string>
-    <string name="choose_app">Choisir l'appli</string>
+    <string name="choose_app">Choisir l\'appli</string>
     <string name="Android_Image_Gallery">Galerie Android</string>
 </resources>

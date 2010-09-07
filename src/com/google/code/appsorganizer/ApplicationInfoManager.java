@@ -72,7 +72,7 @@ public class ApplicationInfoManager {
 				}
 			}
 
-			appCacheDao.removeUninstalledApps(installedApps, nameCache.keys());
+			appCacheDao.removeUninstalledApps(installedApps, nameCache);
 		}
 	}
 

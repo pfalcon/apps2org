@@ -45,7 +45,7 @@
 	<string name="how_to_message_2">(사용법은 온라인으로 볼 수 있습니다.)</string>
 	<string name="Preferences">설정변경</string>
 	<string name="Shortcut_folder">홈 스크린 바로가기 설정</string>
-	<string name="show_close_button_in_folder">'닫기' 버튼 설정</string>
+	<string name="show_close_button_in_folder">\'닫기\' 버튼 설정</string>
 	<string name="close_folder_after_launch">실행시 자동 창 닫힘</string>
 	<string name="starred_first">별점 우선 정렬</string>
 	<string name="Bug_report">버그 리포트</string>
