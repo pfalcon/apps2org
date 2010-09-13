@@ -16,7 +16,9 @@ import com.google.code.appsorganizer.R;
  */
 public class FullVersionDialog extends SimpleDialog {
 
-	private static final String FULL_DIALOG_SHOWN = "fullDialogShown";
+	public static final String FOLDER_ORGANIZER_MARKET_QUERY = "market://search?q=FolderOrganizer pub:\"Fabio Collini\"";
+
+	private static final String FULL_DIALOG_SHOWN = "fullDialogShown_2";
 
 	private static final long serialVersionUID = 6310850433343243241L;
 
@@ -28,7 +30,8 @@ public class FullVersionDialog extends SimpleDialog {
 			private static final long serialVersionUID = 2629468426417628139L;
 
 			public void onClick(CharSequence charSequence, DialogInterface dialog, int which) {
-				Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("market://search?q=pname:com.abcOrganizer"));
+				Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(FOLDER_ORGANIZER_MARKET_QUERY));
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				getOwner().startActivity(intent);
 			}
 		};

@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
 import com.google.code.appsorganizer.db.DbImportExport;
+import com.google.code.appsorganizer.dialogs.FullVersionDialog;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
@@ -131,7 +132,8 @@ public class OptionMenuManager {
 			return true;
 		case R.id.other_apps:
 			try {
-				Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("market://search?q=FolderOrganizer"));
+				Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(FullVersionDialog.FOLDER_ORGANIZER_MARKET_QUERY));
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				context.startActivity(intent);
 				return true;
 			} catch (Throwable t) {

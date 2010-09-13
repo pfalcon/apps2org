@@ -41,6 +41,9 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	public static final String DISABLED_COL_NAME = "disabled";
 
+	private static final String[] COLUMNS_WITH_ID = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME,
+			IMAGE_COL_NAME, DISABLED_COL_NAME, ID_COL_NAME };
+
 	private static final String[] ALL_COLUMNS = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME,
 			IMAGE_COL_NAME, DISABLED_COL_NAME };
 
@@ -63,21 +66,43 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	}
 
 	public AppCacheMap queryForCacheMap(boolean hideDisabled) {
-		Cursor c = db.query(name, ALL_COLUMNS, hideDisabled ? "disabled = 0" : null, null, null, null, PACKAGE_NAME_COL_NAME + "," + NAME_COL_NAME);
+		Cursor c = db.query(name, COLUMNS_WITH_ID, hideDisabled ? "disabled = 0" : null, null, null, null, PACKAGE_NAME_COL_NAME + ","
+				+ NAME_COL_NAME);
 		AppCache[] v = new AppCache[c.getCount()];
 		try {
 			int i = 0;
 			while (c.moveToNext()) {
-				AppCache a = new AppCache(c.getString(3), c.getString(0), c.getString(1));
-				a.starred = c.getInt(2) == 1;
-				a.image = c.getBlob(4);
-				a.disabled = c.getInt(5) == 1;
-				v[i++] = a;
+				v[i++] = createAppCache(c);
 			}
 		} finally {
 			c.close();
 		}
 		return new AppCacheMap(v);
+	}
+
+	private AppCache createAppCache(Cursor c) {
+		AppCache a = new AppCache(c.getString(3), c.getString(0), c.getString(1));
+		a.starred = c.getInt(2) == 1;
+		a.image = c.getBlob(4);
+		a.disabled = c.getInt(5) == 1;
+		a.setId(c.getLong(6));
+		return a;
+	}
+
+	public AppCache queryForAppCache(String packageName, String name, boolean hideDisabled) {
+		String filter = PACKAGE_NAME_COL_NAME + "=? and " + NAME_COL_NAME + "=?";
+		if (hideDisabled) {
+			filter += " and " + DISABLED_COL_NAME + "=0";
+		}
+		Cursor c = db.query(TABLE_NAME, COLUMNS_WITH_ID, filter, new String[] { packageName, name }, null, null, null);
+		try {
+			if (c.moveToNext()) {
+				return createAppCache(c);
+			}
+		} finally {
+			c.close();
+		}
+		return null;
 	}
 
 	public void updateStarred(String packageName, String app, boolean starred) {
@@ -126,6 +151,12 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		db.update(name, v, PACKAGE_NAME_COL_NAME + " = ? and " + NAME_COL_NAME + "=?", new String[] { p, n });
 	}
 
+	public void removeUninstalledApps(StringBuffer installedIds) {
+		ContentValues v = new ContentValues();
+		v.put(DISABLED_COL_NAME, 1);
+		db.update(TABLE_NAME, v, DISABLED_COL_NAME + "=0 and " + ID_COL_NAME + " not in (" + installedIds + ")", null);
+	}
+
 	public void removeUninstalledApps(boolean[] installedApps, AppCacheMap nameCache) {
 		String[] keys = nameCache.keys();
 		for (int i = 0; i < installedApps.length; i++) {
@@ -137,7 +168,6 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 					String packageName = a.substring(0, ind);
 					String appName = a.substring(ind + 1);
 					disablePackage(packageName, appName, true);
-					System.out.println("Disabilito " + packageName);
 				}
 			}
 		}
@@ -221,4 +251,5 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 			}
 		}
 	}
+
 }

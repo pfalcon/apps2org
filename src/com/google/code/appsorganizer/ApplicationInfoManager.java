@@ -34,7 +34,6 @@ import android.os.Message;
 
 import com.google.code.appsorganizer.db.AppCacheDao;
 import com.google.code.appsorganizer.db.DatabaseHelper;
-import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
 
 public class ApplicationInfoManager {
@@ -46,8 +45,7 @@ public class ApplicationInfoManager {
 		AppCacheDao appCacheDao = dbHelper.appCacheDao;
 		synchronized (ApplicationInfoManager.class) {
 			appCacheDao.fixDuplicateApps();
-			AppCacheMap nameCache = appCacheDao.queryForCacheMap(false);
-			boolean[] installedApps = new boolean[nameCache.size()];
+			StringBuffer installedIds = new StringBuffer("-1");
 			List<ResolveInfo> installedApplications = getAllResolveInfo(pm);
 
 			if (handler != null) {
@@ -57,13 +55,8 @@ public class ApplicationInfoManager {
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
 				if (a.enabled) {
-					String name = a.packageName + AppCacheMap.SEPARATOR + a.name;
-					int appCachePosition = nameCache.getPosition(name);
-					AppCache appCache = nameCache.getAt(appCachePosition);
-					if (appCache != null) {
-						installedApps[appCachePosition] = true;
-					}
-					String label = loadAppLabel(pm, a, discardCache || a.packageName.equals(packageToReload), appCacheDao, appCache);
+					AppCache appCache = appCacheDao.queryForAppCache(a.packageName, a.name, false);
+					String label = loadAppLabel(pm, a, discardCache || a.packageName.equals(packageToReload), appCacheDao, appCache, installedIds);
 					if (handler != null) {
 						Message message = new Message();
 						message.obj = label;
@@ -71,8 +64,9 @@ public class ApplicationInfoManager {
 					}
 				}
 			}
-
-			appCacheDao.removeUninstalledApps(installedApps, nameCache);
+			if (discardCache) {
+				appCacheDao.removeUninstalledApps(installedIds);
+			}
 		}
 	}
 
@@ -82,7 +76,8 @@ public class ApplicationInfoManager {
 		handler.sendMessage(message);
 	}
 
-	private static String loadAppLabel(PackageManager pm, ComponentInfo a, boolean discardCache, AppCacheDao appCacheDao, AppCache loadedObj) {
+	private static String loadAppLabel(PackageManager pm, ComponentInfo a, boolean discardCache, AppCacheDao appCacheDao, AppCache loadedObj,
+			StringBuffer installedIds) {
 		boolean changed = false;
 		String label = null;
 		byte[] image = null;
@@ -121,10 +116,14 @@ public class ApplicationInfoManager {
 				// retrieve and store label
 				AppCache obj = new AppCache(a.packageName, a.name, label);
 				obj.image = image;
-				appCacheDao.insert(obj);
+				long insertedId = appCacheDao.insert(obj);
+				installedIds.append(',').append(insertedId);
 			} else {
 				appCacheDao.updateLabel(a.packageName, a.name, label, image, false);
+				installedIds.append(',').append(loadedObj.getId());
 			}
+		} else {
+			installedIds.append(',').append(loadedObj.getId());
 		}
 		return label;
 	}
