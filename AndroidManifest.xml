@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.google.code.appsorganizer" android:versionCode="157"
-	android:versionName="1.5.9">
+	package="com.google.code.appsorganizer" android:versionCode="158"
+	android:versionName="1.5.10: Portuguese translation">
 	<application android:icon="@drawable/icon" android:label="@string/app_name"
 		android:name="AppsOrganizerApplication">
 		<uses-library android:name="android.test.runner" />

@@ -51,6 +51,10 @@ public class AboutDialogCreator extends GenericDialogCreator {
 		builder = builder.setIcon(R.drawable.icon);
 		String versionName = getVersionName(owner);
 		if (versionName != null) {
+			int indexOf = versionName.indexOf(':');
+			if (indexOf != -1) {
+				versionName = versionName.substring(0, indexOf);
+			}
 			builder = builder.setTitle(owner.getString(R.string.app_name) + " " + versionName);
 		} else {
 			builder = builder.setTitle(R.string.app_name);
