@@ -43,7 +43,10 @@ public class AppsReloader {
 				pd.setMax(msg.arg1);
 			} else if (msg.what == -1) {
 				pd.setMessage(context.getText(R.string.preparing_apps_list));
-				pd.dismiss();
+				try {
+					pd.dismiss();
+				} catch (IllegalArgumentException ignored) {
+				}
 			} else {
 				pd.incrementProgressBy(1);
 			}

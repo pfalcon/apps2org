@@ -16,7 +16,7 @@ import com.google.code.appsorganizer.R;
  */
 public class FullVersionDialog extends SimpleDialog {
 
-	public static final String FOLDER_ORGANIZER_MARKET_QUERY = "market://search?q=FolderOrganizer pub:\"Fabio Collini\"";
+	public static final String FOLDER_ORGANIZER_MARKET_QUERY = "market://search?q=Folder Organizer pub:\"Fabio Collini\"";
 
 	private static final String FULL_DIALOG_SHOWN = "fullDialogShown_2";
 

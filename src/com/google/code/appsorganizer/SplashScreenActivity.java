@@ -209,7 +209,10 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 			} else if (msg.what == -3) {
 				pd.setMessage(getText(R.string.preparing_apps_list));
 				initAdapter();
-				pd.dismiss();
+				try {
+					pd.dismiss();
+				} catch (IllegalArgumentException ignored) {
+				}
 				if (!showFirstTimeDownloadDialog()) {
 					if (!showStartHowTo()) {
 						if (!changeLogDialog.showDialogIfVersionChanged()) {
