@@ -19,6 +19,7 @@
 package com.google.code.appsorganizer;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Intent;
@@ -133,6 +134,17 @@ public class ApplicationInfoManager {
 		mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
 		return pm.queryIntentActivities(mainIntent, 0);
+	}
+
+	public static ArrayList<String> getAllActivityNames(PackageManager pm, String packageName) {
+		List<ResolveInfo> allResolveInfo = getAllResolveInfo(pm);
+		ArrayList<String> activityNames = new ArrayList<String>();
+		for (ResolveInfo resolveInfo : allResolveInfo) {
+			if (resolveInfo.activityInfo.packageName.equals(packageName)) {
+				activityNames.add(resolveInfo.activityInfo.name);
+			}
+		}
+		return activityNames;
 	}
 
 }

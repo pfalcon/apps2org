@@ -18,12 +18,15 @@
  */
 package com.google.code.appsorganizer.db;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.google.code.appsorganizer.ApplicationInfoManager;
 import com.google.code.appsorganizer.maps.AppCacheMap;
 import com.google.code.appsorganizer.model.AppCache;
 
@@ -171,6 +174,32 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 				}
 			}
 		}
+	}
+
+	public int enablePackage(Context context, String packageName) {
+		String filter = PACKAGE_NAME_COL_NAME + "=?";
+		String[] args = new String[] { packageName };
+		Cursor cur = db.query(TABLE_NAME, new String[] { ID_COL_NAME, NAME_COL_NAME }, filter, args, null, null, null);
+		try {
+			int count = cur.getCount();
+			if (count > 0) {
+				ArrayList<String> activities = ApplicationInfoManager.getAllActivityNames(context.getPackageManager(), packageName);
+				int tot = 0;
+				while (cur.moveToNext()) {
+					String name = cur.getString(1);
+					if (activities.contains(name)) {
+						tot++;
+						ContentValues c = new ContentValues(1);
+						c.put(DISABLED_COL_NAME, 0);
+						db.update(TABLE_NAME, c, PACKAGE_NAME_COL_NAME + "=? and " + NAME_COL_NAME + "=?", new String[] { packageName, name });
+					}
+				}
+				return tot;
+			}
+		} finally {
+			cur.close();
+		}
+		return 0;
 	}
 
 	public int disablePackage(String packageName, boolean d) {
