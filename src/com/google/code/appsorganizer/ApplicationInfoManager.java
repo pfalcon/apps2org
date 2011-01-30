@@ -55,14 +55,12 @@ public class ApplicationInfoManager {
 
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
-				if (a.enabled) {
-					AppCache appCache = appCacheDao.queryForAppCache(a.packageName, a.name, false);
-					String label = loadAppLabel(pm, a, discardCache || a.packageName.equals(packageToReload), appCacheDao, appCache, installedIds);
-					if (handler != null) {
-						Message message = new Message();
-						message.obj = label;
-						handler.sendMessage(message);
-					}
+				AppCache appCache = appCacheDao.queryForAppCache(a.packageName, a.name, false);
+				String label = loadAppLabel(pm, a, discardCache || a.packageName.equals(packageToReload), appCacheDao, appCache, installedIds);
+				if (handler != null) {
+					Message message = new Message();
+					message.obj = label;
+					handler.sendMessage(message);
 				}
 			}
 			if (discardCache) {
