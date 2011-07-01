@@ -18,6 +18,7 @@
  */
 package com.google.code.appsorganizer.shortcut;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -343,9 +344,13 @@ public class LabelShortcut extends ActivityWithDialog {
 					i.addCategory(Intent.CATEGORY_LAUNCHER);
 					i.setClassName(item.getString(3), item.getString(4));
 					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(i);
-					if (prefs.getBoolean("close_folder_after_launch", false)) {
-						finish();
+					try {
+						startActivity(i);
+						if (prefs.getBoolean("close_folder_after_launch", false)) {
+							finish();
+						}
+					} catch (ActivityNotFoundException e) {
+						Toast.makeText(LabelShortcut.this, R.string.error_while_launching_activity, Toast.LENGTH_SHORT).show();
 					}
 				}
 			}
