@@ -50,7 +50,7 @@ import com.google.code.appsorganizer.dialogs.SimpleDialog;
 
 public class SplashScreenActivity extends ListActivityWithDialog {
 
-	private static final String APPS_RELOADED_FIX_RESOLUTION = "apps_reloaded_fix_resolution";
+	private static final String APPS_RELOADED_FIX_RESOLUTION = "apps_reloaded_fix_resolution_3";
 	private static final String SHOW_START_HOW_TO = "showStartHowTo";
 	// private static final String SHOW_FIRST_TIME_DOWNLOAD =
 	// "showFirstTimeDownload";

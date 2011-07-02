@@ -28,6 +28,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -55,7 +57,7 @@ public class ApplicationInfoManager {
 
 			for (ResolveInfo resolveInfo : installedApplications) {
 				ComponentInfo a = resolveInfo.activityInfo;
-				AppCache appCache = appCacheDao.queryForAppCache(a.packageName, a.name, false);
+				AppCache appCache = appCacheDao.queryForAppCache(a.packageName, a.name, false, !discardCache);
 				String label = loadAppLabel(pm, a, discardCache || a.packageName.equals(packageToReload), appCacheDao, appCache, installedIds);
 				if (handler != null) {
 					Message message = new Message();
@@ -98,13 +100,19 @@ public class ApplicationInfoManager {
 			Drawable drawable = a.loadIcon(pm);
 			if (drawable instanceof BitmapDrawable) {
 				Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+				int width = bitmap.getWidth();
+				int height = bitmap.getHeight();
+				if (width > 72 || height > 72) {
+					bitmap = scaleImage(bitmap, width, height);
+				}
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				boolean compressed = bitmap.compress(CompressFormat.PNG, 100, os);
 				if (!compressed) {
-					bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
+					bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
 					os = new ByteArrayOutputStream();
 					compressed = bitmap.compress(CompressFormat.PNG, 100, os);
 				}
+				bitmap.recycle();
 				image = os.toByteArray();
 				changed = true;
 			}
@@ -125,6 +133,34 @@ public class ApplicationInfoManager {
 			installedIds.append(',').append(loadedObj.getId());
 		}
 		return label;
+	}
+
+	private static Bitmap scaleImage(Bitmap bitmap, int width, int height) {
+		int newWidth = 72;
+		int newHeight = 72;
+		if (width > height) {
+			newHeight = 72 * height / width;
+		} else if (width < height) {
+			newWidth = 72 * width / height;
+		}
+		Bitmap bitmap2 = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+		bitmap.recycle();
+
+		return createSquareBitmap(bitmap2);
+	}
+
+	private static Bitmap createSquareBitmap(Bitmap bitmap) {
+		Bitmap res = Bitmap.createBitmap(72, 72, Config.ARGB_8888);
+		Canvas c = new Canvas(res);
+		BitmapDrawable d = new BitmapDrawable(bitmap);
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+		int left = (72 - width) / 2;
+		int top = (72 - height) / 2;
+		d.setBounds(left, top, left + width, top + height);
+		d.draw(c);
+		bitmap.recycle();
+		return res;
 	}
 
 	private static List<ResolveInfo> getAllResolveInfo(PackageManager pm) {

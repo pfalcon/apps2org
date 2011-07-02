@@ -47,9 +47,6 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 	private static final String[] COLUMNS_WITH_ID = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME,
 			IMAGE_COL_NAME, DISABLED_COL_NAME, ID_COL_NAME };
 
-	private static final String[] ALL_COLUMNS = new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME,
-			IMAGE_COL_NAME, DISABLED_COL_NAME };
-
 	public static final String TABLE_NAME = "apps";
 
 	public static final DbColumns NAME = new DbColumns(NAME_COL_NAME, "text not null");
@@ -92,18 +89,34 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 		return a;
 	}
 
-	public AppCache queryForAppCache(String packageName, String name, boolean hideDisabled) {
+	public AppCache queryForAppCache(String packageName, String name, boolean hideDisabled, boolean loadIcon) {
 		String filter = PACKAGE_NAME_COL_NAME + "=? and " + NAME_COL_NAME + "=?";
 		if (hideDisabled) {
 			filter += " and " + DISABLED_COL_NAME + "=0";
 		}
-		Cursor c = db.query(TABLE_NAME, COLUMNS_WITH_ID, filter, new String[] { packageName, name }, null, null, null);
-		try {
-			if (c.moveToNext()) {
-				return createAppCache(c);
+		if (loadIcon) {
+			Cursor c = db.query(TABLE_NAME, COLUMNS_WITH_ID, filter, new String[] { packageName, name }, null, null, null);
+			try {
+				if (c.moveToNext()) {
+					return createAppCache(c);
+				}
+			} finally {
+				c.close();
 			}
-		} finally {
-			c.close();
+		} else {
+			Cursor c = db.query(TABLE_NAME, new String[] { NAME_COL_NAME, LABEL_COL_NAME, STARRED_COL_NAME, PACKAGE_NAME_COL_NAME, DISABLED_COL_NAME,
+					ID_COL_NAME }, filter, new String[] { packageName, name }, null, null, null);
+			try {
+				if (c.moveToNext()) {
+					AppCache a = new AppCache(c.getString(3), c.getString(0), c.getString(1));
+					a.starred = c.getInt(2) == 1;
+					a.disabled = c.getInt(4) == 1;
+					a.setId(c.getLong(5));
+					return a;
+				}
+			} finally {
+				c.close();
+			}
 		}
 		return null;
 	}
