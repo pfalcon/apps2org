@@ -13,7 +13,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have keived a copy of the GNU General Public License
  * along with Apps Organizer.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.google.code.appsorganizer;
@@ -112,7 +112,6 @@ public class ApplicationInfoManager {
 					os = new ByteArrayOutputStream();
 					compressed = bitmap.compress(CompressFormat.PNG, 100, os);
 				}
-				bitmap.recycle();
 				image = os.toByteArray();
 				changed = true;
 			}
@@ -144,7 +143,6 @@ public class ApplicationInfoManager {
 			newWidth = 72 * width / height;
 		}
 		Bitmap bitmap2 = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-		bitmap.recycle();
 
 		return createSquareBitmap(bitmap2);
 	}
@@ -159,7 +157,6 @@ public class ApplicationInfoManager {
 		int top = (72 - height) / 2;
 		d.setBounds(left, top, left + width, top + height);
 		d.draw(c);
-		bitmap.recycle();
 		return res;
 	}
 
