@@ -25,6 +25,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -165,7 +167,10 @@ public class LabelShortcut extends ActivityWithDialog {
 			Cursor cursor = getDbHelper().getDb().query(LabelDao.TABLE_NAME,
 					new String[] { LabelDao.ID_COL_NAME, LabelDao.LABEL_COL_NAME, LabelDao.ICON_COL_NAME, LabelDao.IMAGE_COL_NAME }, null, null,
 					null, null, ("upper(" + LabelDao.LABEL_COL_NAME + ")"));
-			return cursor;
+			MatrixCursor otherAppsCursor = new MatrixCursor(LabelDao.COLS_STRING, 1);
+			otherAppsCursor.addRow(new Object[] { OTHER_APPS, getText(R.string.other_label).toString(), 0, null });
+			MergeCursor m = new MergeCursor(new Cursor[] { cursor, otherAppsCursor });
+			return m;
 		} else {
 			Cursor tmpCursor;
 			if (labelId == ALL_STARRED_ID) {
