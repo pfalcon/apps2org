@@ -135,7 +135,7 @@ public class AppCacheDao extends ObjectWithIdDao<AppCache> {
 
 	@Override
 	protected AppCache createObject(Cursor c) {
-		AppCache t = new AppCache(c.getString(5), c.getString(1), c.getString(2));
+		AppCache t = new AppCache(c.getString(4), c.getString(1), c.getString(2));
 		t.setId(c.getLong(0));
 		t.starred = c.getInt(3) == 1;
 		t.disabled = c.getInt(6) == 1;
