@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ListView;
 
 import com.google.code.appsorganizer.db.DatabaseHelper;
@@ -33,6 +34,7 @@ import com.google.code.appsorganizer.dialogs.GenericDialogCreator;
 import com.google.code.appsorganizer.dialogs.GenericDialogManager;
 import com.google.code.appsorganizer.dialogs.OnOkClickListener;
 import com.google.code.appsorganizer.model.AppLabelSaver;
+import com.google.code.appsorganizer.model.AppCache;
 
 public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
@@ -76,9 +78,14 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 
 	@Override
 	public void prepareDialog(final Dialog dialog) {
-		List<AppLabelBinding> allLabels = DatabaseHelper.initOrSingleton(owner).labelDao.getAppsLabelList(packageName, name);
+		final DatabaseHelper dbHelper = DatabaseHelper.initOrSingleton(owner);
+		List<AppLabelBinding> allLabels = dbHelper.labelDao.getAppsLabelList(packageName, name);
 		adapter = new ChooseLabelListAdapter(owner, allLabels);
 		listView.setAdapter(adapter);
+
+		AppCache appCache = dbHelper.appCacheDao.queryForAppCache(packageName, name, false, false);
+		final CheckBox starCheck = (CheckBox)dialog.findViewById(R.id.starCheck);
+		starCheck.setChecked(appCache.starred);
 
 		int pos = 0;
 		for (AppLabelBinding appLabelBinding : allLabels) {
@@ -102,6 +109,7 @@ public class ChooseLabelDialogCreator extends GenericDialogCreator {
 				}
 				List<AppLabelBinding> modifiedLabels = adapter.getModifiedLabels();
 				AppLabelSaver.save(DatabaseHelper.initOrSingleton(owner), packageName, name, modifiedLabels);
+				dbHelper.appCacheDao.updateStarred(packageName, name, starCheck.isChecked());
 				if (onOkClickListener != null) {
 					onOkClickListener.onClick(null, dialog, Dialog.BUTTON_POSITIVE);
 				}

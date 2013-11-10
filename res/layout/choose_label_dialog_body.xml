@@ -4,6 +4,11 @@
 
 	<LinearLayout android:layout_height="48dip" android:id="@+id/buttonPanel"
 		android:layout_width="fill_parent" android:gravity="center" android:layout_alignParentBottom="true">
+
+		<CheckBox style="?android:attr/starStyle" android:id="@+id/starCheck" android:focusable="false"
+			android:layout_width="wrap_content" android:layout_marginRight="5dip"
+			android:layout_height="wrap_content" android:layout_gravity="center_vertical"  />
+
 		<Button android:text="@string/alert_dialog_ok" android:id="@+id/okButton"
 			android:layout_height="wrap_content" android:layout_width="110dip"/>
 
