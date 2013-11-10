@@ -268,7 +268,7 @@ public class SplashScreenActivity extends ListActivityWithDialog {
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		SQLiteCursor c = (SQLiteCursor) getListAdapter().getItem(info.position);
-		ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+		ApplicationContextMenuManager.createMenu(this, menu, c.getString(1), -1);
 	}
 
 	@Override

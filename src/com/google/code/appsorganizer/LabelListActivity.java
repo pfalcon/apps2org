@@ -281,7 +281,7 @@ public class LabelListActivity extends ExpandableListActivityWithDialog implemen
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
 			Cursor c = getExpandableListAdapter().getChild(groupPos, childPos);
-			ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+			ApplicationContextMenuManager.createMenu(this, menu, c.getString(1), -1);
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 			Cursor c = getExpandableListAdapter().getGroup(groupPos);
 			menu.setHeaderTitle(c.getString(1));

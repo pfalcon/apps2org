@@ -27,6 +27,8 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.code.appsorganizer.dialogs.GenericDialogManagerActivity;
+import com.google.code.appsorganizer.model.AppCache;
+import com.google.code.appsorganizer.db.DatabaseHelper;
 
 /**
  * @author fabio
@@ -37,10 +39,17 @@ public class ApplicationContextMenuManager {
 	private static final int UNINSTALL = 2;
 	private static final int LAUNCH = 1;
 	private static final int CHOOSE_LABELS = 0;
+	private static final int SET_STAR = 3;
+	private static final int UNSET_STAR = 4;
 
-	public static void createMenu(ContextMenu menu, String label) {
+	public static void createMenu(Context context, ContextMenu menu, String label, int id) {
 		menu.setHeaderTitle(label);
 		menu.add(0, CHOOSE_LABELS, 0, R.string.choose_labels_header);
+		if (id >= 0) {
+			AppCache app = DatabaseHelper.initOrSingleton(context).appCacheDao.queryById(Long.valueOf(id));
+			menu.add(0, app.starred ? UNSET_STAR : SET_STAR,
+			         1, app.starred ? R.string.unstar_app : R.string.star_app);
+		}
 		menu.add(0, LAUNCH, 1, R.string.launch);
 		menu.add(0, UNINSTALL, 2, R.string.uninstall);
 	}
@@ -51,6 +60,12 @@ public class ApplicationContextMenuManager {
 		case CHOOSE_LABELS:
 			chooseLabelDialog.setCurrentApp(packageName, name);
 			((GenericDialogManagerActivity) activity).showDialog(chooseLabelDialog);
+			break;
+		case SET_STAR:
+			DatabaseHelper.initOrSingleton(activity).appCacheDao.updateStarred(packageName, name, true);
+			break;
+		case UNSET_STAR:
+			DatabaseHelper.initOrSingleton(activity).appCacheDao.updateStarred(packageName, name, false);
 			break;
 		case LAUNCH:
 			startApplication(activity, packageName, name);

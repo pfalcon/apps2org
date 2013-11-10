@@ -365,7 +365,7 @@ public class LabelShortcut extends ActivityWithDialog {
 				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 				SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
 				if (c.getColumnCount() != 4) {
-					ApplicationContextMenuManager.createMenu(menu, c.getString(1));
+					ApplicationContextMenuManager.createMenu(LabelShortcut.this, menu, c.getString(1), c.getInt(0));
 				}
 			}
 		});
