@@ -30,6 +30,7 @@ import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -475,11 +476,22 @@ public class LabelShortcut extends ActivityWithDialog {
 		}
 	}
 
+	private boolean inViewBounds(View view, int x, int y, int fuzz) {
+		Rect rect = new Rect();
+		int[] loc = new int[2];
+		view.getDrawingRect(rect);
+		view.getLocationOnScreen(loc);
+		rect.offset(loc[0], loc[1]);
+		rect.inset(-fuzz, -fuzz);
+		return rect.contains(x, y);
+	}
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		boolean ret = super.onTouchEvent(event);
 		if (!ret) {
-			finish();
+			if (!inViewBounds(getWindow().getDecorView(), (int)event.getRawX(), (int)event.getRawY(), 20))
+				finish();
 			return true;
 		}
 		return ret;
