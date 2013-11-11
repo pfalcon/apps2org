@@ -84,6 +84,7 @@ public class OptionMenuManager {
 						}
 					}
 				});
+		textEntryDialog.setDefaultValue("backup.txt");
 		aboutDialogCreator = new AboutDialogCreator(genericDialogManager);
 		newLabelDialog = new NewLabelDialog(genericDialogManager, new OnOkClickListener() {
 
