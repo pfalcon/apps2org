@@ -27,7 +27,7 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.MergeCursor;
-import android.database.sqlite.SQLiteCursor;
+import android.database.AbstractCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -364,7 +364,7 @@ public class LabelShortcut extends ActivityWithDialog {
 		grid.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-				SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
+				AbstractCursor c = (AbstractCursor) grid.getAdapter().getItem(info.position);
 				if (c.getColumnCount() != 4) {
 					ApplicationContextMenuManager.createMenu(LabelShortcut.this, menu, c.getString(1), c.getInt(0));
 				}
@@ -379,7 +379,7 @@ public class LabelShortcut extends ActivityWithDialog {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		if (grid != null) {
-			SQLiteCursor c = (SQLiteCursor) grid.getAdapter().getItem(info.position);
+			AbstractCursor c = (AbstractCursor) grid.getAdapter().getItem(info.position);
 			ApplicationContextMenuManager.onContextItemSelected(item, c.getString(3), c.getString(4), this, chooseLabelDialog);
 			return true;
 		}
