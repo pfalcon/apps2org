@@ -60,7 +60,7 @@
 
         <activity android:name="BugReportActivity" android:label="@string/Bug_report"/>
 
-		<provider android:name="com.google.code.appsorganizer.MyBackupPro" android:authorities="com.google.code.appsorganizer.MyBackupPro"/>
+		<provider android:name=".MyBackupPro" android:authorities="com.google.code.appsorganizer.MyBackupPro"/>
 
 
        <receiver android:name=".appwidget.AppsOrganizerAppWidgetProvider">
