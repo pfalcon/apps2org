@@ -7,7 +7,7 @@
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:paddingBottom="8dip" android:textSize="18dip"></TextView>
 
-	<TextView android:text="sites.google.com/site/appsorganizer/"
+	<TextView android:text="github.com/pfalcon/apps2org"
 		android:gravity="center_horizontal" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:paddingBottom="16dip"
 		android:textSize="16dip" android:autoLink="web"></TextView>
@@ -15,15 +15,15 @@
 	<TextView android:text="@string/Any_suggestion_or_bug_to" android:gravity="center_horizontal"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:textSize="16dip"></TextView>
-	<TextView android:text="appsorganizer@gmail.com"
+	<TextView android:text="github.com/pfalcon/apps2org"
 		android:gravity="center_horizontal" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:paddingBottom="16dip"
-		android:textSize="16dip" android:autoLink="email"></TextView>
+		android:textSize="16dip" android:autoLink="web"></TextView>
 
 	<TextView android:text="@string/Follow_me_on" android:gravity="center_horizontal"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:textSize="16dip"></TextView>
-	<TextView android:text="twitter.com/appsorganizer"
+	<TextView android:text="github.com/pfalcon/apps2org"
 		android:gravity="center_horizontal" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:paddingBottom="16dip"
 		android:textSize="16dip" android:autoLink="web"></TextView>

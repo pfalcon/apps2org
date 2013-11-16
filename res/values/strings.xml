@@ -38,7 +38,7 @@
 	<string name="directory_error">Directory error</string>
 	<string name="file_name">File name</string>
 	<string name="no_files_error">No files found in directory AppsOrganizer in your sd card</string>
-	<string name="Author">Author</string>
+	<string name="Author">Originally by</string>
 	<string name="Any_suggestion_or_bug_to">Any suggestion or bug to</string>
 	<string name="Follow_me_on">Follow me on</string>
 	<string name="Help">Help</string>
