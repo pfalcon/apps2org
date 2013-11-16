@@ -10,7 +10,6 @@
     <string name="other_apps_in_market">Другие приложения</string>
     <string name="Deleted_label">Удаленная метка</string>
     <string name="starred_warning">Нет избранных приложений в данной папке. Нажмите на звезду в заголовке, чтобы отобразить все приложения.</string>
-	<string name="app_name">Apps Organizer</string>
 	<string name="alert_dialog_ok">OK</string>
 	<string name="alert_dialog_hide">Скрыть</string>
 	<string name="alert_dialog_cancel">Отмена</string>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="other_apps_in_market">其他程式</string>
-    <string name="app_name">Apps Organizer</string>
     <string name="choose_labels_header">選擇標籤</string>
     <string name="alert_dialog_ok">確定</string>
     <string name="alert_dialog_hide">隱藏</string>

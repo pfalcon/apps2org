@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="other_apps_in_market">Άλλες εφαρμογές</string>
-	<string name="app_name">Apps Organizer</string>
 	<string name="choose_labels_header">Επιλογή ετικέτας</string>
 	<string name="alert_dialog_ok">Εντάξει</string>
 	<string name="alert_dialog_hide">Απόκρυψη</string>

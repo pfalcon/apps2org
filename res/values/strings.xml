@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="other_apps_in_market">Other apps</string>
-	<string name="app_name">Apps Organizer</string>
+	<string name="app_name">Apps2Org</string>
 	<string name="choose_labels_header">Choose labels</string>
 	<string name="alert_dialog_ok">OK</string>
 	<string name="alert_dialog_hide">Hide</string>

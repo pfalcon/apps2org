@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="other_apps_in_market">Outras Aplicações</string>
-	<string name="app_name">Apps Organizer</string>
 	<string name="choose_labels_header">Escolher Etiquetas</string>
 	<string name="alert_dialog_ok">OK</string>
 	<string name="alert_dialog_hide">Esconder</string>
