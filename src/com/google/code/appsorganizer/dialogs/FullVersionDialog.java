@@ -38,6 +38,7 @@ public class FullVersionDialog extends SimpleDialog {
 	}
 
 	public boolean showDialogIfFirstTime() {
+/*
 		SharedPreferences settings = owner.getSharedPreferences("appsOrganizer_pref", 0);
 		if (!settings.getBoolean(FULL_DIALOG_SHOWN, false)) {
 			showDialog();
@@ -45,6 +46,7 @@ public class FullVersionDialog extends SimpleDialog {
 			saveVersion(settings);
 			return true;
 		}
+*/
 		return false;
 	}
 
